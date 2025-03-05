@@ -41,9 +41,9 @@ ShowSettingsPopup(*) {
 }
 
 ShowAbout(*) {
-    result := MsgBox("QuickKit`n`nVersion: 1.0`nAuthor: facebook.com/nvbangg`nVisit author page?", "About QuickKit", "YesNo")
+    result := MsgBox("QuickKit`n`nVersion: 1.0`nSource: github.com/nvbangg/QuickKit`nVisit repository?", "About QuickKit", "YesNo")
     if (result = "Yes")
-        Run("https://facebook.com/nvbangg")
+        Run("https://github.com/nvbangg/QuickKit")
 }
 
 ShowTips(*) {
