@@ -1,10 +1,27 @@
 ; UI - User Interface
 
+mainMenu := Menu()
+mainMenu.Add("Settings", ShowSettingsPopup)
+mainMenu.Add("Shortcuts", ShowTips)
+mainMenu.Add("About", ShowAbout)
+
 A_TrayMenu.Add("Settings", ShowSettingsPopup)
-A_TrayMenu.Add("About", ShowAbout)
 A_TrayMenu.Add("Shortcuts", ShowTips)
+A_TrayMenu.Add("About", ShowAbout)
 
 A_IconTip := "QuickKit - Quick utility toolkit"
+
+OnTrayIconClick(wParam, lParam, *) {
+    ; nhấn chuột trái
+    if (lParam = 0x0201) {
+        CoordMode("Mouse", "Screen")
+        MouseGetPos(&mX, &mY)
+        mainMenu.Show(mX, mY)
+        return 0 
+    }
+}
+
+OnMessage(0x0404, OnTrayIconClick)  ; 0x0404 là WM_USER + 0x04 (thông báo tray icon)
 
 ; Shortcut to show settings popup
 CapsLock & s::ShowSettingsPopup()
