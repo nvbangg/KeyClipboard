@@ -5,7 +5,6 @@
 ; Translate page in Chrome
 CapsLock & t:: {
     BlockInput("On")
-    
     MouseClick("Right")
     Sleep(50)
     Send("t")
@@ -13,7 +12,6 @@ CapsLock & t:: {
     Send("{Enter}")
     Sleep(50) 
     MouseClick("Left")   
-    
     BlockInput("Off")
 }
 
