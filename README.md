@@ -30,12 +30,14 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 
 ## Cài đặt
 
-Cách 1. **Tải xuống trực tiếp**:
-    - Tải [KeyClipboard.exe](https://github.com/nvbangg/KeyClipboard/releases/latest)
-    - Chạy file sau khi tải xuống
-    - Kiểm tra app ở khay icons
+### Cách 1. Tải xuống trực tiếp
+
+- Tải [KeyClipboard.exe](https://github.com/nvbangg/KeyClipboard/releases/latest)
+- Chạy file sau khi tải xuống
+- Kiểm tra app ở khay icons
     
-Cách 2. **Tải toàn bộ repository**:
-    - Yêu cầu [Autohotkey v2](https://www.autohotkey.com)
-    - Clone repository và chạy file KeyClipboard.ahk
+### Cách 2. Tải toàn bộ repository
+
+- Yêu cầu [Autohotkey v2](https://www.autohotkey.com)
+- Clone repository và chạy file KeyClipboard.ahk
 
