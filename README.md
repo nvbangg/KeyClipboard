@@ -29,7 +29,7 @@ Công cụ quản lý clipboard và nhiều tính năng hữu ích khác.
 ## Cài đặt
 
 1. **Tải xuống trực tiếp file thực thi**:
-    - Tải [QuickKit.exe](https://github.com/nvbangg/QuickKit/releases)
+    - Tải [QuickKit.exe](https://github.com/nvbangg/QuickKit/releases/latest)
     - Chạy file sau khi tải xuống
     - Kiểm tra app ở khay icons
 2. **Hoặc tải toàn bộ repository**:
