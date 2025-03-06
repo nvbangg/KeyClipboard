@@ -1,27 +1,24 @@
-; UI - User Interface - Quản lý menu và giao diện chung
+; UI - User Interface
 
 A_TrayMenu.Add("Settings", ShowSettingsPopup)
 A_TrayMenu.Add("Shortcuts", ShowTips)
 A_TrayMenu.Add("About", ShowAbout)
-A_IconTip := "QuickKit - Quick utility toolkit"
+A_IconTip := "QuickKit - Right click to see more"
 
-; Phím tắt mở cài đặt
+; Settings shortcut
 CapsLock & s::ShowSettingsPopup()
 
+; Display settings popup window
 ShowSettingsPopup(*) {
-    ; Tạo GUI cài đặt
     settingsGui := Gui(, "QuickKit - Settings")
     settingsGui.SetFont("s10")
     
-    ; Thêm các phần cài đặt từ các module khác
     yPos := 10
-    yPos := AddMouseKeyboardSettings(settingsGui, yPos)  ; Hàm này được định nghĩa trong MouseAndKey.ahk
+    yPos := AddMouseKeyboardSettings(settingsGui, yPos)
     yPos := AddClipboardSettings(settingsGui, yPos)
     
-    ; Thêm nút lưu
     settingsGui.Add("Button", "x20 y" . (yPos+10) . " w100 Default", "Save").OnEvent("Click", SaveButtonClick)
     
-    ; Hàm nội bộ để xử lý sự kiện click nút Save
     SaveButtonClick(*) {
         SaveAllSettings(settingsGui.Submit())
     }
@@ -30,17 +27,16 @@ ShowSettingsPopup(*) {
 }
 
 ShowAbout(*) {
-    if (MsgBox("QuickKit`n`nVersion: 1.1`nSource: github.com/nvbangg/QuickKit`nVisit repository?", 
+    if (MsgBox("QuickKit`n`nVersion: 1.1`nDate: 06/03/2025`nSource: github.com/nvbangg/QuickKit`nVisit repository?", 
                "About QuickKit", "YesNo") = "Yes")
         Run("https://github.com/nvbangg/QuickKit")
 }
 
 ShowTips(*) {
-    MsgBox("CapsLock+V: Paste previous clipboard`n" .
-           "CapsLock+C: Show clipboard history`n" .
+    MsgBox("CapsLock+S: Settings`n" .
+           "CapsLock+Z: Paste previous clipboard`n" .
+           "CapsLock+V (same Win+V): Show clipboard history`n" .
            "CapsLock+F: Format when pasting`n" .
-           "CapsLock+F (double-press): Format settings`n" .
-           "CapsLock+T: Translate page (Chrome)`n" .
-           "CapsLock+S: Settings", 
+           "CapsLock+T: Translate page (Chrome)`n",
            "Shortcuts - QuickKit", "Ok")
 }

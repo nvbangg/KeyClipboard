@@ -8,7 +8,7 @@ global alwaysNumLockEnabled := true
 global pasteFormatMode := 1
 global settingsFilePath := A_ScriptDir . "\data\settings.ini"
 
-; Khởi tạo cài đặt khi script chạy
+; Initialize settings when script starts
 InitSettings()
 InitSettings() {
     global mouseClickEnabled, alwaysNumLockEnabled, pasteFormatMode, settingsFilePath
@@ -23,14 +23,13 @@ InitSettings() {
     UpdateNumLockState()
 }
 
+; Save all settings to INI file
 SaveAllSettings(savedValues) {
     global mouseClickEnabled, alwaysNumLockEnabled, pasteFormatMode, settingsFilePath
     
-    ; Cập nhật giá trị từ form
     mouseClickEnabled := !!savedValues.MouseClick
     alwaysNumLockEnabled := !!savedValues.NumLock
     
-    ; Xác định định dạng paste từ radio buttons - Thêm Option4
     if (savedValues.HasProp("FormatOption4") && savedValues.FormatOption4)
         pasteFormatMode := 4
     else if (savedValues.HasProp("FormatOption3") && savedValues.FormatOption3)
@@ -40,13 +39,13 @@ SaveAllSettings(savedValues) {
     else
         pasteFormatMode := 1
     
-    ; Ghi cài đặt vào file
     IniWrite(mouseClickEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseClickEnabled")
     IniWrite(alwaysNumLockEnabled ? "1" : "0", settingsFilePath, "Settings", "alwaysNumLockEnabled")
     IniWrite(pasteFormatMode, settingsFilePath, "Settings", "pasteFormatMode")
     
     UpdateNumLockState()
 }
+
 ; Module imports
 #Include "modules\UI.ahk"
 #Include "modules\Clipboard.ahk"
