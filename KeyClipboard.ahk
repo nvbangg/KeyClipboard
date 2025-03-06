@@ -20,9 +20,9 @@ InitSettings() {
     }
     mouseClickEnabled := IniRead(settingsFilePath, "Settings", "mouseClickEnabled", "0") = "1"
     alwaysNumLockEnabled := IniRead(settingsFilePath, "Settings", "alwaysNumLockEnabled", "1") = "1"
+    prefix_textEnabled := IniRead(settingsFilePath, "Settings", "prefix_textEnabled", "1") = "1"
     formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "3"))
     formatSeparator := Integer(IniRead(settingsFilePath, "Settings", "formatSeparator", "0"))
-    prefix_textEnabled := IniRead(settingsFilePath, "Settings", "prefix_textEnabled", "1") = "1"
 
     UpdateNumLockState()
 }
@@ -32,9 +32,9 @@ SaveAllSettings(savedValues) {
     global mouseClickEnabled, alwaysNumLockEnabled, formatCaseOption, formatSeparator, prefix_textEnabled,
         settingsFilePath
 
+    prefix_textEnabled := !!savedValues.prefix_textEnabled
     mouseClickEnabled := !!savedValues.MouseClick
     alwaysNumLockEnabled := !!savedValues.NumLock
-    prefix_textEnabled := !!savedValues.prefix_textEnabled
 
     ; Text case format options
     if (savedValues.HasProp("CaseNone") && savedValues.CaseNone)
@@ -60,9 +60,9 @@ SaveAllSettings(savedValues) {
 
     IniWrite(mouseClickEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseClickEnabled")
     IniWrite(alwaysNumLockEnabled ? "1" : "0", settingsFilePath, "Settings", "alwaysNumLockEnabled")
+    IniWrite(prefix_textEnabled ? "1" : "0", settingsFilePath, "Settings", "prefix_textEnabled")
     IniWrite(formatCaseOption, settingsFilePath, "Settings", "formatCaseOption")
     IniWrite(formatSeparator, settingsFilePath, "Settings", "formatSeparator")
-    IniWrite(prefix_textEnabled ? "1" : "0", settingsFilePath, "Settings", "prefix_textEnabled")
 
     UpdateNumLockState()
 }

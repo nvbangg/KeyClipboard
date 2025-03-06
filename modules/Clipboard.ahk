@@ -35,58 +35,45 @@ global accentMap := Map(
 ; Add clipboard settings to the settings GUI
 AddClipboardSettings(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h300", "Paste Format (Caps+F)")
-
     yPos += 25
 
     ; Section 1: Code Filename Format (moved to first position)
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h50", "1. Prefix_text")
-
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h50", "1. Prefix_text (nội dung trước_nội dung sau)")
     yPos += 25
     settingsGui.Add("CheckBox", "x40 y" . yPos . " vprefix_textEnabled Checked" . prefix_textEnabled,
         "Bật chế độ Prefix_text")
-
     yPos += 35
 
     ; Section 2: Text Case Format (now second position)
     settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h135", "2. Kiểu")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vCaseNone Checked" . (formatCaseOption = 0),
     "None")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vCaseUpper Checked" . (formatCaseOption = 1),
     "In hoa (UPPERCASE)")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vCaseLower Checked" . (formatCaseOption = 2),
     "In thường (lowercase)")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vCaseNoDiacritics Checked" . (formatCaseOption = 3),
     "In không dấu (Remove diacritics)")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vCaseTitleCase Checked" . (formatCaseOption = 4),
     "In hoa chữ đầu (Title Case)")
-
     yPos += 35
 
     ; Section 3: Word Separator (now third position)
     settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "3. Phân cách")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vSeparatorNone Checked" . (formatSeparator = 0),
     "None")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vSeparatorUnderscore Checked" . (formatSeparator = 1),
     "Gạch dưới (_)")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vSeparatorHyphen Checked" . (formatSeparator = 2),
     "Gạch ngang (-)")
-
     yPos += 25
     settingsGui.Add("Radio", "x40 y" . yPos . " vSeparatorNoSpace Checked" . (formatSeparator = 3),
     "Xoá khoảng cách")
@@ -105,11 +92,9 @@ InitClipboard() {
 ; Handle clipboard content changes
 ClipChanged(Type) {
     global clipboardHistory, isFormatting, originalClip
-
     if (isFormatting) {
         return
     }
-
     if Type = 1 {
         try {
             if (A_Clipboard != "") {
@@ -181,17 +166,10 @@ CapsLock & v:: {
 
     PasteAllItems(*) {
         global isFormatting, clipboardHistory
-
-        ; Set formatting flag before destroying GUI to prevent race conditions
         isFormatting := true
-
-        ; Store original clipboard
         originalClip := ClipboardAll()
-
-        ; Close the GUI first
         clipHistoryGui.Destroy()
 
-        ; Prepare the combined content
         combinedContent := ""
         for index, content in clipboardHistory {
             combinedContent .= content
@@ -200,43 +178,29 @@ CapsLock & v:: {
                 combinedContent .= "`r`n"
         }
 
-        ; Paste the combined content
         A_Clipboard := combinedContent
         ClipWait(0.5)
         Send("^v")
         Sleep(100)
 
-        ; Restore original clipboard
         A_Clipboard := originalClip
         ClipWait(0.5)
         Sleep(100)
 
-        ; Clear formatting flag after everything is done
         isFormatting := false
     }
 
     FormatPasteAllItems(*) {
         global isFormatting, clipboardHistory
-
-        ; Set formatting flag before destroying GUI to prevent race conditions
         isFormatting := true
-
-        ; Store original clipboard
         originalClip := ClipboardAll()
-
-        ; Close the GUI first
         clipHistoryGui.Destroy()
-
-        ; Prepare the combined content with formatting applied
         formattedContent := ""
         for index, content in clipboardHistory {
-            ; Determine if we should use the previous item as prefix
             prefix := ""
             if (index > 1 && prefix_textEnabled) {
                 prefix := clipboardHistory[index - 1]
             }
-
-            ; Format each item
             formattedText := FormatClipboardText(content, prefix)
             formattedContent .= formattedText
 
@@ -244,18 +208,15 @@ CapsLock & v:: {
                 formattedContent .= "`r`n"
         }
 
-        ; Paste the formatted content
         A_Clipboard := formattedContent
         ClipWait(0.5)
         Send("^v")
         Sleep(100)
 
-        ; Restore original clipboard
         A_Clipboard := originalClip
         ClipWait(0.5)
         Sleep(100)
 
-        ; Clear formatting flag after everything is done
         isFormatting := false
     }
 
@@ -367,25 +328,19 @@ CapsLock & f:: {
 
     isFormatting := true
     originalClip := ClipboardAll()
-
-    ; Get the last clipboard item as our text
     text := clipboardHistory[clipboardHistory.Length]
 
-    ; Get potential prefix from the previous item
     prefix := ""
     if (clipboardHistory.Length >= 2) {
         prefix := clipboardHistory[clipboardHistory.Length - 1]
     }
 
-    ; Apply formatting using the shared function
     A_Clipboard := FormatClipboardText(text, prefix)
 
-    ; Paste the formatted text
     ClipWait(0.3)
     Send("^v")
     Sleep(100)
 
-    ; Restore the original clipboard
     A_Clipboard := originalClip
     ClipWait(0.3)
     Sleep(100)
@@ -397,11 +352,9 @@ CapsLock & f:: {
 FormatClipboardText(text, prefixText := "") {
     global formatCaseOption, formatSeparator, prefix_textEnabled
 
-    ; Make a copy to avoid modifying the original
     formattedText := text
     prefix := prefixText
 
-    ; Use prefix_text mode if enabled and a prefix is available
     usePrefixMode := prefix_textEnabled && (prefix != "")
 
     ; Step 1: Apply text case formatting
