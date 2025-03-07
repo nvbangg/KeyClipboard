@@ -67,23 +67,28 @@ ShowClipboardHistory() {
     clipHistoryGui := Gui(, "Clipboard History")
     clipHistoryGui.SetFont("s10")
 
-    LV := clipHistoryGui.Add("ListView", "x10 y10 w700 h400 Grid", ["#", "Content"])
-    LV.OnEvent("DoubleClick", PasteSelected)
-    LV.OnEvent("ContextMenu", ShowContextMenu)
+    LV := clipHistoryGui.Add("ListView", "x10 y10 w700 h400 Grid Multi", ["#", "Content"])
+    LV.OnEvent("DoubleClick", (*) => PasteSelected(LV, clipHistoryGui))
+    LV.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
+        ShowContextMenu(LV, clipHistoryGui, Item, IsRightClick, X, Y))
+
+    ; Add window close handlers
+    clipHistoryGui.OnEvent("Close", (*) => clipHistoryGui.Destroy())
+    clipHistoryGui.OnEvent("Escape", (*) => clipHistoryGui.Destroy())
+
+    ; Set up Enter key hotkey specific to this GUI
+    enterHotkey := HotIfWinActive("ahk_id " . clipHistoryGui.Hwnd)
+    Hotkey("Enter", (*) => PasteSelected(LV, clipHistoryGui))
+
     LV.ModifyCol(1, 50)
     LV.ModifyCol(2, 640)
 
-    for index, content in clipboardHistory {
-        displayContent := StrLen(content) > 100 ? SubStr(content, 1, 100) . "..." : content
-        LV.Add(, index, displayContent)
-    }
-    LV.Modify(1, "Select Focus")
+    PopulateListView(LV)
 
     buttonOptions := [
-        ["x10 y420 w100 Default", "Paste", PasteSelected],
-        ["x120 y420 w100", "Paste All", PasteAllItems],
-        ["x230 y420 w120", "Format Paste All", FormatPasteAllItems],
-        ["x360 y420 w100", "Clear All", ClearAllHistory]
+        ["x10 y420 w100", "Paste All", (*) => PasteAllItems(LV, clipHistoryGui)],
+        ["x120 y420 w120", "Format Paste All", (*) => FormatPasteAllItems(LV, clipHistoryGui)],
+        ["x250 y420 w100", "Clear All", (*) => ClearAllHistory(clipHistoryGui)]
     ]
 
     for option in buttonOptions {
@@ -91,97 +96,6 @@ ShowClipboardHistory() {
     }
 
     clipHistoryGui.Show("w720 h460")
-
-    ; Paste selected item
-    PasteSelected(*) {
-        if (focused_row := LV.GetNext(0)) {
-            selected_index := LV.GetText(focused_row, 1)
-            clipHistoryGui.Destroy()
-            PasteWithFormat(clipboardHistory[selected_index])
-        }
-    }
-
-    ; Paste all items with line breaks
-    PasteAllItems(*) {
-        clipHistoryGui.Destroy()
-
-        combinedContent := ""
-        for index, content in clipboardHistory {
-            combinedContent .= content . (index < clipboardHistory.Length ? "`r`n" : "")
-        }
-
-        PasteWithFormat(combinedContent)
-    }
-
-    ; Format and paste all items
-    FormatPasteAllItems(*) {
-        clipHistoryGui.Destroy()
-        formattedContent := ""
-
-        for index, content in clipboardHistory {
-            prefix := (index > 1 && prefix_textEnabled) ? clipboardHistory[index - 1] : ""
-            formattedText := FormatClipboardText(content, prefix)
-            formattedContent .= formattedText . (index < clipboardHistory.Length ? "`r`n" : "")
-        }
-
-        PasteWithFormat(formattedContent)
-    }
-
-    ; Format and paste selected item
-    FormatPasteSelected(*) {
-        if (focused_row := LV.GetNext(0)) {
-            selected_index := LV.GetText(focused_row, 1)
-            text := clipboardHistory[selected_index]
-
-            prefix := (selected_index > 1) ? clipboardHistory[selected_index - 1] : ""
-            formattedText := FormatClipboardText(text, prefix)
-
-            clipHistoryGui.Destroy()
-            PasteWithFormat(formattedText)
-        }
-    }
-
-    ; Clear all clipboard history
-    ClearAllHistory(*) {
-        global clipboardHistory
-        clipboardHistory := []
-        clipHistoryGui.Destroy()
-        ShowNotification("All items in clipboard history have been cleared.")
-    }
-
-    ; Show context menu for right-click
-    ShowContextMenu(LV, Item, IsRightClick, X, Y) {
-        if (Item = 0)
-            return
-
-        contextMenu := Menu()
-        contextMenu.Add("Paste", PasteSelected)
-        contextMenu.Add("Format Paste", FormatPasteSelected)
-        contextMenu.Add()
-        contextMenu.Add("Delete item", DeleteSelected)
-        contextMenu.Show(X, Y)
-    }
-
-    ; Delete selected item
-    DeleteSelected(*) {
-        if (focused_row := LV.GetNext(0)) {
-            selected_index := LV.GetText(focused_row, 1)
-            clipboardHistory.RemoveAt(selected_index)
-
-            LV.Delete()
-            LV.Delete()  ; Clear all rows
-
-            for index, content in clipboardHistory {
-                displayContent := StrLen(content) > 100 ? SubStr(content, 1, 100) . "..." : content
-                LV.Add(, index, displayContent)
-            }
-
-            if (clipboardHistory.Length = 0) {
-                clipHistoryGui.Destroy()
-                ShowNotification("All items in clipboard history have been deleted.")
-            }
-        }
-    }
 }
 
 ; Paste the previous clipboard content

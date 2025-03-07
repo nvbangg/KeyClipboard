@@ -45,6 +45,8 @@ ShowKeyboardShortcuts(*) {
     MsgBox("CapsLock+S: Show Settings Popup`n" .
         "CapsLock+Z: Paste previous clipboard`n" .
         "CapsLock+V: Show Clipboard History`n" .
+        "-Double click: Paste selected item`n" .
+        "-Enter: Paste selected items`n" .
         "CapsLock+F: Format when pasting`n" .
         "CapsLock+T: Translate page in Chrome`n",
         "Shortcuts - KeyClipboard", "Ok")
