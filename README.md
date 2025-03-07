@@ -27,6 +27,8 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - Thêm chọn phân cách khi dán
 - Thêm dán tất cả với định dạng
 - Tối ưu thêm một số thứ khác
+## Mới (v1.2.1)
+- Tối ưu code và sửa lỗi
 
 ## Cài đặt
 

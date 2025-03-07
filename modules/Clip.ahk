@@ -60,7 +60,7 @@ InitClipboard()
 ShowClipboardHistory() {
     global clipboardHistory
     if (clipboardHistory.Length = 0) {
-        MsgBox("No clipboard history available.", "Notice", "Icon!")
+        ShowNotification("No clipboard history available.")
         return
     }
 
@@ -146,7 +146,7 @@ ShowClipboardHistory() {
         global clipboardHistory
         clipboardHistory := []
         clipHistoryGui.Destroy()
-        MsgBox("All items in clipboard history have been successfully cleared.", "Clipboard Cleared", "IconI")
+        ShowNotification("All items in clipboard history have been cleared.")
     }
 
     ; Show context menu for right-click
@@ -178,7 +178,7 @@ ShowClipboardHistory() {
 
             if (clipboardHistory.Length = 0) {
                 clipHistoryGui.Destroy()
-                MsgBox("All items in clipboard history have been deleted.", "Notice", "Icon!")
+                ShowNotification("All items in clipboard history have been deleted.")
             }
         }
     }
@@ -189,7 +189,7 @@ PastePreviousClipboard() {
     global clipboardHistory
 
     if (clipboardHistory.Length < 2) {
-        MsgBox("Not enough clipboard history to paste previous item.", "Notice", "Icon!")
+        ShowNotification("Not enough clipboard history to paste previous item.")
         return
     }
 
@@ -201,7 +201,7 @@ PasteWithCurrentFormat() {
     global clipboardHistory
 
     if (clipboardHistory.Length < 1) {
-        MsgBox("No clipboard content to format.", "Notice", "Icon!")
+        ShowNotification("No clipboard content to format.")
         return
     }
 

@@ -85,3 +85,12 @@ ShowSettingsPopup(*) {
 
     settingsGui.Show("w400 h" . (yPos + 50))
 }
+
+; Display a simple notification that auto-closes
+ShowNotification(message, timeout := 1500) {
+    notify := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    notify.SetFont("s10")
+    notify.Add("Text", "w300", message)
+    notify.Show("NoActivate")
+    SetTimer(() => notify.Destroy(), -timeout)
+}
