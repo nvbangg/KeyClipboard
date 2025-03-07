@@ -15,7 +15,7 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
         - Chế độ xem lịch sử có thể sắp xếp, chỉnh sửa tuỳ chỉnh
         - **Dán toàn bộ clipboard** theo thứ tự, định dạng tuỳ chỉnh
         - Dán từng mục cụ thể theo định dạng
-- **Mouse and Keyboard** (tuỳ chọn):
+- **Keyboard Settings** (tuỳ chọn):
     - RAlt/RCtrl: Để click chuột trái/phải
     - Luôn bật phím Numlock
 - **Tiện ích Chrome**: 
