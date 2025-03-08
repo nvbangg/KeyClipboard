@@ -45,3 +45,8 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - Yêu cầu [Autohotkey v2](https://www.autohotkey.com)
 - Clone repository và chạy file KeyClipboard.ahk
 
+## Bật tự động khởi chạy khi mở máy tính
+- Vào thư mục `%appdata%\Microsoft\Windows\Start Menu\Programs\Startup`
+- Tạo shortcut của file KeyClipboard.exe hoặc KeyClipboard.ahk và đặt vào thư mục này
+- Ứng dụng sẽ tự động khởi chạy khi mở máy tính
+
