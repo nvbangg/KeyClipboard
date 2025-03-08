@@ -28,9 +28,19 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - Các tính năng đã khả dụng cho nhiều mục được chọn cụ thể
 - Có thể Dán theo thứ tự sắp xếp tuỳ chỉnh
 - Có thể dùng enter để dán nhiều mục
+
 ## Mới (v1.3.1)
 - Thêm phím tắt Caps+A để dán toàn bộ clipboard
 - Thêm phím tắt Caps+C để clear toàn bộ clipboard
+
+## Tính năng dự kiến
+- Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
+- Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
+- Có thể Thêm nội dung và chỉnh sửa nội dung trực tiếp
+- Có thể điều chỉnh thủ công thứ tự của nội dung trong clipboard
+- Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
+- Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
+- Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
 ## Cài đặt
 
