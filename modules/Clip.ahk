@@ -124,3 +124,36 @@ PasteWithCurrentFormat() {
 
     PasteWithFormat(FormatClipboardText(text, prefix))
 }
+
+; Paste all clipboard items (without clearing)
+PasteAllClipboardItems() {
+    global clipboardHistory
+
+    if (clipboardHistory.Length = 0) {
+        ShowNotification("No clipboard history to paste.")
+        return
+    }
+
+    ; Combine all clipboard items
+    combinedContent := ""
+    for index, content in clipboardHistory {
+        combinedContent .= content . (index < clipboardHistory.Length ? "`r`n" : "")
+    }
+
+    ; Paste the content
+    PasteWithFormat(combinedContent)
+    ShowNotification("All items pasted.")
+}
+
+; Clear clipboard history
+ClearClipboardHistory() {
+    global clipboardHistory
+
+    if (clipboardHistory.Length = 0) {
+        ShowNotification("Clipboard history is already empty.")
+        return
+    }
+
+    clipboardHistory := []
+    ShowNotification("Clipboard history cleared.")
+}

@@ -6,6 +6,8 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 
 - ***CapsLock+S để mở settings tuỳ chọn các chế độ***
 - **Clipboard Manager**:
+    - Capslock+A: **Dán toàn bộ clipboard**
+    - Capslock+C: Clear toàn bộ clipboard
     - CapsLock+Z: Dán nội dung clipboard trước của trước đó
     - CapsLock+F: **Dán với định dạng** tuỳ chỉnh
         1. Prefix_text: Dán nội dung trước của trước_nội dung trước
@@ -13,7 +15,7 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
         3. **Chọn phân cách**: Gạch dưới(_), Gạch ngang(-), Xoá khoảng cách
     - CapsLock+V (giống Win+V): Mở Clipboard History
         - Chế độ xem lịch sử có thể sắp xếp, chỉnh sửa tuỳ chỉnh
-        - **Dán toàn bộ clipboard** theo thứ tự, định dạng tuỳ chỉnh
+        - Dán toàn bộ clipboard **theo thứ tự, định dạng tuỳ chỉnh**
         - **Dán nhiều mục được chọn** theo thứ tự, định dạng tuỳ chỉnh
         - *Lưu ý: Double click hoặc enter để dán mục đã chọn*
 - **Keyboard Settings** (tuỳ chọn):
@@ -26,6 +28,9 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - Các tính năng đã khả dụng cho nhiều mục được chọn cụ thể
 - Có thể Dán theo thứ tự sắp xếp tuỳ chỉnh
 - Có thể dùng enter để dán nhiều mục
+## Mới (v1.3.1)
+- Thêm phím tắt Caps+A để dán toàn bộ clipboard
+- Thêm phím tắt Caps+C để clear toàn bộ clipboard
 
 ## Cài đặt
 

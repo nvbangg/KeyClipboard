@@ -236,25 +236,6 @@ PasteSelected(LV, clipHistoryGui) {
     PasteWithFormat(combinedContent)
 }
 
-; Paste all items with line breaks
-PasteAllItems(LV, clipHistoryGui) {
-    global clipboardHistory
-
-    ; Get all items in ListView order BEFORE destroying the GUI
-    contentArray := GetAllItemsFromListView(LV)
-
-    ; Now it's safe to destroy the GUI
-    clipHistoryGui.Destroy()
-
-    ; Process the collected content
-    combinedContent := ""
-    for index, content in contentArray {
-        combinedContent .= content . (index < contentArray.Length ? "`r`n" : "")
-    }
-
-    PasteWithFormat(combinedContent)
-}
-
 ; Get all items from ListView in display order
 GetAllItemsFromListView(LV) {
     global clipboardHistory
@@ -359,6 +340,25 @@ DeleteSelected(LV, clipHistoryGui) {
     } else {
         ShowNotification(selectedItems.Length > 1 ? "Selected items deleted." : "Selected item deleted.")
     }
+}
+
+; Paste all items with line breaks
+PasteAllItems(LV, clipHistoryGui) {
+    global clipboardHistory
+
+    ; Get all items in ListView order BEFORE destroying the GUI
+    contentArray := GetAllItemsFromListView(LV)
+
+    ; Now it's safe to destroy the GUI
+    clipHistoryGui.Destroy()
+
+    ; Process the collected content
+    combinedContent := ""
+    for index, content in contentArray {
+        combinedContent .= content . (index < contentArray.Length ? "`r`n" : "")
+    }
+
+    PasteWithFormat(combinedContent)
 }
 
 ; Clear all clipboard history

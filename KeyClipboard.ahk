@@ -24,6 +24,8 @@ CapsLock & s:: ShowSettingsPopup()
 CapsLock & v:: ShowClipboardHistory()
 CapsLock & z:: PastePreviousClipboard()
 CapsLock & f:: PasteWithCurrentFormat()
+CapsLock & a:: PasteAllClipboardItems()
+CapsLock & c:: ClearClipboardHistory()
 
 ; UI
 A_TrayMenu.Add("Settings (Caps+S)", ShowSettingsPopup)
@@ -33,8 +35,8 @@ A_IconTip := "KeyClipboard - Right click to see more"
 
 ShowAbout(*) {
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.2.1`n" .
-        "Date: 07/03/2025`n" .
+        "Version: 1.3.1`n" .
+        "Date: 08/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard", "YesNo")
@@ -48,6 +50,8 @@ ShowKeyboardShortcuts(*) {
         "-Double click: Paste selected item`n" .
         "-Enter: Paste selected items`n" .
         "CapsLock+F: Format when pasting`n" .
+        "CapsLock+A: Paste all clipboard items`n" .
+        "CapsLock+C: Clear clipboard history`n" .
         "CapsLock+T: Translate page in Chrome`n",
         "Shortcuts - KeyClipboard", "Ok")
 }
