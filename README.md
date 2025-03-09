@@ -5,24 +5,22 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 ## Tính năng và Phím tắt
 
 - **Clipboard Manager**:
-    - Capslock+A: <font color="red">Dán toàn bộ clipboard</font>
-    - Capslock+C: Clear toàn bộ clipboard
-    - CapsLock+Z: Dán nội dung clipboard trước của trước đó
-    - CapsLock+F: **Dán với định dạng** tuỳ chỉnh
+    - ***Dán toàn bộ clipboard*** (Capslock+A)
+    - Clear toàn bộ clipboard (Capslock+C)
+    - Dán nội dung clipboard trước của trước đó (CapsLock+Z)
+    - ***Dán với định dạng tuỳ chỉnh*** (CapsLock+F)
         1. Prefix_text: Dán nội dung trước của trước_nội dung trước
         2. **Dán theo kiểu**: IN HOA, in thường, in không dấu, In Hoa Chữ Cái Đầu
         3. **Chọn phân cách**: Gạch dưới(_), Gạch ngang(-), Xoá khoảng cách
-    - CapsLock+V (giống Win+V): Mở Clipboard History
+    - Mở Clipboard History (CapsLock+V (giống Win+V))
         - Chế độ xem lịch sử có thể sắp xếp, chỉnh sửa tuỳ chỉnh
-        - Dán toàn bộ clipboard **theo thứ tự, định dạng tuỳ chỉnh**
-        - **Dán nhiều mục được chọn** theo thứ tự, định dạng tuỳ chỉnh
+        - Dán toàn bộ clipboard hoặc dán nhiều mục được chọn ***theo thứ tự, định dạng tuỳ chỉnh***
         - *Lưu ý: Double click hoặc enter để dán mục đã chọn*
 - **Keyboard Settings** (tuỳ chọn):
-    - RAlt/RCtrl: Để click chuột trái/phải
-    - Luôn bật phím Numlock
-- **Tiện ích Chrome**: 
-    - CapsLock+T: Để **chuyển đổi dịch** trang web nhanh chóng
-- ***CapsLock+S để mở settings tuỳ chọn các chế độ***
+    - **Chuyển đổi dịch** trang web nhanh chóng trong chrome (CapsLock+T)
+    - Dùng phím Right Alt/Right Ctrl: Để click chuột trái/phải
+    - Luôn bật phím Numlock 
+- *Lưu ý: CapsLock+S để mở settings tuỳ chỉnh*
  
 ### Tính năng dự kiến
 - Có thể Thêm nội dung và chỉnh sửa nội dung trực tiếp
