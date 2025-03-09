@@ -68,8 +68,8 @@ FormatClipboardText(text, prefixText := "") {
             formattedText := StrReplace(formattedText, " ", "")
     }
 
-    ; Step 3: Apply prefix format if needed
-    return usePrefixMode ? prefix . "_" . formattedText . "." : formattedText
+    ; Step 3: Apply prefix format if needed - removed trailing dot
+    return usePrefixMode ? prefix . "_" . formattedText : formattedText
 }
 
 ; Remove Vietnamese diacritical marks
@@ -156,6 +156,10 @@ PopulateListView(LV) {
         displayContent := StrLen(content) > 100 ? SubStr(content, 1, 100) . "..." : content
         LV.Add(, index, displayContent)
     }
+
+    ; Set numeric sorting for column 1
+    LV.ModifyCol(1, "Integer")
+
     LV.Modify(1, "Select Focus")
 }
 

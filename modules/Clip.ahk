@@ -80,7 +80,7 @@ ShowClipboardHistory() {
     enterHotkey := HotIfWinActive("ahk_id " . clipHistoryGui.Hwnd)
     Hotkey("Enter", (*) => PasteSelected(LV, clipHistoryGui))
 
-    LV.ModifyCol(1, 50)
+    LV.ModifyCol(1, 50, "Integer")  ; Set numeric sorting for this column
     LV.ModifyCol(2, 640)
 
     PopulateListView(LV)

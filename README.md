@@ -6,7 +6,7 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 
 - ***CapsLock+S để mở settings tuỳ chọn các chế độ***
 - **Clipboard Manager**:
-    - Capslock+A: **Dán toàn bộ clipboard**
+    - Capslock+A: **<span style="color: red;">Dán toàn bộ clipboard</span>**
     - Capslock+C: Clear toàn bộ clipboard
     - CapsLock+Z: Dán nội dung clipboard trước của trước đó
     - CapsLock+F: **Dán với định dạng** tuỳ chỉnh
@@ -28,17 +28,19 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - Các tính năng đã khả dụng cho nhiều mục được chọn cụ thể
 - Có thể Dán theo thứ tự sắp xếp tuỳ chỉnh
 - Có thể dùng enter để dán nhiều mục
-
 ## Mới (v1.3.1)
 - Thêm phím tắt Caps+A để dán toàn bộ clipboard
 - Thêm phím tắt Caps+C để clear toàn bộ clipboard
+## Mới (v1.3.2)
+- Xoá dấu . sau prefix_text để phù hợp hơn trong nhiều trường hợp
+- Sửa lỗi sắp xếp không đúng khi số lượng nội dung lớn
 
 ## Tính năng dự kiến
-- Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
-- Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể Thêm nội dung và chỉnh sửa nội dung trực tiếp
 - Có thể điều chỉnh thủ công thứ tự của nội dung trong clipboard
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
+- Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
+- Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
@@ -56,7 +58,5 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - Clone repository và chạy file KeyClipboard.ahk
 
 ## Bật tự động khởi chạy khi mở máy tính
-- Vào thư mục `%appdata%\Microsoft\Windows\Start Menu\Programs\Startup`
-- Tạo shortcut của file KeyClipboard.exe hoặc KeyClipboard.ahk và đặt vào thư mục này
-- Ứng dụng sẽ tự động khởi chạy khi mở máy tính
+- 
 
