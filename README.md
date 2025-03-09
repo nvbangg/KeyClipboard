@@ -4,9 +4,8 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 
 ## Tính năng và Phím tắt
 
-- ***CapsLock+S để mở settings tuỳ chọn các chế độ***
 - **Clipboard Manager**:
-    - Capslock+A: **<span style="color: red;">Dán toàn bộ clipboard</span>**
+    - Capslock+A: <font color="red">Dán toàn bộ clipboard</font>
     - Capslock+C: Clear toàn bộ clipboard
     - CapsLock+Z: Dán nội dung clipboard trước của trước đó
     - CapsLock+F: **Dán với định dạng** tuỳ chỉnh
@@ -23,6 +22,7 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
     - Luôn bật phím Numlock
 - **Tiện ích Chrome**: 
     - CapsLock+T: Để **chuyển đổi dịch** trang web nhanh chóng
+- ***CapsLock+S để mở settings tuỳ chọn các chế độ***
  
 ### Tính năng dự kiến
 - Có thể Thêm nội dung và chỉnh sửa nội dung trực tiếp
