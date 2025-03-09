@@ -24,18 +24,7 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - **Tiện ích Chrome**: 
     - CapsLock+T: Để **chuyển đổi dịch** trang web nhanh chóng
  
-## Mới (v1.3)
-- Các tính năng đã khả dụng cho nhiều mục được chọn cụ thể
-- Có thể Dán theo thứ tự sắp xếp tuỳ chỉnh
-- Có thể dùng enter để dán nhiều mục
-## Mới (v1.3.1)
-- Thêm phím tắt Caps+A để dán toàn bộ clipboard
-- Thêm phím tắt Caps+C để clear toàn bộ clipboard
-## Mới (v1.3.2)
-- Xoá dấu . sau prefix_text để phù hợp hơn trong nhiều trường hợp
-- Sửa lỗi sắp xếp không đúng khi số lượng nội dung lớn
-
-## Tính năng dự kiến
+### Tính năng dự kiến
 - Có thể Thêm nội dung và chỉnh sửa nội dung trực tiếp
 - Có thể điều chỉnh thủ công thứ tự của nội dung trong clipboard
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
@@ -57,6 +46,9 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - Yêu cầu [Autohotkey v2](https://www.autohotkey.com)
 - Clone repository và chạy file KeyClipboard.ahk
 
-## Bật tự động khởi chạy khi mở máy tính
-- 
+### Bật tự động khởi chạy khi mở máy tính
+
+ - Vào thư mục `%appdata%\Microsoft\Windows\Start Menu\Programs\Startup`
+ - Tạo shortcut của file KeyClipboard.exe hoặc KeyClipboard.ahk và đặt vào thư mục này
+ - Ứng dụng sẽ tự động khởi chạy khi mở máy tính
 
