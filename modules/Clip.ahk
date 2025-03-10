@@ -67,10 +67,18 @@ ShowClipboardHistory() {
     clipHistoryGui := Gui(, "Clipboard History")
     clipHistoryGui.SetFont("s10")
 
-    LV := clipHistoryGui.Add("ListView", "x10 y10 w700 h400 Grid Multi", ["#", "Content"])
+    ; Create the ListView with larger height relative to the content viewer
+    LV := clipHistoryGui.Add("ListView", "x10 y10 w700 h300 Grid Multi", ["#", "Content"])
     LV.OnEvent("DoubleClick", (*) => PasteSelected(LV, clipHistoryGui))
     LV.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
         ShowContextMenu(LV, clipHistoryGui, Item, IsRightClick, X, Y))
+
+    ; Add the content viewer edit control below the ListView - now smaller and editable
+    contentViewer := clipHistoryGui.Add("Edit", "x10 y320 w700 h200 VScroll HScroll", "")
+
+    ; Update content viewer when selection changes
+    LV.OnEvent("ItemSelect", (LV, *) => UpdateContentViewer(LV, contentViewer))
+    LV.OnEvent("ItemFocus", (LV, *) => UpdateContentViewer(LV, contentViewer))
 
     ; Add window close handlers
     clipHistoryGui.OnEvent("Close", (*) => clipHistoryGui.Destroy())
@@ -86,17 +94,22 @@ ShowClipboardHistory() {
 
     PopulateListView(LV)
 
+    ; Update content viewer with initially selected item
+    UpdateContentViewer(LV, contentViewer)
+
     buttonOptions := [
-        ["x10 y420 w100", "Paste All", (*) => PasteAllItems(LV, clipHistoryGui)],
-        ["x120 y420 w120", "Format Paste All", (*) => FormatPasteAllItems(LV, clipHistoryGui)],
-        ["x250 y420 w100", "Clear All", (*) => ClearAllHistory(clipHistoryGui)]
+        ["x10 y530 w100", "Paste All", (*) => PasteAllItems(LV, clipHistoryGui)],
+        ["x120 y530 w120", "Format Paste All", (*) => FormatPasteAllItems(LV, clipHistoryGui)],
+        ["x250 y530 w100", "Clear All", (*) => ClearAllHistory(clipHistoryGui)],
+        ["x360 y530 w120", "Save Changes", (*) => SaveContentChanges(LV, contentViewer, clipHistoryGui)]
     ]
 
     for option in buttonOptions {
         clipHistoryGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
     }
 
-    clipHistoryGui.Show("w720 h460")
+    ; Show the enlarged window to accommodate the content viewer
+    clipHistoryGui.Show("w720 h570")
 }
 
 ; Paste the previous clipboard content

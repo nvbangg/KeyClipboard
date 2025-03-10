@@ -268,3 +268,60 @@ ClearAllHistory(clipHistoryGui) {
     clipHistoryGui.Destroy()
     ShowNotification("All items in clipboard history have been cleared.")
 }
+; Update the content viewer with the content of selected items
+UpdateContentViewer(LV, contentViewer) {
+    global clipboardHistory
+
+    selectedItems := GetSelectedItems(LV)
+    if (selectedItems.Length = 0) {
+        contentViewer.Value := ""
+        return
+    }
+
+    ; If multiple items are selected, show all their contents with separators
+    if (selectedItems.Length > 1) {
+        combinedContent := ""
+        for index, itemIndex in selectedItems {
+            combinedContent .= "--- Item " . itemIndex . " ---`r`n" .
+                clipboardHistory[itemIndex] .
+                (index < selectedItems.Length ? "`r`n`r`n" : "")
+        }
+        contentViewer.Value := combinedContent
+    } else {
+        ; Single item selected
+        contentViewer.Value := clipboardHistory[selectedItems[1]]
+    }
+}
+
+; Save changes from the content viewer back to the clipboard history
+SaveContentChanges(LV, contentViewer, clipHistoryGui) {
+    global clipboardHistory
+
+    selectedItems := GetSelectedItems(LV)
+    if (selectedItems.Length = 0) {
+        ShowNotification("Select an item to save changes.")
+        return
+    }
+
+    ; If only one item is selected, save the changes directly
+    if (selectedItems.Length = 1) {
+        clipboardHistory[selectedItems[1]] := contentViewer.Value
+
+        ; Update the ListView display for this item
+        rowNum := 1
+        loop LV.GetCount() {
+            if Integer(LV.GetText(rowNum, 1)) = selectedItems[1] {
+                displayContent := StrLen(contentViewer.Value) > 100 ?
+                    SubStr(contentViewer.Value, 1, 100) . "..." : contentViewer.Value
+                LV.Modify(rowNum, , selectedItems[1], displayContent)
+                break
+            }
+            rowNum++
+        }
+
+        ShowNotification("Changes saved to item #" . selectedItems[1])
+    } else {
+        ; Multiple items selected - can't edit multiple items at once in this way
+        ShowNotification("Cannot save changes when multiple items are selected.")
+    }
+}
