@@ -5,7 +5,7 @@ global isFormatting := false
 global originalClip := ""
 
 #Include "Clip_utils.ahk"
-
+#Include "Clip_format.ahk"
 ; Add clipboard settings to the settings interface
 AddClipboardSettings(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h300", "Paste Format (Caps+F)")
@@ -77,9 +77,9 @@ ShowClipboardHistory() {
     clipHistoryGui.OnEvent("Escape", (*) => clipHistoryGui.Destroy())
 
     ; Set up Enter key hotkey specific to this GUI
-    HotIfWinActive("ahk_id " . clipHistoryGui.Hwnd)
-    Hotkey("Enter", (*) => PasteSelected(LV, clipHistoryGui))
-    HotIf()
+    HotIfWinActive("ahk_id " clipHistoryGui.Hwnd)
+    Hotkey "Enter", (*) => PasteSelected(LV, clipHistoryGui)
+    HotIf()  ; Reset the hotkey context
 
     LV.ModifyCol(1, 50, "Integer")  ; Set numeric sorting for this column
     LV.ModifyCol(2, 640)
