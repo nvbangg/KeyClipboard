@@ -30,7 +30,7 @@ AddClipboardSettings(settingsGui, yPos) {
 
     for option in radioOptions {
         settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatCaseOption = option[3]),
-        option[2])
+            option[2])
         yPos += 25
     }
     yPos += 10
@@ -47,7 +47,7 @@ AddClipboardSettings(settingsGui, yPos) {
 
     for option in separatorOptions {
         settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatSeparator = option[3]),
-        option[2])
+            option[2])
         yPos += 25
     }
 
@@ -77,8 +77,9 @@ ShowClipboardHistory() {
     clipHistoryGui.OnEvent("Escape", (*) => clipHistoryGui.Destroy())
 
     ; Set up Enter key hotkey specific to this GUI
-    enterHotkey := HotIfWinActive("ahk_id " . clipHistoryGui.Hwnd)
+    HotIfWinActive("ahk_id " . clipHistoryGui.Hwnd)
     Hotkey("Enter", (*) => PasteSelected(LV, clipHistoryGui))
+    HotIf()
 
     LV.ModifyCol(1, 50, "Integer")  ; Set numeric sorting for this column
     LV.ModifyCol(2, 640)
