@@ -13,7 +13,7 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
         2. **Dán theo kiểu**: IN HOA, in thường, in không dấu, In Hoa Chữ Cái Đầu
         3. **Chọn phân cách**: Gạch dưới(_), Gạch ngang(-), Xoá khoảng cách
     - Mở Clipboard History (CapsLock+V (giống Win+V))
-        - Chế độ xem lịch sử có thể sắp xếp, chỉnh sửa tuỳ chỉnh
+        - Chế độ xem lịch sử có thể sắp xếp, ***chỉnh sửa nội dung trực tiếp***
         - Dán toàn bộ clipboard hoặc dán nhiều mục được chọn ***theo thứ tự, định dạng tuỳ chỉnh***
         - *Lưu ý: Double click hoặc enter để dán mục đã chọn*
 - **Keyboard Settings** (tuỳ chọn):

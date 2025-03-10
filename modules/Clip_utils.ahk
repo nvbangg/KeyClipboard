@@ -22,29 +22,8 @@ ClipChanged(Type) {
     }
 }
 
-; Helper function to paste formatted text while preserving clipboard
-PasteWithFormat(text, preserveClipboard := true) {
-    global isFormatting
-
-    isFormatting := true
-    originalClip := preserveClipboard ? ClipboardAll() : ""
-
-    A_Clipboard := text
-    ClipWait(0.3)
-    Send("^v")
-    Sleep(100)
-
-    if (preserveClipboard) {
-        A_Clipboard := originalClip
-        ClipWait(0.3)
-        Sleep(100)
-    }
-
-    isFormatting := false
-}
-
 ; Populate the ListView with clipboard history items
-PopulateListView(LV) {
+UpdateLV(LV) {
     global clipboardHistory
 
     for index, content in clipboardHistory {
@@ -56,6 +35,76 @@ PopulateListView(LV) {
     LV.ModifyCol(1, "Integer")
 
     LV.Modify(1, "Select Focus")
+}
+
+Paste(text, formatText := false) {
+    global isFormatting, prefix_textEnabled, clipboardHistory
+    isFormatting := true
+    originalClip := ClipboardAll()
+
+    if (formatText) {
+        if (prefix_textEnabled)
+            prefix := clipboardHistory[clipboardHistory.Length - 1]
+        else
+            prefix := ""
+        text := FormatText(text, prefix)
+    }
+
+    A_Clipboard := text
+    ClipWait(0.3)
+    Send("^v")
+    Sleep(50)
+
+    ; Khôi phục clipboard gốc
+    A_Clipboard := originalClip
+    ClipWait(0.3)
+    Sleep(50)
+
+    isFormatting := false
+}
+
+; Paste clipboard items (selected or all)
+PasteSelected(LV := 0, clipHistoryGui := 0, formatText := false) {
+    global clipboardHistory
+    contentToPaste := []
+    if (LV) {
+        selectedIndices := GetSelected(LV)
+        if (selectedIndices.Length = 0)
+            return
+        for _, index in selectedIndices
+            contentToPaste.Push(clipboardHistory[index])
+        if (clipHistoryGui)
+            clipHistoryGui.Destroy()
+    }
+    ; If no ListView provided, use all items
+    else {
+        if (clipboardHistory.Length = 0) {
+            return
+        }
+        contentToPaste := clipboardHistory.Clone()
+    }
+
+    combinedContent := ""
+    for index, content in contentToPaste
+        combinedContent .= content . (index < contentToPaste.Length ? "`r`n" : "")
+
+    Paste(combinedContent, formatText)
+}
+
+GetAll(LV) {
+    items := []
+    rowCount := LV.GetCount()
+
+    if (rowCount = 0)
+        return items
+
+    loop rowCount {
+        rowNum := A_Index
+        itemIndex := Integer(LV.GetText(rowNum, 1))
+        items.Push(itemIndex)
+    }
+
+    return items
 }
 
 ; Helper function to sort array in descending order
@@ -76,150 +125,34 @@ DescendingSort(array) {
     return array
 }
 
-; Show context menu for right-click
-ShowContextMenu(LV, clipHistoryGui, Item, IsRightClick, X, Y) {
-    if (Item = 0)
-        return
-
-    selectedItems := GetSelectedItems(LV)
-    if (selectedItems.Length = 0)
-        return
-
-    contextMenu := Menu()
-
-    if (selectedItems.Length = 1) {
-        contextMenu.Add("Paste", (*) => PasteSelected(LV, clipHistoryGui))
-        contextMenu.Add("Format Paste", (*) => FormatPasteSelected(LV, clipHistoryGui))
-    } else {
-        contextMenu.Add("Paste Selected Items", (*) => PasteSelected(LV, clipHistoryGui))
-        contextMenu.Add("Format Paste Selected Items", (*) => FormatPasteSelected(LV, clipHistoryGui))
-    }
-
-    contextMenu.Add()
-    contextMenu.Add(selectedItems.Length > 1 ? "Delete Selected Items" : "Delete Item",
-        (*) => DeleteSelected(LV, clipHistoryGui))
-    contextMenu.Show(X, Y)
-}
-
 ; Get all selected items in the ListView
-GetSelectedItems(LV) {
+GetSelected(LV) {
     selectedItems := []
     rowNum := 0
 
-    loop {
-        rowNum := LV.GetNext(rowNum)
-        if !rowNum
-            break
-
-        selectedItems.Push(Integer(LV.GetText(rowNum, 1)))
+    if (Type(LV) = "Array") {
+        return LV
+    }
+    try {
+        loop {
+            rowNum := LV.GetNext(rowNum)
+            if (!rowNum)
+                break
+            selectedItems.Push(Integer(LV.GetText(rowNum, 1)))
+        }
+    } catch Error as e {
+        MsgBox("Error in GetSelectedItems: " . e.Message)
+        return []
     }
 
     return selectedItems
-}
-
-; Paste selected item(s)
-PasteSelected(LV, clipHistoryGui) {
-    global clipboardHistory
-
-    selectedItems := GetSelectedItems(LV)
-    if (selectedItems.Length = 0)
-        return
-
-    clipHistoryGui.Destroy()
-
-    combinedContent := ""
-    for index, item in selectedItems {
-        combinedContent .= clipboardHistory[item] . (index < selectedItems.Length ? "`r`n" : "")
-    }
-
-    PasteWithFormat(combinedContent)
-}
-
-; Get all items from ListView in display order
-GetAllItemsFromListView(LV) {
-    global clipboardHistory
-    contentArray := []
-
-    rowCount := LV.GetCount()
-    loop rowCount {
-        rowNum := A_Index
-        itemIndex := Integer(LV.GetText(rowNum, 1))
-        contentArray.Push(clipboardHistory[itemIndex])
-    }
-
-    return contentArray
-}
-
-; Format and paste selected item(s)
-FormatPasteSelected(LV, clipHistoryGui) {
-    global clipboardHistory, prefix_textEnabled
-
-    selectedItems := GetSelectedItems(LV)
-    if (selectedItems.Length = 0)
-        return
-
-    formattedContent := ""
-    for i, item in selectedItems {
-        text := clipboardHistory[item]
-        prefix := (item > 1 && prefix_textEnabled) ? clipboardHistory[item - 1] : ""
-        formattedText := FormatClipboardText(text, prefix)
-        formattedContent .= formattedText . (i < selectedItems.Length ? "`r`n" : "")
-    }
-
-    clipHistoryGui.Destroy()
-    PasteWithFormat(formattedContent)
-}
-
-; Format and paste all items
-FormatPasteAllItems(LV, clipHistoryGui) {
-    global clipboardHistory, prefix_textEnabled
-
-    ; Get all items in ListView order with their potential prefixes
-    itemData := GetAllItemsWithPrefixes(LV)
-
-    ; Now it's safe to destroy the GUI
-    clipHistoryGui.Destroy()
-
-    ; Process the collected data
-    formattedContent := ""
-    for index, item in itemData {
-        formattedText := FormatClipboardText(item.content, prefix_textEnabled ? item.prefix : "")
-        formattedContent .= formattedText . (index < itemData.Length ? "`r`n" : "")
-    }
-
-    PasteWithFormat(formattedContent)
-}
-
-; Get all items from ListView with their prefixes
-GetAllItemsWithPrefixes(LV) {
-    global clipboardHistory
-    itemData := []
-
-    rowCount := LV.GetCount()
-    loop rowCount {
-        rowNum := A_Index
-        itemIndex := Integer(LV.GetText(rowNum, 1))
-
-        ; Get the prefix from the previous item in the list if available
-        prevIndex := 0
-        if (rowNum > 1) {
-            prevIndex := Integer(LV.GetText(rowNum - 1, 1))
-        }
-
-        itemData.Push({
-            content: clipboardHistory[itemIndex],
-            prefix: prevIndex > 0 ? clipboardHistory[prevIndex] : ""
-        })
-    }
-
-    return itemData
 }
 
 ; Delete selected item(s)
 DeleteSelected(LV, clipHistoryGui) {
     global clipboardHistory
 
-    selectedItems := GetSelectedItems(LV)
+    selectedItems := GetSelected(LV)
     if (selectedItems.Length = 0)
         return
 
@@ -231,7 +164,7 @@ DeleteSelected(LV, clipHistoryGui) {
 
     ; Refresh the ListView
     LV.Delete()
-    PopulateListView(LV)
+    UpdateLV(LV)
 
     if (clipboardHistory.Length = 0) {
         clipHistoryGui.Destroy()
@@ -239,25 +172,6 @@ DeleteSelected(LV, clipHistoryGui) {
     } else {
         ShowNotification(selectedItems.Length > 1 ? "Selected items deleted." : "Selected item deleted.")
     }
-}
-
-; Paste all items with line breaks
-PasteAllItems(LV, clipHistoryGui) {
-    global clipboardHistory
-
-    ; Get all items in ListView order BEFORE destroying the GUI
-    contentArray := GetAllItemsFromListView(LV)
-
-    ; Now it's safe to destroy the GUI
-    clipHistoryGui.Destroy()
-
-    ; Process the collected content
-    combinedContent := ""
-    for index, content in contentArray {
-        combinedContent .= content . (index < contentArray.Length ? "`r`n" : "")
-    }
-
-    PasteWithFormat(combinedContent)
 }
 
 ; Clear all clipboard history
@@ -272,7 +186,7 @@ ClearAllHistory(clipHistoryGui) {
 UpdateContentViewer(LV, contentViewer) {
     global clipboardHistory
 
-    selectedItems := GetSelectedItems(LV)
+    selectedItems := GetSelected(LV)
     if (selectedItems.Length = 0) {
         contentViewer.Value := ""
         return
@@ -297,7 +211,7 @@ UpdateContentViewer(LV, contentViewer) {
 SaveContentChanges(LV, contentViewer, clipHistoryGui) {
     global clipboardHistory
 
-    selectedItems := GetSelectedItems(LV)
+    selectedItems := GetSelected(LV)
     if (selectedItems.Length = 0) {
         ShowNotification("Select an item to save changes.")
         return
@@ -324,4 +238,27 @@ SaveContentChanges(LV, contentViewer, clipHistoryGui) {
         ; Multiple items selected - can't edit multiple items at once in this way
         ShowNotification("Cannot save changes when multiple items are selected.")
     }
+}
+
+; Save changes and then paste selected item(s)
+SaveAndPasteSelected(LV, contentViewer, clipHistoryGui) {
+    global clipboardHistory
+
+    selectedItems := GetSelected(LV)
+    if (selectedItems.Length = 0)
+        return
+
+    ; If only one item is selected, save the changes before pasting
+    if (selectedItems.Length = 1) {
+        clipboardHistory[selectedItems[1]] := contentViewer.Value
+    }
+
+    clipHistoryGui.Destroy()
+
+    combinedContent := ""
+    for index, item in selectedItems {
+        combinedContent .= clipboardHistory[item] . (index < selectedItems.Length ? "`r`n" : "")
+    }
+
+    Paste(combinedContent)
 }

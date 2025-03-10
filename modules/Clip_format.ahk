@@ -1,7 +1,7 @@
 ;Clip_format
 
 ; Format text according to current settings
-FormatClipboardText(text, prefixText := "") {
+FormatText(text, prefixText := "") {
     global formatCaseOption, formatSeparator, prefix_textEnabled
 
     if (text = "")

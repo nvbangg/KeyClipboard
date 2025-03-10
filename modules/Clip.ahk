@@ -30,7 +30,7 @@ AddClipboardSettings(settingsGui, yPos) {
 
     for option in radioOptions {
         settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatCaseOption = option[3]),
-            option[2])
+        option[2])
         yPos += 25
     }
     yPos += 10
@@ -47,7 +47,7 @@ AddClipboardSettings(settingsGui, yPos) {
 
     for option in separatorOptions {
         settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatSeparator = option[3]),
-            option[2])
+        option[2])
         yPos += 25
     }
 
@@ -63,20 +63,17 @@ ShowClipboardHistory() {
         ShowNotification("No clipboard history available.")
         return
     }
-
     clipHistoryGui := Gui(, "Clipboard History")
     clipHistoryGui.SetFont("s10")
-
-    ; Create the ListView with larger height relative to the content viewer
     LV := clipHistoryGui.Add("ListView", "x10 y10 w700 h300 Grid Multi", ["#", "Content"])
-    LV.OnEvent("DoubleClick", (*) => PasteSelected(LV, clipHistoryGui))
+    LV.ModifyCol(1, 50, "Integer")
+    LV.ModifyCol(2, 640)
+
     LV.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
-        ShowContextMenu(LV, clipHistoryGui, Item, IsRightClick, X, Y))
+        ShowContextMenu(LV, clipHistoryGui, Item, X, Y))
 
-    ; Add the content viewer edit control below the ListView - now smaller and editable
+    ; Add the content viewer
     contentViewer := clipHistoryGui.Add("Edit", "x10 y320 w700 h200 VScroll HScroll", "")
-
-    ; Update content viewer when selection changes
     LV.OnEvent("ItemSelect", (LV, *) => UpdateContentViewer(LV, contentViewer))
     LV.OnEvent("ItemFocus", (LV, *) => UpdateContentViewer(LV, contentViewer))
 
@@ -84,22 +81,18 @@ ShowClipboardHistory() {
     clipHistoryGui.OnEvent("Close", (*) => clipHistoryGui.Destroy())
     clipHistoryGui.OnEvent("Escape", (*) => clipHistoryGui.Destroy())
 
-    ; Set up Enter key hotkey specific to this GUI
+    LV.OnEvent("DoubleClick", (*) => PasteSelected(LV, clipHistoryGui))
     HotIfWinActive("ahk_id " clipHistoryGui.Hwnd)
-    Hotkey "Enter", (*) => PasteSelected(LV, clipHistoryGui)
-    HotIf()  ; Reset the hotkey context
+    Hotkey "Enter", (*) => SaveAndPasteSelected(LV, contentViewer, clipHistoryGui)
+    HotIf()
 
-    LV.ModifyCol(1, 50, "Integer")  ; Set numeric sorting for this column
-    LV.ModifyCol(2, 640)
-
-    PopulateListView(LV)
-
-    ; Update content viewer with initially selected item
+    UpdateLV(LV)
     UpdateContentViewer(LV, contentViewer)
 
     buttonOptions := [
-        ["x10 y530 w100", "Paste All", (*) => PasteAllItems(LV, clipHistoryGui)],
-        ["x120 y530 w120", "Format Paste All", (*) => FormatPasteAllItems(LV, clipHistoryGui)],
+        ["x10 y530 w100", "Paste All", (*) =>
+            PasteSelected(GetAll(LV), clipHistoryGui)],
+        ["x120 y530 w120", "Format Paste All", (*) => PasteSelected(GetAll(LV), clipHistoryGui), true],
         ["x250 y530 w100", "Clear All", (*) => ClearAllHistory(clipHistoryGui)],
         ["x360 y530 w120", "Save Changes", (*) => SaveContentChanges(LV, contentViewer, clipHistoryGui)]
     ]
@@ -108,8 +101,20 @@ ShowClipboardHistory() {
         clipHistoryGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
     }
 
-    ; Show the enlarged window to accommodate the content viewer
     clipHistoryGui.Show("w720 h570")
+}
+
+; Show context menu for right-click
+ShowContextMenu(LV, clipHistoryGui, Item, X, Y) {
+    if (Item = 0)
+        return
+    contextMenu := Menu()
+    contextMenu.Add("Paste", (*) => PasteSelected(LV, clipHistoryGui))
+    contextMenu.Add("Format Paste", (*) => PasteSelected(LV, clipHistoryGui, true))
+    contextMenu.Add()
+    contextMenu.Add("Delete Item",
+        (*) => DeleteSelected(LV, clipHistoryGui))
+    contextMenu.Show(X, Y)
 }
 
 ; Paste the previous clipboard content
@@ -121,42 +126,7 @@ PastePreviousClipboard() {
         return
     }
 
-    PasteWithFormat(clipboardHistory[clipboardHistory.Length - 1])
-}
-
-; Format and paste clipboard content based on settings
-PasteWithCurrentFormat() {
-    global clipboardHistory
-
-    if (clipboardHistory.Length < 1) {
-        ShowNotification("No clipboard content to format.")
-        return
-    }
-
-    text := clipboardHistory[clipboardHistory.Length]
-    prefix := (clipboardHistory.Length >= 2) ? clipboardHistory[clipboardHistory.Length - 1] : ""
-
-    PasteWithFormat(FormatClipboardText(text, prefix))
-}
-
-; Paste all clipboard items (without clearing)
-PasteAllClipboardItems() {
-    global clipboardHistory
-
-    if (clipboardHistory.Length = 0) {
-        ShowNotification("No clipboard history to paste.")
-        return
-    }
-
-    ; Combine all clipboard items
-    combinedContent := ""
-    for index, content in clipboardHistory {
-        combinedContent .= content . (index < clipboardHistory.Length ? "`r`n" : "")
-    }
-
-    ; Paste the content
-    PasteWithFormat(combinedContent)
-    ShowNotification("All items pasted.")
+    Paste(clipboardHistory[clipboardHistory.Length - 1])
 }
 
 ; Clear clipboard history

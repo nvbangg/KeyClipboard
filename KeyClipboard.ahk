@@ -23,8 +23,8 @@ CapsLock & t:: TranslatePageInChrome()
 CapsLock & s:: ShowSettingsPopup()
 CapsLock & v:: ShowClipboardHistory()
 CapsLock & z:: PastePreviousClipboard()
-CapsLock & f:: PasteWithCurrentFormat()
-CapsLock & a:: PasteAllClipboardItems()
+CapsLock & f:: FormatPaste()
+CapsLock & a:: PasteSelected()
 CapsLock & c:: ClearClipboardHistory()
 
 ; UI
@@ -35,13 +35,15 @@ A_IconTip := "KeyClipboard - Right click to see more"
 
 ShowAbout(*) {
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.4`n" .
-        "Date: 10/03/2025`n" .
+        "Version: 1.4.1`n" .
+        "Date: 11/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard", "YesNo")
     if (result = "Yes")
         Run("https://github.com/nvbangg/KeyClipboard")
+    else
+        Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 }
 ShowKeyboardShortcuts(*) {
     MsgBox("CapsLock+S: Show Settings Popup`n" .
