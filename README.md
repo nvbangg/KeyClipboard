@@ -1,6 +1,6 @@
 # KeyClipboard
 
-Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng suất làm việc
+Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh hoạt với nhiều tính năng hữu ích
 
 ## Tính năng và Phím tắt
 
@@ -23,15 +23,18 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - *Lưu ý: CapsLock+S để mở settings tuỳ chỉnh*
  
 ### Tính năng dự kiến
-- sửa lỗi prefix text khi paste
-- Có thể lưu đồng thời nhiều lựa chọn
-- Có thể thêm và  điều chỉnh thủ công thứ tự của nội dung trong clipboard
+- Thêm tính năng có thể lưu format text vào ClipboardHistory trong menu chuột phải
+- Có thể chỉnh sửa đồng thời nhiều lựa chọn
+- Có thể thêm và điều chỉnh thủ công thứ tự của nội dung trong clipboard
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
 - Thêm tuỳ chọn xoá định dạng (in đậm, ...)
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
 - Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
+
+### Changelog:
+- Tối ưu code
 
 ## Cài đặt
 
@@ -51,4 +54,3 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
  - Vào thư mục `%appdata%\Microsoft\Windows\Start Menu\Programs\Startup`
  - Tạo shortcut của file KeyClipboard.exe hoặc KeyClipboard.ahk và đặt vào thư mục này
  - Ứng dụng sẽ tự động khởi chạy khi mở máy tính
-
