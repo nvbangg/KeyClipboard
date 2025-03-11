@@ -2,7 +2,7 @@
 global settingsFilePath := A_ScriptDir . "\data\settings.ini"
 
 ; Ensure the data file exists
-EnsureDataFilesExist() {
+ensureFilesExist() {
     dataDir := A_ScriptDir . "\data"
     if !DirExist(dataDir) {
         DirCreate(dataDir)
@@ -13,27 +13,27 @@ EnsureDataFilesExist() {
 }
 
 ; Initialize settings
-InitSettings() {
-    global mouseClickEnabled, alwaysNumLockEnabled, formatCaseOption, formatSeparator, prefix_textEnabled
-    EnsureDataFilesExist()
+initSettings() {
+    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, prefix_textEnabled
+    ensureFilesExist()
 
-    mouseClickEnabled := IniRead(settingsFilePath, "Settings", "mouseClickEnabled", "0") = "1"
-    alwaysNumLockEnabled := IniRead(settingsFilePath, "Settings", "alwaysNumLockEnabled", "1") = "1"
+    mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
+    numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
     prefix_textEnabled := IniRead(settingsFilePath, "Settings", "prefix_textEnabled", "1") = "1"
     formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "3"))
     formatSeparator := Integer(IniRead(settingsFilePath, "Settings", "formatSeparator", "0"))
 
-    UpdateNumLockState()
+    updateNumLock()
 }
 
 ; Save all settings to INI file
-SaveAllSettings(savedValues) {
-    global mouseClickEnabled, alwaysNumLockEnabled, formatCaseOption, formatSeparator, prefix_textEnabled
-    EnsureDataFilesExist()
+saveSettings(savedValues) {
+    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, prefix_textEnabled
+    ensureFilesExist()
 
     prefix_textEnabled := !!savedValues.prefix_textEnabled
-    mouseClickEnabled := !!savedValues.MouseClick
-    alwaysNumLockEnabled := !!savedValues.NumLock
+    mouseEnabled := !!savedValues.MouseClick
+    numLockEnabled := !!savedValues.NumLock
 
     ; Text case format options
     if (savedValues.HasProp("CaseNone") && savedValues.CaseNone)
@@ -57,37 +57,34 @@ SaveAllSettings(savedValues) {
     else if (savedValues.HasProp("SeparatorNoSpace") && savedValues.SeparatorNoSpace)
         formatSeparator := 3
 
-    IniWrite(mouseClickEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseClickEnabled")
-    IniWrite(alwaysNumLockEnabled ? "1" : "0", settingsFilePath, "Settings", "alwaysNumLockEnabled")
+    IniWrite(mouseEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseEnabled")
+    IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
     IniWrite(prefix_textEnabled ? "1" : "0", settingsFilePath, "Settings", "prefix_textEnabled")
     IniWrite(formatCaseOption, settingsFilePath, "Settings", "formatCaseOption")
     IniWrite(formatSeparator, settingsFilePath, "Settings", "formatSeparator")
 
-    UpdateNumLockState()
+    updateNumLock()
 }
 
 ; Display settings popup window
-ShowSettingsPopup(*) {
+showSettings(*) {
     settingsGui := Gui(, "KeyClipboard - Settings")
     settingsGui.SetFont("s10")
-
     yPos := 10
-    yPos := AddKeyboardSettings(settingsGui, yPos)
-    yPos := AddClipboardSettings(settingsGui, yPos)
+    yPos := addKeySettings(settingsGui, yPos)
+    yPos := addClipSettings(settingsGui, yPos)
 
-    settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save").OnEvent("Click", SaveButtonClick)
-    settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) =>
-        ShowKeyboardShortcuts())
-
-    SaveButtonClick(*) {
-        SaveAllSettings(settingsGui.Submit())
+    settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save").OnEvent("Click", saveButtonClick)
+    settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
+    saveButtonClick(*) {
+        saveSettings(settingsGui.Submit())
     }
 
     settingsGui.Show("w400 h" . (yPos + 50))
 }
 
 ; Display a simple notification that auto-closes
-ShowNotification(message, timeout := 1500) {
+showNotification(message, timeout := 1500) {
     notify := Gui("+AlwaysOnTop -Caption +ToolWindow")
     notify.SetFont("s10")
     notify.Add("Text", "w300", message)

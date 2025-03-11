@@ -1,49 +1,45 @@
 ; Clip_utils
 
 ; Initialize and track clipboard
-InitClipboard() {
-    global clipboardHistory := []
-    OnClipboardChange(ClipChanged, 1)
+initClipboard() {
+    global clipHistory := []
+    OnClipboardChange(updateClipboard, 1)
 }
 
 ; Process clipboard content changes
-ClipChanged(Type) {
-    global clipboardHistory, isFormatting
-
+updateClipboard(Type) {
+    global clipHistory, isFormatting
     if (isFormatting)
         return
-
     if (Type = 1 && A_Clipboard != "") {
         try {
-            clipboardHistory.Push(A_Clipboard)
-            if (clipboardHistory.Length > 50)
-                clipboardHistory.RemoveAt(1)
+            clipHistory.Push(A_Clipboard)
+            if (clipHistory.Length > 50)
+                clipHistory.RemoveAt(1)
         }
     }
 }
 
 ; Populate the ListView with clipboard history items
-UpdateLV(LV) {
-    global clipboardHistory
-
-    for index, content in clipboardHistory {
+updateLV(LV) {
+    global clipHistory
+    for index, content in clipHistory {
         displayContent := StrLen(content) > 100 ? SubStr(content, 1, 100) . "..." : content
         LV.Add(, index, displayContent)
     }
 
     ; Set numeric sorting for column 1
     LV.ModifyCol(1, "Integer")
-
     LV.Modify(1, "Select Focus")
 }
 
-Paste(text, formatTextEnable := false) {
-    global isFormatting, clipboardHistory
+paste(text, formatTextEnable := false) {
+    global isFormatting, clipHistory
     isFormatting := true
     originalClip := ClipboardAll()
 
     if (formatTextEnable)
-        text := FormatText(text)
+        text := formatText(text)
     A_Clipboard := text
     ClipWait(0.3)
     Send("^v")
@@ -58,39 +54,40 @@ Paste(text, formatTextEnable := false) {
 }
 
 ; Paste clipboard items (selected or all)
-PasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
-    global clipboardHistory, prefix_textEnabled
-    contentToPaste := []
+pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
+    global clipHistory, prefix_textEnabled
+    contentPaste := []
     if (LV) {
-        selectedIndices := GetSelected(LV)
-        if (selectedIndices.Length = 0)
+        selectedItems := getSelected(LV)
+        if (selectedItems.Length = 0)
             return
-        for _, index in selectedIndices
-            contentToPaste.Push(clipboardHistory[index])
+        for _, index in selectedItems
+            contentPaste.Push(clipHistory[index])
         if (clipHistoryGui)
             clipHistoryGui.Destroy()
     }
     ; If no ListView provided, use all items
     else {
-        if (clipboardHistory.Length = 0)
+        if (clipHistory.Length = 0)
             return
-        contentToPaste := clipboardHistory.Clone()
+        contentPaste := clipHistory.Clone()
     }
 
     if (prefix_textEnabled && formatTextEnable) {
-        index := contentToPaste.Length
+        index := contentPaste.Length
         while (index > 1) {
-            contentToPaste[index] := contentToPaste[index - 1] . "_" . contentToPaste[index]
+            contentPaste[index] := contentPaste[index - 1] . "_" . contentPaste[index]
             index--
         }
     }
-    combinedContent := ""
-    for index, content in contentToPaste
-        combinedContent .= content . (index < contentToPaste.Length ? "`r`n" : "")
-    Paste(combinedContent, formatTextEnable)
+
+    mergedItems := ""
+    for index, item in contentPaste
+        mergedItems .= item . (index < contentPaste.Length ? "`r`n" : "")
+    paste(mergedItems, formatTextEnable)
 }
 
-GetAll(LV) {
+getAll(LV) {
     items := []
     rowCount := LV.GetCount()
     if (rowCount = 0)
@@ -100,18 +97,15 @@ GetAll(LV) {
         itemIndex := Integer(LV.GetText(rowNum, 1))
         items.Push(itemIndex)
     }
-
     return items
 }
 
 ; Get all selected items in the ListView
-GetSelected(LV) {
+getSelected(LV) {
     selectedItems := []
     rowNum := 0
-
-    if (Type(LV) = "Array") {
+    if (Type(LV) = "Array")
         return LV
-    }
     try {
         loop {
             rowNum := LV.GetNext(rowNum)
@@ -123,15 +117,14 @@ GetSelected(LV) {
         MsgBox("Error in GetSelectedItems: " . e.Message)
         return []
     }
-
     return selectedItems
 }
 
 ; Delete selected item(s)
-DeleteSelected(LV, clipHistoryGui) {
-    global clipboardHistory
+deleteSelected(LV, clipHistoryGui) {
+    global clipHistory
 
-    selectedItems := GetSelected(LV)
+    selectedItems := getSelected(LV)
     if (selectedItems.Length = 0)
         return
     ; Sort the selected items
@@ -149,17 +142,15 @@ DeleteSelected(LV, clipHistoryGui) {
     }
 
     for i, item in selectedItems
-        clipboardHistory.RemoveAt(item)
-
+        clipHistory.RemoveAt(item)
     LV.Delete()
-    UpdateLV(LV)
+    updateLV(LV)
 }
 
 ; Update the content viewer with the content of selected items
-UpdateContentViewer(LV, contentViewer) {
-    global clipboardHistory
-
-    selectedItems := GetSelected(LV)
+updateContent(LV, contentViewer) {
+    global clipHistory
+    selectedItems := getSelected(LV)
     if (selectedItems.Length = 0) {
         contentViewer.Value := ""
         return
@@ -167,67 +158,49 @@ UpdateContentViewer(LV, contentViewer) {
 
     ; If multiple items are selected, show all their contents with separators
     if (selectedItems.Length > 1) {
-        combinedContent := ""
+        mergedItems := ""
         for index, itemIndex in selectedItems {
-            combinedContent .= "--- Item " . itemIndex . " ---`r`n" .
-                clipboardHistory[itemIndex] .
+            mergedItems .= "--- Item " . itemIndex . " ---`r`n" .
+                clipHistory[itemIndex] .
                 (index < selectedItems.Length ? "`r`n`r`n" : "")
         }
-        contentViewer.Value := combinedContent
-    } else {
-        ; Single item selected
-        contentViewer.Value := clipboardHistory[selectedItems[1]]
-    }
+        contentViewer.Value := mergedItems
+    } else
+        contentViewer.Value := clipHistory[selectedItems[1]]
+
 }
 
-; Save changes from the content viewer back to the clipboard history
-SaveContentChanges(LV, contentViewer, clipHistoryGui) {
-    global clipboardHistory
-
-    selectedItems := GetSelected(LV)
-    if (selectedItems.Length = 0) {
-        return
-    }
-
-    if (selectedItems.Length = 1) {
-        clipboardHistory[selectedItems[1]] := contentViewer.Value
-
-        ; Update the ListView display for this item
-        rowNum := 1
-        loop LV.GetCount() {
-            if Integer(LV.GetText(rowNum, 1)) = selectedItems[1] {
-                displayContent := StrLen(contentViewer.Value) > 100 ?
-                    SubStr(contentViewer.Value, 1, 100) . "..." : contentViewer.Value
-                LV.Modify(rowNum, , selectedItems[1], displayContent)
-                break
-            }
-            rowNum++
-        }
-
-        ShowNotification("Changes saved to item #" . selectedItems[1])
-    } else {
-        ShowNotification("Cannot save changes when multiple items are selected.")
-    }
-}
-
-; Save changes and then paste selected item(s)
-SaveAndPasteSelected(LV, contentViewer, clipHistoryGui) {
-    global clipboardHistory
-
-    selectedItems := GetSelected(LV)
+saveContent(LV, contentViewer, clipHistoryGui, andPaste := false) {
+    global clipHistory
+    selectedItems := getSelected(LV)
     if (selectedItems.Length = 0)
         return
-
+    ; Save changes if only one item is selected
     if (selectedItems.Length = 1) {
-        clipboardHistory[selectedItems[1]] := contentViewer.Value
+        clipHistory[selectedItems[1]] := contentViewer.Value
+
+        if (!andPaste) {
+            rowNum := 1
+            loop LV.GetCount() {
+                if Integer(LV.GetText(rowNum, 1)) = selectedItems[1] {
+                    displayContent := StrLen(contentViewer.Value) > 100 ?
+                        SubStr(contentViewer.Value, 1, 100) . "..." : contentViewer.Value
+                    LV.Modify(rowNum, , selectedItems[1], displayContent)
+                    break
+                }
+                rowNum++
+            }
+            showNotification("Changes saved to item #" . selectedItems[1])
+        }
+    } else if (!andPaste)
+        showNotification("Cannot save changes when multiple items are selected.")
+
+    ; Paste functionality
+    if (andPaste) {
+        clipHistoryGui.Destroy()
+        mergedItems := ""
+        for index, item in selectedItems
+            mergedItems .= clipHistory[item] . (index < selectedItems.Length ? "`r`n" : "")
+        paste(mergedItems)
     }
-
-    clipHistoryGui.Destroy()
-
-    combinedContent := ""
-    for index, item in selectedItems {
-        combinedContent .= clipboardHistory[item] . (index < selectedItems.Length ? "`r`n" : "")
-    }
-
-    Paste(combinedContent)
 }

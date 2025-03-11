@@ -1,7 +1,7 @@
 ;Clip_format
 
 ; Format text according to current settings
-FormatText(text) {
+formatText(text) {
     global formatCaseOption, formatSeparator
     if (text = "")
         return ""
@@ -12,9 +12,9 @@ FormatText(text) {
         case 2:  ; lowercase
             text := StrLower(text)
         case 3:  ; Remove diacritics
-            text := RemoveAccents(text)
+            text := removeAccents(text)
         case 4:  ; Title Case
-            text := ToTitleCase(text)
+            text := TitleCase(text)
     }
     switch formatSeparator {
         case 1:  ; Under_score
@@ -57,7 +57,7 @@ global accentMap := Map(
 )
 
 ; Convert string to non-accented version
-RemoveAccents(str) {
+removeAccents(str) {
     result := ""
     loop parse, str
         result .= accentMap.Has(A_LoopField) ? accentMap[A_LoopField] : A_LoopField
@@ -65,7 +65,7 @@ RemoveAccents(str) {
 }
 
 ; Convert text to Title Case format
-ToTitleCase(str) {
+TitleCase(str) {
     result := ""
     nextIsTitle := true
 

@@ -1,20 +1,19 @@
 ;Keyboard functions
 
 ; Add keyboard settings to GUI
-AddKeyboardSettings(settingsGui, y) {
-    global mouseClickEnabled, alwaysNumLockEnabled
+addKeySettings(settingsGui, y) {
+    global mouseEnabled, numLockEnabled
 
     settingsGui.Add("GroupBox", "x10 y" . y . " w380 h" . 80, "Keyboard Settings")
-    settingsGui.Add("CheckBox", "x20 y" . (y + 20) . " vMouseClick Checked" . mouseClickEnabled, "Enable mouse clicks")
+    settingsGui.Add("CheckBox", "x20 y" . (y + 20) . " vMouseClick Checked" . mouseEnabled, "Enable Mouse Clicks")
     settingsGui.Add("Text", "x+10 yp w200", "(RAlt: left click, RCtrl: right click)")
-    settingsGui.Add("CheckBox", "x20 y" . (y + 40) . " vNumLock Checked" . alwaysNumLockEnabled,
-    "Always enable Numlock")
+    settingsGui.Add("CheckBox", "x20 y" . (y + 40) . " vNumLock Checked" . numLockEnabled, "Always Enable Numlock")
 
     return y + 80 + 10
 }
 
 ; Translate page in Chrome
-TranslatePageInChrome() {
+translateInChrome() {
     BlockInput("On")
     MouseClick("Right")
     Sleep(50)
@@ -27,6 +26,6 @@ TranslatePageInChrome() {
 }
 
 ; Update NumLock state based on settings
-UpdateNumLockState() {
-    SetNumLockState(alwaysNumLockEnabled ? "AlwaysOn" : "Default")
+updateNumLock() {
+    SetNumLockState(numLockEnabled ? "AlwaysOn" : "Default")
 }

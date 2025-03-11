@@ -6,36 +6,36 @@
 #Include "modules\Key.ahk"
 
 ; Initialize settings
-InitSettings()
+initSettings()
 
 ; Mouse click
-#HotIf mouseClickEnabled
+#HotIf mouseEnabled
 RAlt:: Click()
 RCtrl:: Click("Right")
 #HotIf
 
 ; Translate page in Chrome hotkey
 #HotIf WinActive("ahk_exe chrome.exe")
-CapsLock & t:: TranslatePageInChrome()
+CapsLock & t:: translateInChrome()
 #HotIf
 
 ; Hotkeys
-CapsLock & s:: ShowSettingsPopup()
-CapsLock & v:: ShowClipboardHistory()
-CapsLock & z:: PastePreviousClipboard()
-CapsLock & f:: PasteWithCurrentFormat()
-CapsLock & a:: PasteSelected()
-CapsLock & c:: ClearAllHistory()
+CapsLock & s:: showSettings()
+CapsLock & v:: showClipboard()
+CapsLock & z:: pastePrevious()
+CapsLock & f:: formatWhenPaste()
+CapsLock & a:: pasteSelected()
+CapsLock & c:: clearClipboard()
 
 ; UI
-A_TrayMenu.Add("Settings (Caps+S)", ShowSettingsPopup)
-A_TrayMenu.Add("Shortcuts", ShowKeyboardShortcuts)
-A_TrayMenu.Add("About", ShowAbout)
+A_TrayMenu.Add("Settings (Caps+S)", showSettings)
+A_TrayMenu.Add("Shortcuts", showShortcuts)
+A_TrayMenu.Add("About", showAbout)
 A_IconTip := "KeyClipboard - Right click to see more"
 
-ShowAbout(*) {
+showAbout(*) {
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.4.1`n" .
+        "Version: 1.4.2`n" .
         "Date: 11/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
@@ -45,7 +45,7 @@ ShowAbout(*) {
     else
         Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 }
-ShowKeyboardShortcuts(*) {
+showShortcuts(*) {
     MsgBox("CapsLock+S: Show Settings Popup`n" .
         "CapsLock+Z: Paste previous clipboard`n" .
         "CapsLock+V: Show Clipboard History`n" .
