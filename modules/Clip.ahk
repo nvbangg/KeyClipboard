@@ -92,7 +92,7 @@ ShowClipboardHistory() {
     buttonOptions := [
         ["x10 y530 w100", "Paste All", (*) =>
             PasteSelected(GetAll(LV), clipHistoryGui)],
-        ["x120 y530 w120", "Format Paste All", (*) => PasteSelected(GetAll(LV), clipHistoryGui), true],
+        ["x120 y530 w120", "Format Paste All", (*) => PasteSelected(GetAll(LV), clipHistoryGui, true)],
         ["x250 y530 w100", "Clear All", (*) => ClearAllHistory(clipHistoryGui)],
         ["x360 y530 w120", "Save Changes", (*) => SaveContentChanges(LV, contentViewer, clipHistoryGui)]
     ]
@@ -129,15 +129,29 @@ PastePreviousClipboard() {
     Paste(clipboardHistory[clipboardHistory.Length - 1])
 }
 
-; Clear clipboard history
-ClearClipboardHistory() {
-    global clipboardHistory
+PasteWithCurrentFormat() {
+    global clipboardHistory, prefix_textEnabled
 
-    if (clipboardHistory.Length = 0) {
-        ShowNotification("Clipboard history is already empty.")
+    if (clipboardHistory.Length < 1) {
+        ShowNotification("No items in clipboard history")
         return
     }
+    Content := clipboardHistory[clipboardHistory.Length]
 
+    if (prefix_textEnabled) {
+        if (clipboardHistory.Length > 1) {
+            prevContent := clipboardHistory[clipboardHistory.Length - 1]
+            Content := prevContent . "_" . Content
+        }
+    }
+    Paste(Content, true)
+}
+
+; Clear clipboard history
+ClearAllHistory(clipHistoryGui := 0) {
+    if (clipHistoryGui)
+        clipHistoryGui.Destroy()
+    global clipboardHistory
     clipboardHistory := []
-    ShowNotification("Clipboard history cleared.")
+    ShowNotification("All items have been cleared.")
 }

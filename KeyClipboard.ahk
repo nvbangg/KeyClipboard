@@ -23,9 +23,9 @@ CapsLock & t:: TranslatePageInChrome()
 CapsLock & s:: ShowSettingsPopup()
 CapsLock & v:: ShowClipboardHistory()
 CapsLock & z:: PastePreviousClipboard()
-CapsLock & f:: FormatPaste()
+CapsLock & f:: PasteWithCurrentFormat()
 CapsLock & a:: PasteSelected()
-CapsLock & c:: ClearClipboardHistory()
+CapsLock & c:: ClearAllHistory()
 
 ; UI
 A_TrayMenu.Add("Settings (Caps+S)", ShowSettingsPopup)

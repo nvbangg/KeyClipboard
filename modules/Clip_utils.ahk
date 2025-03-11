@@ -37,19 +37,13 @@ UpdateLV(LV) {
     LV.Modify(1, "Select Focus")
 }
 
-Paste(text, formatText := false) {
-    global isFormatting, prefix_textEnabled, clipboardHistory
+Paste(text, formatTextEnable := false) {
+    global isFormatting, clipboardHistory
     isFormatting := true
     originalClip := ClipboardAll()
 
-    if (formatText) {
-        if (prefix_textEnabled)
-            prefix := clipboardHistory[clipboardHistory.Length - 1]
-        else
-            prefix := ""
-        text := FormatText(text, prefix)
-    }
-
+    if (formatTextEnable)
+        text := FormatText(text)
     A_Clipboard := text
     ClipWait(0.3)
     Send("^v")
@@ -64,8 +58,8 @@ Paste(text, formatText := false) {
 }
 
 ; Paste clipboard items (selected or all)
-PasteSelected(LV := 0, clipHistoryGui := 0, formatText := false) {
-    global clipboardHistory
+PasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
+    global clipboardHistory, prefix_textEnabled
     contentToPaste := []
     if (LV) {
         selectedIndices := GetSelected(LV)
@@ -78,26 +72,29 @@ PasteSelected(LV := 0, clipHistoryGui := 0, formatText := false) {
     }
     ; If no ListView provided, use all items
     else {
-        if (clipboardHistory.Length = 0) {
+        if (clipboardHistory.Length = 0)
             return
-        }
         contentToPaste := clipboardHistory.Clone()
     }
 
+    if (prefix_textEnabled && formatTextEnable) {
+        index := contentToPaste.Length
+        while (index > 1) {
+            contentToPaste[index] := contentToPaste[index - 1] . "_" . contentToPaste[index]
+            index--
+        }
+    }
     combinedContent := ""
     for index, content in contentToPaste
         combinedContent .= content . (index < contentToPaste.Length ? "`r`n" : "")
-
-    Paste(combinedContent, formatText)
+    Paste(combinedContent, formatTextEnable)
 }
 
 GetAll(LV) {
     items := []
     rowCount := LV.GetCount()
-
     if (rowCount = 0)
         return items
-
     loop rowCount {
         rowNum := A_Index
         itemIndex := Integer(LV.GetText(rowNum, 1))
@@ -105,24 +102,6 @@ GetAll(LV) {
     }
 
     return items
-}
-
-; Helper function to sort array in descending order
-DescendingSort(array) {
-    ; Manual bubble sort implementation for descending order
-    n := array.Length
-    loop n - 1 {
-        i := A_Index
-        loop n - i {
-            j := A_Index
-            if (array[j] < array[j + 1]) {
-                temp := array[j]
-                array[j] := array[j + 1]
-                array[j + 1] := temp
-            }
-        }
-    }
-    return array
 }
 
 ; Get all selected items in the ListView
@@ -155,33 +134,27 @@ DeleteSelected(LV, clipHistoryGui) {
     selectedItems := GetSelected(LV)
     if (selectedItems.Length = 0)
         return
-
-    ; Sort in descending order to avoid index issues when deleting
-    DescendingSort(selectedItems)
+    ; Sort the selected items
+    n := selectedItems.Length
+    loop n - 1 {
+        i := A_Index
+        loop n - i {
+            j := A_Index
+            if (selectedItems[j] < selectedItems[j + 1]) {
+                temp := selectedItems[j]
+                selectedItems[j] := selectedItems[j + 1]
+                selectedItems[j + 1] := temp
+            }
+        }
+    }
 
     for i, item in selectedItems
         clipboardHistory.RemoveAt(item)
 
-    ; Refresh the ListView
     LV.Delete()
     UpdateLV(LV)
-
-    if (clipboardHistory.Length = 0) {
-        clipHistoryGui.Destroy()
-        ShowNotification("All items in clipboard history have been deleted.")
-    } else {
-        ShowNotification(selectedItems.Length > 1 ? "Selected items deleted." : "Selected item deleted.")
-    }
 }
 
-; Clear all clipboard history
-ClearAllHistory(clipHistoryGui) {
-    global clipboardHistory
-
-    clipboardHistory := []
-    clipHistoryGui.Destroy()
-    ShowNotification("All items in clipboard history have been cleared.")
-}
 ; Update the content viewer with the content of selected items
 UpdateContentViewer(LV, contentViewer) {
     global clipboardHistory
@@ -213,11 +186,9 @@ SaveContentChanges(LV, contentViewer, clipHistoryGui) {
 
     selectedItems := GetSelected(LV)
     if (selectedItems.Length = 0) {
-        ShowNotification("Select an item to save changes.")
         return
     }
 
-    ; If only one item is selected, save the changes directly
     if (selectedItems.Length = 1) {
         clipboardHistory[selectedItems[1]] := contentViewer.Value
 
@@ -235,7 +206,6 @@ SaveContentChanges(LV, contentViewer, clipHistoryGui) {
 
         ShowNotification("Changes saved to item #" . selectedItems[1])
     } else {
-        ; Multiple items selected - can't edit multiple items at once in this way
         ShowNotification("Cannot save changes when multiple items are selected.")
     }
 }
@@ -248,7 +218,6 @@ SaveAndPasteSelected(LV, contentViewer, clipHistoryGui) {
     if (selectedItems.Length = 0)
         return
 
-    ; If only one item is selected, save the changes before pasting
     if (selectedItems.Length = 1) {
         clipboardHistory[selectedItems[1]] := contentViewer.Value
     }

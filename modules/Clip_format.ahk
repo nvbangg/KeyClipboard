@@ -1,53 +1,31 @@
 ;Clip_format
 
 ; Format text according to current settings
-FormatText(text, prefixText := "") {
-    global formatCaseOption, formatSeparator, prefix_textEnabled
-
+FormatText(text) {
+    global formatCaseOption, formatSeparator
     if (text = "")
         return ""
 
-    formattedText := text
-    prefix := prefixText
-    usePrefixMode := prefix_textEnabled && (prefix != "")
-
-    ; Step 1: Format case
     switch formatCaseOption {
         case 1:  ; UPPERCASE
-            formattedText := StrUpper(formattedText)
-            if (usePrefixMode)
-                prefix := StrUpper(prefix)
-
+            text := StrUpper(text)
         case 2:  ; lowercase
-            formattedText := StrLower(formattedText)
-            if (usePrefixMode)
-                prefix := StrLower(prefix)
-
+            text := StrLower(text)
         case 3:  ; Remove diacritics
-            formattedText := RemoveAccents(formattedText)
-            if (usePrefixMode)
-                prefix := RemoveAccents(prefix)
-
+            text := RemoveAccents(text)
         case 4:  ; Title Case
-            formattedText := ToTitleCase(formattedText)
-            if (usePrefixMode)
-                prefix := ToTitleCase(prefix)
+            text := ToTitleCase(text)
     }
-
-    ; Step 2: Handle spacing
     switch formatSeparator {
         case 1:  ; Under_score
-            formattedText := StrReplace(formattedText, " ", "_")
-
+            text := StrReplace(text, " ", "_")
         case 2:  ; Hyphen-dash
-            formattedText := StrReplace(formattedText, " ", "-")
-
+            text := StrReplace(text, " ", "-")
         case 3:  ; Nospacing
-            formattedText := StrReplace(formattedText, " ", "")
+            text := StrReplace(text, " ", "")
     }
 
-    ; Step 3: Apply prefix format if needed - removed trailing dot
-    return usePrefixMode ? prefix . "_" . formattedText : formattedText
+    return text
 }
 
 ; Remove Vietnamese diacritical marks

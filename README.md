@@ -23,6 +23,8 @@ Keyboard + Clipboard manager với nhiều tính năng hữu ích, tăng năng s
 - *Lưu ý: CapsLock+S để mở settings tuỳ chỉnh*
  
 ### Tính năng dự kiến
+- sửa lỗi prefix text khi paste
+- Có thể lưu đồng thời nhiều lựa chọn
 - Có thể thêm và  điều chỉnh thủ công thứ tự của nội dung trong clipboard
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
 - Thêm tuỳ chọn xoá định dạng (in đậm, ...)
