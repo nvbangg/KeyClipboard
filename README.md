@@ -26,7 +26,6 @@ Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh
     - Luôn bật phím Numlock 
  
 ### Tính năng dự kiến
-- Thêm tính năng có thể lưu format text vào ClipboardHistory trong menu chuột phải
 - Có thể chỉnh sửa đồng thời nhiều lựa chọn
 - Có thể thêm và điều chỉnh thủ công thứ tự của nội dung trong clipboard
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép

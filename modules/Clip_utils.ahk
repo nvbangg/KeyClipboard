@@ -53,43 +53,67 @@ paste(text, formatTextEnable := false) {
     isFormatting := false
 }
 
-; Paste clipboard items (selected or all)
-pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
+; Process clipboard items and return the merged content
+processClipItems(LV := 0, formatTextEnable := false) {
     global clipHistory, beforeLatest_LatestEnabled
-    contentPaste := []
+    contentItems := []
     firstItemIndex := 1
+
     if (LV) {
         selectedItems := getSelected(LV)
         if (selectedItems.Length = 0)
-            return
+            return ""
         firstItemIndex := selectedItems[1]
         for _, index in selectedItems
-            contentPaste.Push(clipHistory[index])
-        if (clipHistoryGui)
-            clipHistoryGui.Destroy()
+            contentItems.Push(clipHistory[index])
     }
     ; If no ListView provided, use all items
     else {
         if (clipHistory.Length = 0)
-            return
-        contentPaste := clipHistory.Clone()
+            return ""
+        contentItems := clipHistory.Clone()
     }
 
     if (beforeLatest_LatestEnabled && formatTextEnable) {
-        index := contentPaste.Length
+        index := contentItems.Length
         while (index > 1) {
-            contentPaste[index] := contentPaste[index - 1] . "_" . contentPaste[index]
+            contentItems[index] := contentItems[index - 1] . "_" . contentItems[index]
             index--
         }
         if (firstItemIndex > 1) {
-            contentPaste[1] := clipHistory[firstItemIndex - 1] . "_" . contentPaste[1]
+            contentItems[1] := clipHistory[firstItemIndex - 1] . "_" . contentItems[1]
         }
     }
 
     mergedItems := ""
-    for index, item in contentPaste
-        mergedItems .= item . (index < contentPaste.Length ? "`r`n" : "")
-    paste(mergedItems, formatTextEnable)
+    for index, item in contentItems
+        mergedItems .= item . (index < contentItems.Length ? "`r`n" : "")
+
+    return mergedItems
+}
+
+; Paste clipboard items (selected or all)
+pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
+    mergedItems := processClipItems(LV, formatTextEnable)
+    if (clipHistoryGui)
+        clipHistoryGui.Destroy()
+    if (mergedItems != "")
+        paste(mergedItems, formatTextEnable)
+}
+
+; Merge selected items into clipboard history
+saveToClipboard(LV := 0, formatTextEnable := false) {
+    global isFormatting, clipHistory
+    mergedItems := processClipItems(LV, formatTextEnable)
+    if (mergedItems = "")
+        return
+    if (formatTextEnable)
+        mergedItems := formatText(mergedItems)
+    itemsArray := StrSplit(mergedItems, "`r`n")
+    for _, item in itemsArray
+        clipHistory.Push(item)
+    LV.Delete()
+    updateLV(LV)
 }
 
 getAll(LV) {

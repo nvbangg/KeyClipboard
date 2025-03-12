@@ -111,7 +111,8 @@ showContextMenu(LV, clipHistoryGui, Item, X, Y) {
         return
     contextMenu := Menu()
     contextMenu.Add("Paste", (*) => pasteSelected(LV, clipHistoryGui))
-    contextMenu.Add("Format Paste", (*) => pasteSelected(LV, clipHistoryGui, true))
+    contextMenu.Add("Paste with Format", (*) => pasteSelected(LV, clipHistoryGui, true))
+    contextMenu.Add("Save Format to Clipboard", (*) => saveToClipboard(LV, true))
     contextMenu.Add()
     contextMenu.Add("Delete Item",
         (*) => deleteSelected(LV, clipHistoryGui))
