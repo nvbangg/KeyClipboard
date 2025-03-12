@@ -47,6 +47,8 @@ Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh
     - CapsLock+X: Clear clipboard history
     - CapsLock+C: Show Clipboard History
 
+## How to Install
+
 ### Cách 1. Tải xuống trực tiếp
 
 - Tải [KeyClipboard.exe](https://github.com/nvbangg/KeyClipboard/releases/latest)
