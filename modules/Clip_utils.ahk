@@ -14,7 +14,7 @@ updateClipboard(Type) {
     if (Type = 1 && A_Clipboard != "") {
         try {
             clipHistory.Push(A_Clipboard)
-            if (clipHistory.Length > 50)
+            if (clipHistory.Length > 100)
                 clipHistory.RemoveAt(1)
         }
     }
@@ -23,14 +23,14 @@ updateClipboard(Type) {
 ; Populate the ListView with clipboard history items
 updateLV(LV) {
     global clipHistory
+    LV.Delete()
     for index, content in clipHistory {
         displayContent := StrLen(content) > 100 ? SubStr(content, 1, 100) . "..." : content
         LV.Add(, index, displayContent)
     }
 
-    ; Set numeric sorting for column 1
     LV.ModifyCol(1, "Integer")
-    LV.Modify(1, "Select Focus")
+    LV.Modify(clipHistory.Length, "Select Focus")
 }
 
 paste(text, formatTextEnable := false) {
@@ -56,23 +56,25 @@ paste(text, formatTextEnable := false) {
 ; Process clipboard items and return the merged content
 processClipItems(LV := 0, formatTextEnable := false) {
     global clipHistory, beforeLatest_LatestEnabled
+    if (clipHistory.Length = 0) {
+        showNotification("No items in clipboard history")
+        return ""
+    }
+
     contentItems := []
     firstItemIndex := 1
-
     if (LV) {
         selectedItems := getSelected(LV)
         if (selectedItems.Length = 0)
             return ""
         firstItemIndex := selectedItems[1]
+        contentItems.Capacity := selectedItems.Length
         for _, index in selectedItems
             contentItems.Push(clipHistory[index])
     }
     ; If no ListView provided, use all items
-    else {
-        if (clipHistory.Length = 0)
-            return ""
+    else
         contentItems := clipHistory.Clone()
-    }
 
     if (beforeLatest_LatestEnabled && formatTextEnable) {
         index := contentItems.Length
@@ -88,17 +90,17 @@ processClipItems(LV := 0, formatTextEnable := false) {
     mergedItems := ""
     for index, item in contentItems
         mergedItems .= item . (index < contentItems.Length ? "`r`n" : "")
-
     return mergedItems
 }
 
 ; Paste clipboard items (selected or all)
 pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
     mergedItems := processClipItems(LV, formatTextEnable)
-    if (clipHistoryGui)
-        clipHistoryGui.Destroy()
-    if (mergedItems != "")
+    if (mergedItems != "") {
+        if (clipHistoryGui)
+            clipHistoryGui.Destroy()
         paste(mergedItems, formatTextEnable)
+    }
 }
 
 ; Merge selected items into clipboard history
@@ -112,7 +114,6 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
     itemsArray := StrSplit(mergedItems, "`r`n")
     for _, item in itemsArray
         clipHistory.Push(item)
-    LV.Delete()
     updateLV(LV)
 }
 
@@ -135,16 +136,11 @@ getSelected(LV) {
     rowNum := 0
     if (Type(LV) = "Array")
         return LV
-    try {
-        loop {
-            rowNum := LV.GetNext(rowNum)
-            if (!rowNum)
-                break
-            selectedItems.Push(Integer(LV.GetText(rowNum, 1)))
-        }
-    } catch Error as e {
-        MsgBox("Error in GetSelectedItems: " . e.Message)
-        return []
+    loop {
+        rowNum := LV.GetNext(rowNum)
+        if (!rowNum)
+            break
+        selectedItems.Push(Integer(LV.GetText(rowNum, 1)))
     }
     return selectedItems
 }
@@ -172,7 +168,6 @@ deleteSelected(LV, clipHistoryGui) {
 
     for i, item in selectedItems
         clipHistory.RemoveAt(item)
-    LV.Delete()
     updateLV(LV)
 }
 
@@ -185,11 +180,10 @@ updateContent(LV, contentViewer) {
         return
     }
 
-    ; If multiple items are selected, show all their contents with separators
     if (selectedItems.Length > 1) {
         mergedItems := ""
         for index, itemIndex in selectedItems {
-            mergedItems .= "--- Item " . itemIndex . " ---`r`n" .
+            mergedItems .= itemIndex . "`r`n" .
                 clipHistory[itemIndex] .
                 (index < selectedItems.Length ? "`r`n`r`n" : "")
         }
@@ -211,7 +205,7 @@ saveContent(LV, contentViewer, clipHistoryGui, andPaste := false) {
         if (!andPaste) {
             rowNum := 1
             loop LV.GetCount() {
-                if Integer(LV.GetText(rowNum, 1)) = selectedItems[1] {
+                if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
                     displayContent := StrLen(contentViewer.Value) > 100 ?
                         SubStr(contentViewer.Value, 1, 100) . "..." : contentViewer.Value
                     LV.Modify(rowNum, , selectedItems[1], displayContent)
@@ -221,15 +215,58 @@ saveContent(LV, contentViewer, clipHistoryGui, andPaste := false) {
             }
             showNotification("Changes saved")
         }
-    } else if (!andPaste)
+    } else if (!andPaste) {
         showNotification("Cannot save changes when multiple items are selected.")
-
+        return
+    }
     ; Paste functionality
     if (andPaste) {
-        clipHistoryGui.Destroy()
         mergedItems := ""
         for index, item in selectedItems
             mergedItems .= clipHistory[item] . (index < selectedItems.Length ? "`r`n" : "")
+        clipHistoryGui.Destroy()
         paste(mergedItems)
+        return
     }
+    updateLV(LV)
+}
+
+; Move selected item up or down in the clipboard history
+moveSelectedItem(LV, contentViewer, direction) {
+    global clipHistory
+
+    selectedRow := LV.GetNext(0)
+    if (!selectedRow)
+        return
+
+    ; Get the actual index in the clipHistory array
+    currentIndex := Integer(LV.GetText(selectedRow, 1))
+    targetIndex := currentIndex + direction
+
+    if (targetIndex < 1 || targetIndex > clipHistory.Length)
+        return
+
+    ; Swap items in clipHistory array
+    temp := clipHistory[currentIndex]
+    clipHistory[currentIndex] := clipHistory[targetIndex]
+    clipHistory[targetIndex] := temp
+
+    updateLV(LV)
+    LV.Modify(0, "-Select")
+
+    ; Find and select the item at its new position
+    loop LV.GetCount() {
+        rowNum := A_Index
+        itemIndex := Integer(LV.GetText(rowNum, 1))
+        if (itemIndex = targetIndex) {
+            LV.Modify(rowNum, "Select Focus Vis")
+            break
+        }
+    }
+
+    ; Update content viewer with the selected item
+    updateContent(LV, contentViewer)
+
+    ; Provide visual feedback
+    showNotification("Item moved " . (direction < 0 ? "up" : "down"))
 }

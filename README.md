@@ -19,6 +19,7 @@ Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh
     - Show Clipboard History (CapsLock+C)
         - Chế độ xem lịch sử có thể sắp xếp, ***chỉnh sửa nội dung trực tiếp***
         - Dán toàn bộ clipboard hoặc dán nhiều mục được chọn ***theo thứ tự, định dạng tuỳ chỉnh***
+        - Alt + Up/Down Arrow moves an item up or down
         - *Lưu ý: Double click hoặc enter để dán mục đã chọn*
 - **Keyboard Settings**:
     - **Chuyển đổi dịch** nhanh chóng trong chrome (CapsLock+T)
@@ -26,8 +27,6 @@ Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh
     - Luôn bật phím Numlock 
  
 ### Tính năng dự kiến
-- Có thể chỉnh sửa đồng thời nhiều lựa chọn
-- Có thể thêm và điều chỉnh thủ công thứ tự của nội dung trong clipboard
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
 - Thêm tuỳ chọn xoá định dạng (in đậm, ...)
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
@@ -37,8 +36,8 @@ Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh
 
 ### Changelog:
 - Thêm tính năng có thể thêm nội dung được định dạng vào clipboard
-
-
+- Thêm Có thể dùng Alt+ Up/Down Arrow để thay đổi vị trí của 1 mục
+- Sửa một số lỗi
 ## How to Install
 
 ### Cách 1. Tải xuống trực tiếp

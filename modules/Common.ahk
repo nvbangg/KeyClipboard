@@ -84,10 +84,10 @@ showSettings(*) {
 }
 
 ; Display a simple notification that auto-closes
-showNotification(message, timeout := 1500) {
+showNotification(message, timeout := 1200) {
     notify := Gui("+AlwaysOnTop -Caption +ToolWindow")
-    notify.SetFont("s10")
-    notify.Add("Text", "w300", message)
+    notify.SetFont("s12 bold")
+    notify.Add("Text", "w300 Center", message)
     notify.Show("NoActivate")
     SetTimer(() => notify.Destroy(), -timeout)
 }
