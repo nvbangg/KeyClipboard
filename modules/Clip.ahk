@@ -11,10 +11,11 @@ addClipSettings(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h300", "Paste Format (Caps+F)")
     yPos += 25
 
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h50", "1. Prefix_text (nội dung trước_nội dung sau)")
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h50",
+        "1. nội dung trước của gần nhất_nội dung gần nhất")
     yPos += 25
-    settingsGui.Add("CheckBox", "x40 y" . yPos . " vprefix_textEnabled Checked" . prefix_textEnabled,
-        "Enable Prefix_text")
+    settingsGui.Add("CheckBox", "x40 y" . yPos . " vbeforeLatest_LatestEnabled Checked" . beforeLatest_LatestEnabled,
+        "Enable beforeLatest_Latest")
     yPos += 35
 
     settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h135", "2. Kiểu")
@@ -118,7 +119,7 @@ showContextMenu(LV, clipHistoryGui, Item, X, Y) {
 }
 
 ; Paste the previous clipboard content
-pastePrevious() {
+pasteBeforeLatest() {
     global clipHistory
 
     if (clipHistory.Length < 2) {
@@ -129,8 +130,17 @@ pastePrevious() {
     paste(clipHistory[clipHistory.Length - 1])
 }
 
+pasteLatest() {
+    global clipHistory
+    if (clipHistory.Length < 1) {
+        showNotification("No items in clipboard history")
+        return
+    }
+    paste(clipHistory[clipHistory.Length])
+}
+
 formatWhenPaste() {
-    global clipHistory, prefix_textEnabled
+    global clipHistory, beforeLatest_LatestEnabled
 
     if (clipHistory.Length < 1) {
         showNotification("No items in clipboard history")
@@ -138,7 +148,7 @@ formatWhenPaste() {
     }
     content := clipHistory[clipHistory.Length]
 
-    if (prefix_textEnabled) {
+    if (beforeLatest_LatestEnabled) {
         if (clipHistory.Length > 1) {
             prevContent := clipHistory[clipHistory.Length - 1]
             content := prevContent . "_" . content

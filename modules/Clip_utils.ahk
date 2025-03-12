@@ -55,7 +55,7 @@ paste(text, formatTextEnable := false) {
 
 ; Paste clipboard items (selected or all)
 pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
-    global clipHistory, prefix_textEnabled
+    global clipHistory, beforeLatest_LatestEnabled
     contentPaste := []
     if (LV) {
         selectedItems := getSelected(LV)
@@ -73,7 +73,7 @@ pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
         contentPaste := clipHistory.Clone()
     }
 
-    if (prefix_textEnabled && formatTextEnable) {
+    if (beforeLatest_LatestEnabled && formatTextEnable) {
         index := contentPaste.Length
         while (index > 1) {
             contentPaste[index] := contentPaste[index - 1] . "_" . contentPaste[index]

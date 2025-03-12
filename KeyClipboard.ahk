@@ -20,12 +20,14 @@ CapsLock & t:: translateInChrome()
 #HotIf
 
 ; Hotkeys
+CapsLock & b:: pasteBeforeLatest() ;Paste the item before the latest
+CapsLock & v:: pasteLatest()    ; Paste latest item from clipboard history
+CapsLock & f:: formatWhenPaste() ; Paste latest item with format
+CapsLock & a:: pasteSelected() ; Paste all clipboard items
+Capslock & d:: pasteSelected(, , true) ; Paste all items with format
+CapsLock & x:: clearClipboard()
+CapsLock & c:: showClipboard()
 CapsLock & s:: showSettings()
-CapsLock & v:: showClipboard()
-CapsLock & z:: pastePrevious()
-CapsLock & f:: formatWhenPaste()
-CapsLock & a:: pasteSelected()
-CapsLock & c:: clearClipboard()
 
 ; UI
 A_TrayMenu.Add("Settings (Caps+S)", showSettings)
@@ -36,7 +38,7 @@ A_IconTip := "KeyClipboard - Right click to see more"
 showAbout(*) {
     result := MsgBox("KeyClipboard`n" .
         "Version: 1.4.2`n" .
-        "Date: 11/03/2025`n" .
+        "Date: 12/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard", "YesNo")
@@ -47,13 +49,16 @@ showAbout(*) {
 }
 showShortcuts(*) {
     MsgBox("CapsLock+S: Show Settings Popup`n" .
-        "CapsLock+Z: Paste previous clipboard`n" .
-        "CapsLock+V: Show Clipboard History`n" .
-        "-Double click: Paste selected item`n" .
-        "-Enter: Paste selected items`n" .
-        "CapsLock+F: Format when pasting`n" .
+        "CapsLock+B: Paste the item before the latest`n" .
+        "CapsLock+V: Paste latest item from clipboard history`n" .
+        "CapsLock+F: Paste latest item with format`n" .
         "CapsLock+A: Paste all clipboard items`n" .
-        "CapsLock+C: Clear clipboard history`n" .
+        "CapsLock+D: Paste all items with format`n" .
+        "CapsLock+X: Clear clipboard history`n" .
+        "CapsLock+C: Show Clipboard History`n" .
+        "   -Double click: Paste selected item`n" .
+        "   -Enter: Paste selected items`n" .
+        "MouseMode: Right Alt to Click/ Right Ctrl to Right Click`n" .
         "CapsLock+T: Translate page in Chrome`n",
         "Shortcuts - KeyClipboard", "Ok")
 }

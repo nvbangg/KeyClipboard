@@ -14,12 +14,12 @@ ensureFilesExist() {
 
 ; Initialize settings
 initSettings() {
-    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, prefix_textEnabled
+    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
     ensureFilesExist()
 
     mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
     numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
-    prefix_textEnabled := IniRead(settingsFilePath, "Settings", "prefix_textEnabled", "1") = "1"
+    beforeLatest_LatestEnabled := IniRead(settingsFilePath, "Settings", "beforeLatest_LatestEnabled", "1") = "1"
     formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "3"))
     formatSeparator := Integer(IniRead(settingsFilePath, "Settings", "formatSeparator", "0"))
 
@@ -28,10 +28,10 @@ initSettings() {
 
 ; Save all settings to INI file
 saveSettings(savedValues) {
-    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, prefix_textEnabled
+    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
     ensureFilesExist()
 
-    prefix_textEnabled := !!savedValues.prefix_textEnabled
+    beforeLatest_LatestEnabled := !!savedValues.beforeLatest_LatestEnabled
     mouseEnabled := !!savedValues.MouseClick
     numLockEnabled := !!savedValues.NumLock
 
@@ -59,7 +59,7 @@ saveSettings(savedValues) {
 
     IniWrite(mouseEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseEnabled")
     IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
-    IniWrite(prefix_textEnabled ? "1" : "0", settingsFilePath, "Settings", "prefix_textEnabled")
+    IniWrite(beforeLatest_LatestEnabled ? "1" : "0", settingsFilePath, "Settings", "beforeLatest_LatestEnabled")
     IniWrite(formatCaseOption, settingsFilePath, "Settings", "formatCaseOption")
     IniWrite(formatSeparator, settingsFilePath, "Settings", "formatSeparator")
 

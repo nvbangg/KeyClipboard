@@ -2,25 +2,28 @@
 
 Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh hoạt với nhiều tính năng hữu ích
 
-## Tính năng và Phím tắt
+## Features and Shortcuts
 
 - **Clipboard Manager**:
-    - ***Dán toàn bộ clipboard*** (Capslock+A)
-    - Clear toàn bộ clipboard (Capslock+C)
-    - Dán nội dung clipboard trước của trước đó (CapsLock+Z)
-    - ***Dán với định dạng tuỳ chỉnh*** (CapsLock+F)
-        1. Prefix_text: Dán nội dung trước của trước_nội dung trước
-        2. **Dán theo kiểu**: IN HOA, in thường, in không dấu, In Hoa Chữ Cái Đầu
-        3. **Chọn phân cách**: Gạch dưới(_), Gạch ngang(-), Xoá khoảng cách
-    - Mở Clipboard History (CapsLock+V (giống Win+V))
+    - Paste the item **before** the latest (CapsLock+B) 
+    - Paste latest item from clipboard history (CapsLock+V)
+    - ***Paste all clipboard items*** (CapsLock+A)
+    - Paste all items with format (CapsLock+D)
+    - ***Paste latest item with format*** (CapsLock+F)
+        1. beforeLatest_Latest: Dán nội dung trước của gần nhất_nội dung gần nhất 
+            (phù hợp cho đặt tên file, folder)
+        2. Dán theo kiểu: IN HOA, in thường, in không dấu, In Hoa Chữ Cái Đầu
+        3. Chọn phân cách: Gạch dưới(_), Gạch ngang(-), Xoá khoảng cách
+    - Clear clipboard history (CapsLock+X)
+    - Show Settings Popup (CapsLock+S)
+    - Show Clipboard History (CapsLock+C)
         - Chế độ xem lịch sử có thể sắp xếp, ***chỉnh sửa nội dung trực tiếp***
         - Dán toàn bộ clipboard hoặc dán nhiều mục được chọn ***theo thứ tự, định dạng tuỳ chỉnh***
         - *Lưu ý: Double click hoặc enter để dán mục đã chọn*
-- **Keyboard Settings** (tuỳ chọn):
-    - **Chuyển đổi dịch** trang web nhanh chóng trong chrome (CapsLock+T)
-    - Dùng phím Right Alt/Right Ctrl: Để click chuột trái/phải
+- **Keyboard Settings**:
+    - **Chuyển đổi dịch** nhanh chóng trong chrome (CapsLock+T)
+    - MouseMode: Right Alt to Click/ Right Ctrl to Right Click
     - Luôn bật phím Numlock 
-- *Lưu ý: CapsLock+S để mở settings tuỳ chỉnh*
  
 ### Tính năng dự kiến
 - Thêm tính năng có thể lưu format text vào ClipboardHistory trong menu chuột phải
@@ -34,9 +37,15 @@ Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
 ### Changelog:
-- Tối ưu code
-
-## Cài đặt
+- Tối ưu code, cải thiện trải nghiệm người dùng
+- Sửa lại một số phím tắt:
+    - **CapsLock+B (new)**: Paste the item before the latest
+    - CapsLock+V: Paste latest item from clipboard history
+    - CapsLock+F: Paste latest item with format
+    - CapsLock+A: Paste all clipboard items
+    - CapsLock+D: Paste all items with format
+    - CapsLock+X: Clear clipboard history
+    - CapsLock+C: Show Clipboard History
 
 ### Cách 1. Tải xuống trực tiếp
 
