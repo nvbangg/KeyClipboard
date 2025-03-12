@@ -3,43 +3,59 @@
 global clipHistory := []
 global isFormatting := false
 global originalClip := ""
+global clipHistoryGuiInstance := 0
+global removeDiacriticsEnabled := false  ; Add new global variable
+global removeLineBreaksEnabled := false  ; Add new global variable
 #Include "Clip_utils.ahk"
 #Include "Clip_format.ahk"
 
 ; Add clipboard settings to the settings interface
 addClipSettings(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h300", "Paste Format (Caps+F)")
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h350", "Paste Format (Caps+F)")
     yPos += 25
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h50",
-        "1. nội dung trước của gần nhất_nội dung gần nhất")
+
+    ; Independent checkbox options
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Format Options")
     yPos += 25
+
     settingsGui.Add("CheckBox", "x40 y" . yPos . " vbeforeLatest_LatestEnabled Checked" . beforeLatest_LatestEnabled,
         "Enable beforeLatest_Latest")
+    yPos += 25
+
+    settingsGui.Add("CheckBox", "x40 y" . yPos . " vremoveDiacriticsEnabled Checked" . removeDiacriticsEnabled,
+        "Remove Diacritics")
+    yPos += 25
+
+    settingsGui.Add("CheckBox", "x40 y" . yPos . " vremoveLineBreaksEnabled Checked" . removeLineBreaksEnabled,
+        "Remove Line Breaks")
     yPos += 35
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h135", "2. Kiểu")
+
+    ; Text case options (radio buttons)
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Text Case")
     yPos += 25
 
     caseOptions := [
         ["CaseNone", "None", 0],
-        ["CaseUpper", "In hoa (UPPERCASE)", 1],
-        ["CaseLower", "In thường (lowercase)", 2],
-        ["CaseNoDiacritics", "In không dấu (Remove diacritics)", 3],
-        ["CaseTitleCase", "In hoa chữ đầu (Title Case)", 4]
+        ["CaseUpper", "UPPERCASE", 1],
+        ["CaseLower", "lowercase", 2],
+        ["CaseTitleCase", "Title Case", 3]
     ]
     for option in caseOptions {
         settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatCaseOption = option[3]),
         option[2])
         yPos += 25
     }
+
+    ; Separator options
     yPos += 10
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "3. Phân cách")
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Word Separator")
     yPos += 25
 
     separatorOptions := [
         ["SeparatorNone", "None", 0],
-        ["SeparatorUnderscore", "Gạch dưới (_)", 1],
-        ["SeparatorHyphen", "Gạch ngang (-)", 2],
-        ["SeparatorNoSpace", "Xoá khoảng cách", 3]
+        ["SeparatorUnderscore", "Underscore (_)", 1],
+        ["SeparatorHyphen", "Hyphen (-)", 2],
+        ["SeparatorNoSpace", "Remove Spaces", 3]
     ]
     for option in separatorOptions {
         settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatSeparator = option[3]),
@@ -54,13 +70,23 @@ initClipboard()
 
 ; Display clipboard history and allow selection
 showClipboard() {
-    global clipHistory
+    global clipHistory, clipHistoryGuiInstance
+    try {
+        if (IsObject(clipHistoryGuiInstance) && clipHistoryGuiInstance.HasProp("Hwnd") && WinExist("ahk_id " .
+            clipHistoryGuiInstance.Hwnd)) {
+            clipHistoryGuiInstance.Destroy()
+        }
+    } catch {
+        clipHistoryGuiInstance := 0
+    }
+
     if (clipHistory.Length < 1) {
         showNotification("No items in clipboard history")
         return
     }
 
     clipHistoryGui := Gui(, "Clipboard History")
+    clipHistoryGuiInstance := clipHistoryGui
     clipHistoryGui.SetFont("s10")
     LV := clipHistoryGui.Add("ListView", "x10 y10 w700 h300 Grid Multi", ["#", "Content"])
     LV.ModifyCol(1, 50, "Integer")

@@ -15,12 +15,15 @@ ensureFilesExist() {
 ; Initialize settings
 initSettings() {
     global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
+    global removeDiacriticsEnabled, removeLineBreaksEnabled
     ensureFilesExist()
 
     mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
     numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
     beforeLatest_LatestEnabled := IniRead(settingsFilePath, "Settings", "beforeLatest_LatestEnabled", "1") = "1"
-    formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "3"))
+    removeDiacriticsEnabled := IniRead(settingsFilePath, "Settings", "removeDiacriticsEnabled", "1") = "1"
+    removeLineBreaksEnabled := IniRead(settingsFilePath, "Settings", "removeLineBreaksEnabled", "1") = "1"
+    formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "0"))
     formatSeparator := Integer(IniRead(settingsFilePath, "Settings", "formatSeparator", "0"))
 
     updateNumLock()
@@ -29,9 +32,12 @@ initSettings() {
 ; Save all settings to INI file
 saveSettings(savedValues) {
     global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
+    global removeDiacriticsEnabled, removeLineBreaksEnabled
     ensureFilesExist()
 
     beforeLatest_LatestEnabled := !!savedValues.beforeLatest_LatestEnabled
+    removeDiacriticsEnabled := !!savedValues.removeDiacriticsEnabled
+    removeLineBreaksEnabled := !!savedValues.removeLineBreaksEnabled
     mouseEnabled := !!savedValues.MouseClick
     numLockEnabled := !!savedValues.NumLock
 
@@ -42,10 +48,8 @@ saveSettings(savedValues) {
         formatCaseOption := 1
     else if (savedValues.HasProp("CaseLower") && savedValues.CaseLower)
         formatCaseOption := 2
-    else if (savedValues.HasProp("CaseNoDiacritics") && savedValues.CaseNoDiacritics)
-        formatCaseOption := 3
     else if (savedValues.HasProp("CaseTitleCase") && savedValues.CaseTitleCase)
-        formatCaseOption := 4
+        formatCaseOption := 3
 
     ; Word separator options
     if (savedValues.HasProp("SeparatorNone") && savedValues.SeparatorNone)
@@ -60,6 +64,8 @@ saveSettings(savedValues) {
     IniWrite(mouseEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseEnabled")
     IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
     IniWrite(beforeLatest_LatestEnabled ? "1" : "0", settingsFilePath, "Settings", "beforeLatest_LatestEnabled")
+    IniWrite(removeDiacriticsEnabled ? "1" : "0", settingsFilePath, "Settings", "removeDiacriticsEnabled")
+    IniWrite(removeLineBreaksEnabled ? "1" : "0", settingsFilePath, "Settings", "removeLineBreaksEnabled")
     IniWrite(formatCaseOption, settingsFilePath, "Settings", "formatCaseOption")
     IniWrite(formatSeparator, settingsFilePath, "Settings", "formatSeparator")
 

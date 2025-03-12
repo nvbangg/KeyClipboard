@@ -37,8 +37,8 @@ A_IconTip := "KeyClipboard - Right click to see more"
 
 showAbout(*) {
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.4.3`n" .
-        "Date: 12/03/2025`n" .
+        "Version: 1.5`n" .
+        "Date: 13/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard", "YesNo")
@@ -59,6 +59,7 @@ showShortcuts(*) {
         "CapsLock+C: Show Clipboard History`n" .
         "   -Double click: Paste selected item`n" .
         "   -Enter: Paste selected items`n" .
+        "   -Alt+Up/Down: Move selected item up/down in the list`n" .
         "MouseMode: Right Alt to Click/ Right Ctrl to Right Click`n" .
         "CapsLock+T: Translate page in Chrome`n",
         "Shortcuts - KeyClipboard", "Ok")

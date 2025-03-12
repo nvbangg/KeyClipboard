@@ -2,20 +2,28 @@
 
 ; Format text according to current settings
 formatText(text) {
-    global formatCaseOption, formatSeparator
+    global formatCaseOption, formatSeparator, removeDiacriticsEnabled, removeLineBreaksEnabled
     if (text = "")
         return ""
 
+    ; Apply independent formatting options first
+    if (removeDiacriticsEnabled)
+        text := removeAccents(text)
+
+    if (removeLineBreaksEnabled)
+        text := removeLineBreaks(text)
+
+    ; Apply case formatting
     switch formatCaseOption {
         case 1:  ; UPPERCASE
             text := StrUpper(text)
         case 2:  ; lowercase
             text := StrLower(text)
-        case 3:  ; Remove diacritics
-            text := removeAccents(text)
-        case 4:  ; Title Case
+        case 3:  ; Title Case
             text := TitleCase(text)
     }
+
+    ; Apply separator formatting
     switch formatSeparator {
         case 1:  ; Under_score
             text := StrReplace(text, " ", "_")
@@ -26,6 +34,23 @@ formatText(text) {
     }
 
     return text
+}
+
+removeLineBreaks(str) {
+    ; Replace various line break sequences with space
+    str := StrReplace(str, "`r`n", " ")
+    str := StrReplace(str, "`n", " ")
+    str := StrReplace(str, "`r", " ")
+
+    ; Replace multiple spaces with a single space
+    loop {
+        oldStr := str
+        str := StrReplace(str, "  ", " ")
+        if (str = oldStr)
+            break
+    }
+
+    return str
 }
 
 ; Remove Vietnamese diacritical marks
