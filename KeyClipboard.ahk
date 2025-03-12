@@ -37,7 +37,7 @@ A_IconTip := "KeyClipboard - Right click to see more"
 
 showAbout(*) {
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.4.2`n" .
+        "Version: 1.4.3`n" .
         "Date: 12/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",

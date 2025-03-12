@@ -57,10 +57,12 @@ paste(text, formatTextEnable := false) {
 pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
     global clipHistory, beforeLatest_LatestEnabled
     contentPaste := []
+    firstItemIndex := 1
     if (LV) {
         selectedItems := getSelected(LV)
         if (selectedItems.Length = 0)
             return
+        firstItemIndex := selectedItems[1]
         for _, index in selectedItems
             contentPaste.Push(clipHistory[index])
         if (clipHistoryGui)
@@ -78,6 +80,9 @@ pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
         while (index > 1) {
             contentPaste[index] := contentPaste[index - 1] . "_" . contentPaste[index]
             index--
+        }
+        if (firstItemIndex > 1) {
+            contentPaste[1] := clipHistory[firstItemIndex - 1] . "_" . contentPaste[1]
         }
     }
 
