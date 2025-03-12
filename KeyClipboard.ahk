@@ -46,6 +46,7 @@ showAbout(*) {
         Run("https://github.com/nvbangg/KeyClipboard")
     else
         Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    ;   =)))))
 }
 showShortcuts(*) {
     MsgBox("CapsLock+S: Show Settings Popup`n" .

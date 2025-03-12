@@ -219,7 +219,7 @@ saveContent(LV, contentViewer, clipHistoryGui, andPaste := false) {
                 }
                 rowNum++
             }
-            showNotification("Changes saved to item #" . selectedItems[1])
+            showNotification("Changes saved")
         }
     } else if (!andPaste)
         showNotification("Cannot save changes when multiple items are selected.")

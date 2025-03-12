@@ -36,15 +36,8 @@ Advanced Clipboard Manager + Tự động hóa thao tác bằng phím tắt linh
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
 ### Changelog:
-- Tối ưu code, cải thiện trải nghiệm người dùng
-- Sửa lại một số phím tắt:
-    - **CapsLock+B (new)**: Paste the item before the latest
-    - CapsLock+V: Paste latest item from clipboard history
-    - CapsLock+F: Paste latest item with format
-    - CapsLock+A: Paste all clipboard items
-    - CapsLock+D: Paste all items with format
-    - CapsLock+X: Clear clipboard history
-    - CapsLock+C: Show Clipboard History
+- Thêm tính năng có thể thêm nội dung được định dạng vào clipboard
+
 
 ## How to Install
 

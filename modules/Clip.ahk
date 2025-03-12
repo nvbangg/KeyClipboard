@@ -60,8 +60,8 @@ initClipboard()
 ; Display clipboard history and allow selection
 showClipboard() {
     global clipHistory
-    if (clipHistory.Length = 0) {
-        showNotification("No clipboard history available.")
+    if (clipHistory.Length < 1) {
+        showNotification("No items in clipboard history")
         return
     }
     clipHistoryGui := Gui(, "Clipboard History")
@@ -124,7 +124,7 @@ pasteBeforeLatest() {
     global clipHistory
 
     if (clipHistory.Length < 2) {
-        showNotification("Not enough clipboard history to paste previous item.")
+        showNotification("Not enough items in clipboard history")
         return
     }
 
@@ -164,5 +164,5 @@ clearClipboard(clipHistoryGui := 0) {
         clipHistoryGui.Destroy()
     global clipHistory
     clipHistory := []
-    showNotification("All items have been cleared.")
+    showNotification("All items have been cleared")
 }
