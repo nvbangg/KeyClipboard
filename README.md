@@ -76,7 +76,7 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 3. Place the shortcut in this folder
 4. The application will now start automatically when you boot your computer
 
-### Tính năng dự kiến
+## Tính năng dự kiến
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
 - Thêm tuỳ chọn xoá định dạng (in đậm, ...)
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
