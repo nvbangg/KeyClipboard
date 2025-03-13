@@ -27,6 +27,7 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - `CapsLock+D`: Paste all items with formatting
 - `CapsLock+X`: Clear clipboard history
 - `CapsLock+S`: Open settings window
+- `CapsLock+R`: Toggle beforeLatest_Latest feature
 - `CapsLock+T`: Translate current page in Chrome
 
 ### Clipboard History Viewer Shortcuts
@@ -44,14 +45,20 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 
 ## Formatting Options
 
+- Paste with beforeLatest_Latest (toggle with CapsLock+R)
+- Remove diacritics
+- Fix spacing around punctuation
+
+- **Line Break Handling**
+  - None (preserve line breaks)
+  - Remove excessive line breaks (no empty lines)
+  - Remove all line breaks
+
 - **Text Case Conversion**
   - UPPERCASE
   - lowercase
   - Title Case
-  
-- **Character Processing**
-  - Remove diacritics (accent marks)
-  - Remove line breaks
+  - Sentence case
   
 - **Word Separators**
   - Underscore (_)
@@ -85,7 +92,6 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
 ### Changelog:
-- Sửa một số lỗi và ổn định các tính năng
-- Thêm tính năng có thể thêm nội dung được định dạng vào clipboard
-- Thêm Có thể dùng Alt+ Up/Down Arrow để thay đổi vị trí của 1 mục
-- Thêm các mục trong format options như xoá xuống dòng, đồng thời tách xoá dấu câu thành định dạng riêng
+- Sửa cửa sổ Settings và Shortcuts sẽ tự động tắt khi nhấn ra bên ngoài
+- Dùng CapsLock + R để chuyển đổi beforeLatest_LatestEnable
+- Thêm một số format options như Xoá khoảng cách thừa, xoá dòng trống thừa, xoá xuống dòng, In hoa đầu câu

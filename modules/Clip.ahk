@@ -4,14 +4,14 @@ global clipHistory := []
 global isFormatting := false
 global originalClip := ""
 global clipHistoryGuiInstance := 0
-global removeDiacriticsEnabled := false  ; Add new global variable
-global removeLineBreaksEnabled := false  ; Add new global variable
+global removeDiacriticsEnabled := false
+global removeExcessiveSpacesEnabled := false  ; Add new option for space handling
+global lineBreakOption := 0  ; Replace removeLineBreaksEnabled with more flexible option
 #Include "Clip_utils.ahk"
 #Include "Clip_format.ahk"
 
-; Add clipboard settings to the settings interface
 addClipSettings(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h350", "Paste Format (Caps+F)")
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h450", "Paste Format (Caps+F)")
     yPos += 25
 
     ; Independent checkbox options
@@ -26,19 +26,37 @@ addClipSettings(settingsGui, yPos) {
         "Remove Diacritics")
     yPos += 25
 
-    settingsGui.Add("CheckBox", "x40 y" . yPos . " vremoveLineBreaksEnabled Checked" . removeLineBreaksEnabled,
-        "Remove Line Breaks")
+    settingsGui.Add("CheckBox", "x40 y" . yPos . " vremoveExcessiveSpacesEnabled Checked" .
+        removeExcessiveSpacesEnabled,
+        "Fix Spacing Around Punctuation")
     yPos += 35
 
+    ; Line break options
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Line Break Handling")
+    yPos += 25
+
+    lineBreakOptions := [
+        ["LineBreakNone", "None", 0],
+        ["LineBreakRemoveExcessive", "Remove Excessive Line Breaks", 1],
+        ["LineBreakRemoveAll", "Remove All Line Breaks", 2]
+    ]
+    for option in lineBreakOptions {
+        settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (lineBreakOption = option[3]),
+        option[2])
+        yPos += 25
+    }
+
     ; Text case options (radio buttons)
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Text Case")
+    yPos += 10
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h140", "Text Case")
     yPos += 25
 
     caseOptions := [
         ["CaseNone", "None", 0],
         ["CaseUpper", "UPPERCASE", 1],
         ["CaseLower", "lowercase", 2],
-        ["CaseTitleCase", "Title Case", 3]
+        ["CaseTitleCase", "Title Case", 3],
+        ["CaseSentence", "Sentence case", 4]
     ]
     for option in caseOptions {
         settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatCaseOption = option[3]),

@@ -1,4 +1,4 @@
-; KeyClipboard - Keyboard + clipboard manager
+; KeyClipboard - An advanced clipboard manager and keyboard automation tool with flexible shortcuts and powerful features.
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 #Include "modules\Common.ahk"
@@ -28,6 +28,7 @@ Capslock & d:: pasteSelected(, , true) ; Paste all items with format
 CapsLock & x:: clearClipboard()
 CapsLock & c:: showClipboard()
 CapsLock & s:: showSettings()
+CapsLock & r:: toggleBeforeLatestLatest() ; Toggle beforeLatest_Latest feature
 
 ; UI
 A_TrayMenu.Add("Settings (Caps+S)", showSettings)
@@ -37,7 +38,7 @@ A_IconTip := "KeyClipboard - Right click to see more"
 
 showAbout(*) {
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.5`n" .
+        "Version: 1.5.1`n" .
         "Date: 13/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
@@ -48,8 +49,27 @@ showAbout(*) {
         Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
     ;   =)))))
 }
+
 showShortcuts(*) {
-    MsgBox("CapsLock+S: Show Settings Popup`n" .
+    static shortcutsGui := 0
+
+    try {
+        if IsObject(shortcutsGui) && shortcutsGui.HasProp("Hwnd")
+            if WinExist("ahk_id " . shortcutsGui.Hwnd)
+                shortcutsGui.Destroy()
+    } catch {
+        ; If any error occurs, just create a new GUI
+    }
+
+    ; Create new GUI with appropriate options
+    shortcutsGui := Gui("+AlwaysOnTop +ToolWindow")
+    shortcutsGui.Title := "Shortcuts - KeyClipboard"
+    shortcutsGui.SetFont("s10")
+    shortcutsGui.OnEvent("Escape", CloseShortcutsGui)
+
+    ; Add shortcuts text
+    shortcutsGui.Add("Text", "w450",
+        "CapsLock+S: Show Settings Popup`n" .
         "CapsLock+B: Paste the item before the latest`n" .
         "CapsLock+V: Paste latest item from clipboard history`n" .
         "CapsLock+F: Paste latest item with format`n" .
@@ -57,10 +77,23 @@ showShortcuts(*) {
         "CapsLock+D: Paste all items with format`n" .
         "CapsLock+X: Clear clipboard history`n" .
         "CapsLock+C: Show Clipboard History`n" .
+        "CapsLock+R: Toggle beforeLatest_Latest feature`n" .
         "   -Double click: Paste selected item`n" .
         "   -Enter: Paste selected items`n" .
         "   -Alt+Up/Down: Move selected item up/down in the list`n" .
         "MouseMode: Right Alt to Click/ Right Ctrl to Right Click`n" .
-        "CapsLock+T: Translate page in Chrome`n",
-        "Shortcuts - KeyClipboard", "Ok")
+        "CapsLock+T: Translate page in Chrome")
+
+    shortcutsGui.Add("Button", "Default w80", "OK").OnEvent("Click", CloseShortcutsGui)
+    shortcutsGui.Show()
+
+    ; Store the timer ID to stop it later
+    SetTimer(CheckOutsideClick, 100)
+    CloseShortcutsGui(*) {
+        SetTimer(CheckOutsideClick, 0)
+        if IsObject(shortcutsGui) {
+            try shortcutsGui.Destroy()
+            shortcutsGui := 0
+        }
+    }
 }
