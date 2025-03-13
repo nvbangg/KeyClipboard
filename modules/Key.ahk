@@ -29,3 +29,10 @@ translateInChrome() {
 updateNumLock() {
     SetNumLockState(numLockEnabled ? "AlwaysOn" : "Default")
 }
+
+; Toggle always-on-top status for active window
+toggleAlwaysOnTop() {
+    WinSetAlwaysOnTop(-1, "A")  ; Use -1 instead of "Toggle" for toggling
+    isAlwaysOnTop := WinGetExStyle("A") & 0x8  ; Check if the window is now always on top
+    showNotification("Always On Top: " . (isAlwaysOnTop ? "Enabled" : "Disabled"))
+}

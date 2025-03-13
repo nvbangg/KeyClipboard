@@ -20,6 +20,7 @@ CapsLock & t:: translateInChrome()
 #HotIf
 
 ; Hotkeys
+CapsLock & q:: toggleAlwaysOnTop()
 CapsLock & b:: pasteBeforeLatest() ;Paste the item before the latest
 CapsLock & v:: pasteLatest()    ; Paste latest item from clipboard history
 CapsLock & f:: formatWhenPaste() ; Paste latest item with format
@@ -38,7 +39,7 @@ A_IconTip := "KeyClipboard - Right click to see more"
 
 showAbout(*) {
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.5.1`n" .
+        "Version: 1.5.2`n" .
         "Date: 13/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
@@ -70,6 +71,7 @@ showShortcuts(*) {
     ; Add shortcuts text
     shortcutsGui.Add("Text", "w450",
         "CapsLock+S: Show Settings Popup`n" .
+        "CapsLock+Q: Toggle Always-on-Top for active window`n" .
         "CapsLock+B: Paste the item before the latest`n" .
         "CapsLock+V: Paste latest item from clipboard history`n" .
         "CapsLock+F: Paste latest item with format`n" .

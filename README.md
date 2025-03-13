@@ -92,6 +92,4 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
 ### Changelog:
-- Sửa cửa sổ Settings và Shortcuts sẽ tự động tắt khi nhấn ra bên ngoài
-- Dùng CapsLock + R để chuyển đổi beforeLatest_LatestEnable
-- Thêm một số format options như Xoá khoảng cách thừa, xoá dòng trống thừa, xoá xuống dòng, In hoa đầu câu
+- Thêm tính năng dùng Capslock + Q để cửa sổ đang hoạt động hiện tại sẽ Always on Top
