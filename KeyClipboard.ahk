@@ -87,10 +87,14 @@ showShortcuts(*) {
     shortcutsGui.Add("Button", "Default w80", "OK").OnEvent("Click", CloseShortcutsGui)
     shortcutsGui.Show()
 
-    ; Store the timer ID to stop it later
-    SetTimer(CheckOutsideClick, 100)
+    ; Store a reference to the current GUI
+    myGui := shortcutsGui  ; Create a local copy for the closure
+
+    ; Set up timer with the GUI passed to the function
+    SetTimer () => CheckOutsideClick(myGui), 100
+
     CloseShortcutsGui(*) {
-        SetTimer(CheckOutsideClick, 0)
+        SetTimer () => CheckOutsideClick(myGui), 0
         if IsObject(shortcutsGui) {
             try shortcutsGui.Destroy()
             shortcutsGui := 0

@@ -176,7 +176,7 @@ showNotification(message, timeout := 1200) {
 }
 
 ; Function to check for outside clicks
-CheckOutsideClick() {
+CheckOutsideClick(shortcutsGui) {
     static isDestroying := false
 
     ; Skip if we're already in the process of destroying or if GUI is gone
@@ -185,8 +185,7 @@ CheckOutsideClick() {
 
     try {
         if !shortcutsGui.HasProp("Hwnd") || !WinExist("ahk_id " . shortcutsGui.Hwnd) {
-            SetTimer(CheckOutsideClick, 0)
-            shortcutsGui := 0
+            SetTimer () => CheckOutsideClick(shortcutsGui), 0
             return
         }
 
@@ -198,14 +197,12 @@ CheckOutsideClick() {
 
         if mouseIsOutside && GetKeyState("LButton", "P") {
             isDestroying := true
-            SetTimer(CheckOutsideClick, 0)
+            SetTimer () => CheckOutsideClick(shortcutsGui), 0
             try shortcutsGui.Destroy()
-            shortcutsGui := 0
             isDestroying := false
         }
     } catch {
         ; If any error occurs, stop the timer
-        SetTimer(CheckOutsideClick, 0)
-        shortcutsGui := 0
+        SetTimer () => CheckOutsideClick(shortcutsGui), 0
     }
 }
