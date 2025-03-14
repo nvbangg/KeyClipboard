@@ -5,6 +5,8 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 ## Features
 
 ### Clipboard Management
+
+- **Always on Top for active window**
 - **Smart Clipboard History**: Access and manipulate your clipboard history with ease
 - **Formatted Pasting**: Apply various text formatting options when pasting
 - **Multi-item Operations**: Paste multiple clipboard items at once with custom formatting
@@ -19,6 +21,7 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 ## Keyboard Shortcuts
 
 ### Core Shortcuts
+- `CapsLock+Q`: Toggle Always-on-Top for active window
 - `CapsLock+C`: Open clipboard history viewer
 - `CapsLock+V`: Paste latest clipboard item
 - `CapsLock+B`: Paste the item before the latest
