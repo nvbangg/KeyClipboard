@@ -11,11 +11,11 @@ global lineBreakOption := 0  ; Replace removeLineBreaksEnabled with more flexibl
 #Include "Clip_format.ahk"
 
 addClipSettings(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w380 h450", "Paste Format (Caps+F)")
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w440 h350", "Paste Format (Caps+F)")
     yPos += 25
 
     ; Independent checkbox options
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Format Options")
+    settingsGui.Add("GroupBox", "x20 y" . yPos . " w420 h110", "Format Options")
     yPos += 25
 
     settingsGui.Add("CheckBox", "x40 y" . yPos . " vbeforeLatest_LatestEnabled Checked" . beforeLatest_LatestEnabled,
@@ -31,55 +31,29 @@ addClipSettings(settingsGui, yPos) {
         "Fix Spacing Around Punctuation")
     yPos += 35
 
-    ; Line break options
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Line Break Handling")
-    yPos += 25
+    ; Line break options - Converted to dropdown with AltSubmit
+    settingsGui.Add("Text", "x20 y" . yPos . " w150", "Line Break Handling:")  ; Increased label width from 120 to 150
+    lineBreakChoices := ["None", "Remove Excessive Line Breaks", "Remove All Line Breaks"]
+    settingsGui.Add("DropDownList", "x180 y" . (yPos - 3) . " w250 AltSubmit vLineBreakOption Choose" . (
+        lineBreakOption + 1),  ; Adjusted X position from 150 to 180
+    lineBreakChoices)
+    yPos += 30
 
-    lineBreakOptions := [
-        ["LineBreakNone", "None", 0],
-        ["LineBreakRemoveExcessive", "Remove Excessive Line Breaks", 1],
-        ["LineBreakRemoveAll", "Remove All Line Breaks", 2]
-    ]
-    for option in lineBreakOptions {
-        settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (lineBreakOption = option[3]),
-        option[2])
-        yPos += 25
-    }
+    ; Text case options - Converted to dropdown with AltSubmit
+    settingsGui.Add("Text", "x20 y" . yPos . " w150", "Text Case:")  ; Increased label width from 120 to 150
+    caseChoices := ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"]
+    settingsGui.Add("DropDownList", "x180 y" . (yPos - 3) . " w250 AltSubmit vCaseOption Choose" . (formatCaseOption +
+        1),  ; Adjusted X position from 150 to 180
+    caseChoices)
+    yPos += 30
 
-    ; Text case options (radio buttons)
-    yPos += 10
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h140", "Text Case")
-    yPos += 25
-
-    caseOptions := [
-        ["CaseNone", "None", 0],
-        ["CaseUpper", "UPPERCASE", 1],
-        ["CaseLower", "lowercase", 2],
-        ["CaseTitleCase", "Title Case", 3],
-        ["CaseSentence", "Sentence case", 4]
-    ]
-    for option in caseOptions {
-        settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatCaseOption = option[3]),
-        option[2])
-        yPos += 25
-    }
-
-    ; Separator options
-    yPos += 10
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w360 h110", "Word Separator")
-    yPos += 25
-
-    separatorOptions := [
-        ["SeparatorNone", "None", 0],
-        ["SeparatorUnderscore", "Underscore (_)", 1],
-        ["SeparatorHyphen", "Hyphen (-)", 2],
-        ["SeparatorNoSpace", "Remove Spaces", 3]
-    ]
-    for option in separatorOptions {
-        settingsGui.Add("Radio", "x40 y" . yPos . " v" . option[1] . " Checked" . (formatSeparator = option[3]),
-        option[2])
-        yPos += 25
-    }
+    ; Separator options - Converted to dropdown with AltSubmit
+    settingsGui.Add("Text", "x20 y" . yPos . " w150", "Word Separator:")  ; Increased label width from 120 to 150
+    separatorChoices := ["None", "Underscore (_)", "Hyphen (-)", "Remove Spaces"]
+    settingsGui.Add("DropDownList", "x180 y" . (yPos - 3) . " w250 AltSubmit vSeparatorOption Choose" . (
+        formatSeparator + 1),  ; Adjusted X position from 150 to 180
+    separatorChoices)
+    yPos += 30
 
     return yPos + 15
 }

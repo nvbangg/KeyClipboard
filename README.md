@@ -95,4 +95,5 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
 ### Changelog:
-- Thêm tính năng dùng Capslock + Q để cửa sổ đang hoạt động hiện tại sẽ Always on Top
+- Dùng menu thả lên để chọn mục từ settings
+- Sửa lỗi Mục About không hiển thị lên đầu khi nhấn từ Settings

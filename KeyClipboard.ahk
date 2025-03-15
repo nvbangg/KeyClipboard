@@ -38,12 +38,34 @@ A_TrayMenu.Add("About", showAbout)
 A_IconTip := "KeyClipboard - Right click to see more"
 
 showAbout(*) {
+    ; Find settings window if it exists
+    settingsHwnd := WinExist("KeyClipboard - Settings")
+
+    ; If settings window exists, temporarily remove its always-on-top status
+    wasAlwaysOnTop := false
+    if (settingsHwnd) {
+        wasAlwaysOnTop := WinGetExStyle(settingsHwnd) & 0x8  ; Check if AlwaysOnTop flag is set
+        WinSetAlwaysOnTop(0, "ahk_id " . settingsHwnd)  ; Remove AlwaysOnTop
+    }
+
+    ; Show the message box
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.5.2`n" .
-        "Date: 13/03/2025`n" .
+        "Version: 1.5.2.1`n" .
+        "Date: 15/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard", "YesNo")
+
+    ; Restore settings window's always-on-top status if it was previously set AND still exists
+    if (settingsHwnd && wasAlwaysOnTop && WinExist("ahk_id " . settingsHwnd)) {
+        try {
+            WinSetAlwaysOnTop(1, "ahk_id " . settingsHwnd)
+        } catch {
+            ; Silently ignore if window can't be modified
+        }
+    }
+
+    ; Handle the result
     if (result = "Yes")
         Run("https://github.com/nvbangg/KeyClipboard")
     else

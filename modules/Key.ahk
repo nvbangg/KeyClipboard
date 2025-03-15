@@ -4,9 +4,9 @@
 addKeySettings(settingsGui, y) {
     global mouseEnabled, numLockEnabled
 
-    settingsGui.Add("GroupBox", "x10 y" . y . " w380 h" . 80, "Keyboard Settings")
+    settingsGui.Add("GroupBox", "x10 y" . y . " w440 h" . 80, "Keyboard Settings")  ; Adjusted width to 440 to match
     settingsGui.Add("CheckBox", "x20 y" . (y + 20) . " vMouseClick Checked" . mouseEnabled, "Enable Mouse Clicks")
-    settingsGui.Add("Text", "x+10 yp w200", "(RAlt: left click, RCtrl: right click)")
+    settingsGui.Add("Text", "x+10 yp w280", "(RAlt: left click, RCtrl: right click)")
     settingsGui.Add("CheckBox", "x20 y" . (y + 40) . " vNumLock Checked" . numLockEnabled, "Always Enable Numlock")
 
     return y + 80 + 10

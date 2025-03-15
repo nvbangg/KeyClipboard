@@ -50,35 +50,10 @@ saveSettings(savedValues) {
     mouseEnabled := !!savedValues.MouseClick
     numLockEnabled := !!savedValues.NumLock
 
-    ; Line break options
-    if (savedValues.HasProp("LineBreakNone") && savedValues.LineBreakNone)
-        lineBreakOption := 0
-    else if (savedValues.HasProp("LineBreakRemoveExcessive") && savedValues.LineBreakRemoveExcessive)
-        lineBreakOption := 1
-    else if (savedValues.HasProp("LineBreakRemoveAll") && savedValues.LineBreakRemoveAll)
-        lineBreakOption := 2
-
-    ; Text case format options
-    if (savedValues.HasProp("CaseNone") && savedValues.CaseNone)
-        formatCaseOption := 0
-    else if (savedValues.HasProp("CaseUpper") && savedValues.CaseUpper)
-        formatCaseOption := 1
-    else if (savedValues.HasProp("CaseLower") && savedValues.CaseLower)
-        formatCaseOption := 2
-    else if (savedValues.HasProp("CaseTitleCase") && savedValues.CaseTitleCase)
-        formatCaseOption := 3
-    else if (savedValues.HasProp("CaseSentence") && savedValues.CaseSentence)
-        formatCaseOption := 4
-
-    ; Word separator options
-    if (savedValues.HasProp("SeparatorNone") && savedValues.SeparatorNone)
-        formatSeparator := 0
-    else if (savedValues.HasProp("SeparatorUnderscore") && savedValues.SeparatorUnderscore)
-        formatSeparator := 1
-    else if (savedValues.HasProp("SeparatorHyphen") && savedValues.SeparatorHyphen)
-        formatSeparator := 2
-    else if (savedValues.HasProp("SeparatorNoSpace") && savedValues.SeparatorNoSpace)
-        formatSeparator := 3
+    ; Get values directly from dropdown menus (1-based index)
+    lineBreakOption := savedValues.LineBreakOption - 1
+    formatCaseOption := savedValues.CaseOption - 1
+    formatSeparator := savedValues.SeparatorOption - 1
 
     IniWrite(mouseEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseEnabled")
     IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
@@ -114,7 +89,7 @@ showSettings(*) {
     settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
     settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About").OnEvent("Click", (*) => showAbout())
 
-    settingsGui.Show("w400 h" . (yPos + 50))
+    settingsGui.Show("w460 h" . (yPos + 50))  ; Adjusted width to 460 instead of 480
     settingsGui.OnEvent("Escape", CloseSettingsGui)
 
     SetTimer(CheckSettingsOutsideClick, 100)
@@ -132,6 +107,7 @@ showSettings(*) {
     ; Function to check for outside clicks
     CheckSettingsOutsideClick() {
         static isDestroying := false
+        static isDropdownActive := false
 
         ; Skip if we're already in the process of destroying or if GUI is gone
         if isDestroying || !IsObject(settingsGui)
@@ -141,6 +117,20 @@ showSettings(*) {
             if !settingsGui.HasProp("Hwnd") || !WinExist("ahk_id " . settingsGui.Hwnd) {
                 SetTimer(CheckSettingsOutsideClick, 0)
                 settingsGui := 0
+                return
+            }
+
+            ; Check if a dropdown/combobox is active by looking for the dropdown class
+            dropdownIsActive := WinExist("ahk_class ComboLBox") != 0
+
+            ; If dropdown just became active, remember this state
+            if (dropdownIsActive) {
+                isDropdownActive := true
+                return  ; Don't process outside clicks while dropdown is open
+            } else if (isDropdownActive) {
+                ; If dropdown was active but now isn't, give some time before checking clicks again
+                isDropdownActive := false
+                Sleep(200)  ; Small delay to avoid immediate processing after dropdown closes
                 return
             }
 
@@ -158,7 +148,8 @@ showSettings(*) {
                 settingsGui := 0
                 isDestroying := false
             }
-        } catch {
+        }
+        catch {
             ; If any error occurs, stop the timer
             SetTimer(CheckSettingsOutsideClick, 0)
             settingsGui := 0
@@ -185,7 +176,7 @@ CheckOutsideClick(shortcutsGui) {
 
     try {
         if !shortcutsGui.HasProp("Hwnd") || !WinExist("ahk_id " . shortcutsGui.Hwnd) {
-            SetTimer () => CheckOutsideClick(shortcutsGui), 0
+            SetTimer(() => CheckOutsideClick(shortcutsGui), 0)
             return
         }
 
@@ -197,12 +188,12 @@ CheckOutsideClick(shortcutsGui) {
 
         if mouseIsOutside && GetKeyState("LButton", "P") {
             isDestroying := true
-            SetTimer () => CheckOutsideClick(shortcutsGui), 0
+            SetTimer(() => CheckOutsideClick(shortcutsGui), 0)
             try shortcutsGui.Destroy()
             isDestroying := false
         }
     } catch {
         ; If any error occurs, stop the timer
-        SetTimer () => CheckOutsideClick(shortcutsGui), 0
+        SetTimer(() => CheckOutsideClick(shortcutsGui), 0)
     }
 }
