@@ -1,54 +1,45 @@
-;Clip_format
-
-; Format text according to current settings
+; Formats text according to user-defined settings
 formatText(text) {
     global formatCaseOption, formatSeparator, removeDiacriticsEnabled, lineBreakOption, removeExcessiveSpacesEnabled
     if (text = "")
         return ""
 
-    ; Apply independent formatting options first
+    ; Apply independent formatting options
     if (removeDiacriticsEnabled)
         text := removeAccents(text)
 
     if (removeExcessiveSpacesEnabled)
         text := removeExcessiveSpaces(text)
 
-    ; Apply line break formatting based on option
+    ; Apply line break formatting
     switch lineBreakOption {
-        case 1:  ; Remove excessive line breaks
-            text := removeExcessiveLineBreaks(text)
-        case 2:  ; Remove all line breaks
-            text := removeLineBreaks(text)
+        case 1: text := removeExcessiveLineBreaks(text)
+        case 2: text := removeLineBreaks(text)
     }
 
     ; Apply case formatting
     switch formatCaseOption {
-        case 1:  ; UPPERCASE
-            text := StrUpper(text)
-        case 2:  ; lowercase
-            text := StrLower(text)
-        case 3:  ; Title Case
-            text := TitleCase(text)
-        case 4:  ; Sentence case
-            text := SentenceCase(text)
+        case 1: text := StrUpper(text)
+        case 2: text := StrLower(text)
+        case 3: text := TitleCase(text)
+        case 4: text := SentenceCase(text)
     }
 
     ; Apply separator formatting
     switch formatSeparator {
-        case 1:  ; Under_score
-            text := StrReplace(text, " ", "_")
-        case 2:  ; Hyphen-dash
-            text := StrReplace(text, " ", "-")
-        case 3:  ; Nospacing
-            text := StrReplace(text, " ", "")
+        case 1: text := StrReplace(text, " ", "_")
+        case 2: text := StrReplace(text, " ", "-")
+        case 3: text := StrReplace(text, " ", "")
     }
 
     return text
 }
 
+; Removes redundant spaces and fixes punctuation spacing
 removeExcessiveSpaces(str) {
-    ; Trim leading spaces
     str := RegExReplace(str, "^\s+", "")
+
+    ; Collapse multiple spaces to single space
     loop {
         oldStr := str
         str := StrReplace(str, "  ", " ")
@@ -56,20 +47,21 @@ removeExcessiveSpaces(str) {
             break
     }
 
-    ; Remove spaces before punctuation
+    ; Handle punctuation spacing
     punctuation := [".", ",", ";", ":"]
+
+    ; Remove spaces before punctuation
     for punct in punctuation {
         str := StrReplace(str, " " . punct, punct)
     }
 
-    ; Ensure one space after punctuation (but not at the end of text)
+    ; Ensure one space after punctuation (except at end of text)
     for punct in punctuation {
         pos := 1
         while (pos := InStr(str, punct, false, pos)) {
             if (pos = 0)
                 break
 
-            ; Check if it's not the end of the string
             if (pos < StrLen(str)) {
                 nextChar := SubStr(str, pos + 1, 1)
                 if (nextChar != " " && !InStr(".,;:", nextChar)) {
@@ -83,9 +75,8 @@ removeExcessiveSpaces(str) {
     return str
 }
 
-; Function to remove excessive line breaks (no empty lines)
+; Removes empty lines but preserves paragraph breaks
 removeExcessiveLineBreaks(str) {
-    ; First normalize all line endings to `n` (for easier processing)
     str := StrReplace(str, "`r`n", "`n")
     str := StrReplace(str, "`r", "`n")
     lines := StrSplit(str, "`n")
@@ -102,8 +93,8 @@ removeExcessiveLineBreaks(str) {
     return StrReplace(output, "`n", "`r`n")
 }
 
+; Converts all line breaks to spaces
 removeLineBreaks(str) {
-    ; Replace various line break sequences with space
     str := StrReplace(str, "`r`n", " ")
     str := StrReplace(str, "`n", " ")
     str := StrReplace(str, "`r", " ")
@@ -119,7 +110,7 @@ removeLineBreaks(str) {
     return str
 }
 
-; Remove Vietnamese diacritical marks
+; Mapping of accented characters to their non-accented equivalents
 global accentMap := Map(
     "à", "a", "á", "a", "ả", "a", "ã", "a", "ạ", "a",
     "ă", "a", "ằ", "a", "ắ", "a", "ẳ", "a", "ẵ", "a", "ặ", "a",
@@ -147,7 +138,7 @@ global accentMap := Map(
     "Ỳ", "Y", "Ý", "Y", "Ỷ", "Y", "Ỹ", "Y", "Ỵ", "Y", "Đ", "D"
 )
 
-; Convert string to non-accented version
+; Removes diacritical marks from text
 removeAccents(str) {
     result := ""
     loop parse, str
@@ -155,7 +146,7 @@ removeAccents(str) {
     return result
 }
 
-; Convert text to Title Case format
+; Capitalizes first letter of each word
 TitleCase(str) {
     result := ""
     nextIsTitle := true
@@ -174,30 +165,22 @@ TitleCase(str) {
     return result
 }
 
-; Convert text to Sentence case format (capitalizes first letter of each sentence)
+; Capitalizes first letter of each sentence
 SentenceCase(str) {
-    ; First convert everything to lowercase
     str := StrLower(str)
-
-    ; Normalize line endings to `n` for easier processing
     str := StrReplace(str, "`r`n", "`n")
     str := StrReplace(str, "`r", "`n")
-
-    ; Split into paragraphs
     paragraphs := StrSplit(str, "`n")
 
-    ; Process each paragraph
     for i, paragraph in paragraphs {
-        ; Skip empty paragraphs
         if (paragraph = "")
             continue
 
-        ; Find first letter position (after any leading spaces)
+        ; Capitalize first letter in paragraph
         firstLetterPos := 0
         loop parse, paragraph {
             firstLetterPos++
             if RegExMatch(A_LoopField, "[a-z]") {
-                ; Found the first letter, capitalize it
                 paragraph := SubStr(paragraph, 1, firstLetterPos - 1) .
                 StrUpper(A_LoopField) .
                 SubStr(paragraph, firstLetterPos + 1)
@@ -205,7 +188,7 @@ SentenceCase(str) {
             }
         }
 
-        ; Find sentence endings within paragraph
+        ; Find and capitalize letters after sentence endings
         sentenceEndings := [".", "!", "?"]
 
         for _, ending in sentenceEndings {
@@ -214,18 +197,11 @@ SentenceCase(str) {
                 if (pos = 0 || pos = StrLen(paragraph))
                     break
 
-                ; Check the next character after the punctuation
                 nextPos := pos + 1
-
-                ; If the next character is a space, we need to capitalize the character after that
                 if (SubStr(paragraph, nextPos, 1) = " ") {
                     charPos := nextPos + 1
-
-                    ; If there's a character after the space
                     if (charPos <= StrLen(paragraph)) {
                         nextChar := SubStr(paragraph, charPos, 1)
-
-                        ; If it's a lowercase letter, capitalize it
                         if (RegExMatch(nextChar, "[a-z]")) {
                             paragraph := SubStr(paragraph, 1, charPos - 1) .
                             StrUpper(nextChar) .
@@ -233,16 +209,13 @@ SentenceCase(str) {
                         }
                     }
                 }
-
                 pos += 1
             }
         }
 
-        ; Update the paragraph in the array
         paragraphs[i] := paragraph
     }
 
-    ; Combine paragraphs back with proper line endings
     result := ""
     for i, paragraph in paragraphs {
         if (i > 1)

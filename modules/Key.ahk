@@ -1,18 +1,18 @@
-;Keyboard functions
+; === KEY MODULE ===
+; Functions for keyboard shortcuts and mouse emulation
 
-; Add keyboard settings to GUI
 addKeySettings(settingsGui, y) {
     global mouseEnabled, numLockEnabled
 
-    settingsGui.Add("GroupBox", "x10 y" . y . " w440 h" . 80, "Keyboard Settings")  ; Adjusted width to 440 to match
+    settingsGui.Add("GroupBox", "x10 y" . y . " w440 h80", "Keyboard Settings")
     settingsGui.Add("CheckBox", "x20 y" . (y + 20) . " vMouseClick Checked" . mouseEnabled, "Enable Mouse Clicks")
     settingsGui.Add("Text", "x+10 yp w280", "(RAlt: left click, RCtrl: right click)")
     settingsGui.Add("CheckBox", "x20 y" . (y + 40) . " vNumLock Checked" . numLockEnabled, "Always Enable Numlock")
 
-    return y + 80 + 10
+    return y + 90
 }
 
-; Translate page in Chrome
+; Chrome-specific translation shortcut
 translateInChrome() {
     BlockInput("On")
     MouseClick("Right")
@@ -25,14 +25,14 @@ translateInChrome() {
     BlockInput("Off")
 }
 
-; Update NumLock state based on settings
+; Toggle NumLock based on settings
 updateNumLock() {
     SetNumLockState(numLockEnabled ? "AlwaysOn" : "Default")
 }
 
-; Toggle always-on-top status for active window
+; Toggle always-on-top for active window and show status notification
 toggleAlwaysOnTop() {
-    WinSetAlwaysOnTop(-1, "A")  ; Use -1 instead of "Toggle" for toggling
-    isAlwaysOnTop := WinGetExStyle("A") & 0x8  ; Check if the window is now always on top
+    WinSetAlwaysOnTop(-1, "A")
+    isAlwaysOnTop := WinGetExStyle("A") & 0x8
     showNotification("Always On Top: " . (isAlwaysOnTop ? "Enabled" : "Disabled"))
 }

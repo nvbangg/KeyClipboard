@@ -1,37 +1,54 @@
-; KeyClipboard - An advanced clipboard manager and keyboard automation tool with flexible shortcuts and powerful features.
+; KeyClipboard - Advanced clipboard manager and keyboard automation tool
 #Requires AutoHotkey v2.0
 #SingleInstance Force
 #Include "modules\Common.ahk"
 #Include "modules\Clip.ahk"
 #Include "modules\Key.ahk"
 
-; Initialize settings
+; === INITIALIZATION ===
 initSettings()
 
-; Mouse click
+; === KeyBoard HOTKEYS ===
+
 #HotIf mouseEnabled
 RAlt:: Click()
 RCtrl:: Click("Right")
 #HotIf
 
-; Translate page in Chrome hotkey
 #HotIf WinActive("ahk_exe chrome.exe")
 CapsLock & t:: translateInChrome()
 #HotIf
 
-; Hotkeys
-CapsLock & q:: toggleAlwaysOnTop()
-CapsLock & b:: pasteBeforeLatest() ;Paste the item before the latest
-CapsLock & v:: pasteLatest()    ; Paste latest item from clipboard history
-CapsLock & f:: formatWhenPaste() ; Paste latest item with format
-CapsLock & a:: pasteSelected() ; Paste all clipboard items
-Capslock & d:: pasteSelected(, , true) ; Paste all items with format
-CapsLock & x:: clearClipboard()
-CapsLock & c:: showClipboard()
+CapsLock & w:: toggleAlwaysOnTop()
 CapsLock & s:: showSettings()
-CapsLock & r:: toggleBeforeLatestLatest() ; Toggle beforeLatest_Latest feature
 
-; UI
+; === CLIPBOARD MANAGEMENT ===
+CapsLock & Space:: showClipboard()
+CapsLock & c:: clearClipboard()
+CapsLock & f:: pasteSpecific()
+
+#HotIf GetKeyState("CapsLock", "P")
+v:: pasteFromHistory(0, false)
++v:: pasteFromHistory(0, true)
+b:: pasteFromHistory(1, false)
++b:: pasteFromHistory(1, true)
+a:: pasteSelected()
++a:: pasteSelected(, , true)
+#HotIf
+
+; CapsLock toggle handling
+*CapsLock::
+{
+    KeyWait "CapsLock"
+    if (A_PriorKey = "CapsLock") {
+        if GetKeyState("CapsLock", "T")
+            SetCapsLockState "AlwaysOff"
+        else
+            SetCapsLockState "AlwaysOn"
+    }
+}
+
+; === TRAY MENU & UI ===
 A_TrayMenu.Add("Settings (Caps+S)", showSettings)
 A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
@@ -44,19 +61,18 @@ showAbout(*) {
     ; If settings window exists, temporarily remove its always-on-top status
     wasAlwaysOnTop := false
     if (settingsHwnd) {
-        wasAlwaysOnTop := WinGetExStyle(settingsHwnd) & 0x8  ; Check if AlwaysOnTop flag is set
-        WinSetAlwaysOnTop(0, "ahk_id " . settingsHwnd)  ; Remove AlwaysOnTop
+        wasAlwaysOnTop := WinGetExStyle(settingsHwnd) & 0x8
+        WinSetAlwaysOnTop(0, "ahk_id " . settingsHwnd)
     }
 
-    ; Show the message box
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.5.2.1`n" .
-        "Date: 15/03/2025`n" .
+        "Version: 1.5.3`n" .
+        "Date: 16/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard", "YesNo")
 
-    ; Restore settings window's always-on-top status if it was previously set AND still exists
+    ; Restore settings window's always-on-top status
     if (settingsHwnd && wasAlwaysOnTop && WinExist("ahk_id " . settingsHwnd)) {
         try {
             WinSetAlwaysOnTop(1, "ahk_id " . settingsHwnd)
@@ -65,7 +81,6 @@ showAbout(*) {
         }
     }
 
-    ; Handle the result
     if (result = "Yes")
         Run("https://github.com/nvbangg/KeyClipboard")
     else
@@ -93,15 +108,16 @@ showShortcuts(*) {
     ; Add shortcuts text
     shortcutsGui.Add("Text", "w450",
         "CapsLock+S: Show Settings Popup`n" .
-        "CapsLock+Q: Toggle Always-on-Top for active window`n" .
-        "CapsLock+B: Paste the item before the latest`n" .
+        "CapsLock+W: Toggle Always-on-Top for active Window`n" .
         "CapsLock+V: Paste latest item from clipboard history`n" .
-        "CapsLock+F: Paste latest item with format`n" .
+        "CapsLock+Shift+V: Paste latest item with format`n" .
+        "CapsLock+B: Paste the item before the latest`n" .
+        "CapsLock+Shift+B: Paste the item before the latest with format`n" .
+        "CapsLock+F: Paste latest item with beforeLatest_Latest and Remove Diacritics`n" .
         "CapsLock+A: Paste all clipboard items`n" .
-        "CapsLock+D: Paste all items with format`n" .
-        "CapsLock+X: Clear clipboard history`n" .
-        "CapsLock+C: Show Clipboard History`n" .
-        "CapsLock+R: Toggle beforeLatest_Latest feature`n" .
+        "CapsLock+Shift+A: Paste all items with format`n" .
+        "CapsLock+C: Clear clipboard history`n" .
+        "CapsLock+Space: Show Clipboard History`n" .
         "   -Double click: Paste selected item`n" .
         "   -Enter: Paste selected items`n" .
         "   -Alt+Up/Down: Move selected item up/down in the list`n" .
@@ -110,11 +126,7 @@ showShortcuts(*) {
 
     shortcutsGui.Add("Button", "Default w80", "OK").OnEvent("Click", CloseShortcutsGui)
     shortcutsGui.Show()
-
-    ; Store a reference to the current GUI
-    myGui := shortcutsGui  ; Create a local copy for the closure
-
-    ; Set up timer with the GUI passed to the function
+    myGui := shortcutsGui
     SetTimer () => CheckOutsideClick(myGui), 100
 
     CloseShortcutsGui(*) {

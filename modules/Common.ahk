@@ -1,7 +1,6 @@
-; Common functions
 global settingsFilePath := A_ScriptDir . "\data\settings.ini"
 
-; Ensure the data file exists
+; Ensures required directories and files exist
 ensureFilesExist() {
     dataDir := A_ScriptDir . "\data"
     if !DirExist(dataDir) {
@@ -12,7 +11,7 @@ ensureFilesExist() {
     }
 }
 
-; Initialize settings
+; Loads settings from INI file into global variables
 initSettings() {
     global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
     global removeDiacriticsEnabled, lineBreakOption, removeExcessiveSpacesEnabled
@@ -21,7 +20,7 @@ initSettings() {
     mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
     numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
     beforeLatest_LatestEnabled := IniRead(settingsFilePath, "Settings", "beforeLatest_LatestEnabled", "1") = "1"
-    removeDiacriticsEnabled := IniRead(settingsFilePath, "Settings", "removeDiacriticsEnabled", "1") = "1"
+    removeDiacriticsEnabled := IniRead(settingsFilePath, "Settings", "removeDiacriticsEnabled", "0") = "1"
     removeExcessiveSpacesEnabled := IniRead(settingsFilePath, "Settings", "removeExcessiveSpacesEnabled", "0") = "1"
     lineBreakOption := Integer(IniRead(settingsFilePath, "Settings", "lineBreakOption", "1"))
     formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "0"))
@@ -30,15 +29,7 @@ initSettings() {
     updateNumLock()
 }
 
-; Toggle beforeLatest_Latest feature
-toggleBeforeLatestLatest() {
-    global beforeLatest_LatestEnabled, settingsFilePath
-    beforeLatest_LatestEnabled := !beforeLatest_LatestEnabled
-    IniWrite(beforeLatest_LatestEnabled ? "1" : "0", settingsFilePath, "Settings", "beforeLatest_LatestEnabled")
-    showNotification("beforeLatest_Latest: " . (beforeLatest_LatestEnabled ? "Enabled" : "Disabled"))
-}
-
-; Save all settings to INI file
+; Saves settings to INI file and updates global variables
 saveSettings(savedValues) {
     global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
     global removeDiacriticsEnabled, lineBreakOption, removeExcessiveSpacesEnabled
@@ -50,7 +41,6 @@ saveSettings(savedValues) {
     mouseEnabled := !!savedValues.MouseClick
     numLockEnabled := !!savedValues.NumLock
 
-    ; Get values directly from dropdown menus (1-based index)
     lineBreakOption := savedValues.LineBreakOption - 1
     formatCaseOption := savedValues.CaseOption - 1
     formatSeparator := savedValues.SeparatorOption - 1
@@ -67,7 +57,7 @@ saveSettings(savedValues) {
     updateNumLock()
 }
 
-; Display settings popup window
+; Creates and displays the settings GUI
 showSettings(*) {
     static settingsGui := 0
 
@@ -89,12 +79,11 @@ showSettings(*) {
     settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
     settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About").OnEvent("Click", (*) => showAbout())
 
-    settingsGui.Show("w460 h" . (yPos + 50))  ; Adjusted width to 460 instead of 480
+    settingsGui.Show("w460 h" . (yPos + 50))
     settingsGui.OnEvent("Escape", CloseSettingsGui)
 
     SetTimer(CheckSettingsOutsideClick, 100)
 
-    ; Function to safely close the settings GUI
     CloseSettingsGui(*) {
         SetTimer(CheckSettingsOutsideClick, 0)
         saveSettings(settingsGui.Submit())
@@ -104,12 +93,10 @@ showSettings(*) {
         }
     }
 
-    ; Function to check for outside clicks
     CheckSettingsOutsideClick() {
         static isDestroying := false
         static isDropdownActive := false
 
-        ; Skip if we're already in the process of destroying or if GUI is gone
         if isDestroying || !IsObject(settingsGui)
             return
 
@@ -120,17 +107,14 @@ showSettings(*) {
                 return
             }
 
-            ; Check if a dropdown/combobox is active by looking for the dropdown class
             dropdownIsActive := WinExist("ahk_class ComboLBox") != 0
 
-            ; If dropdown just became active, remember this state
             if (dropdownIsActive) {
                 isDropdownActive := true
-                return  ; Don't process outside clicks while dropdown is open
+                return
             } else if (isDropdownActive) {
-                ; If dropdown was active but now isn't, give some time before checking clicks again
                 isDropdownActive := false
-                Sleep(200)  ; Small delay to avoid immediate processing after dropdown closes
+                Sleep(200)
                 return
             }
 
@@ -150,14 +134,13 @@ showSettings(*) {
             }
         }
         catch {
-            ; If any error occurs, stop the timer
             SetTimer(CheckSettingsOutsideClick, 0)
             settingsGui := 0
         }
     }
 }
 
-; Display a simple notification that auto-closes
+; Shows a temporary notification popup
 showNotification(message, timeout := 1200) {
     notify := Gui("+AlwaysOnTop -Caption +ToolWindow")
     notify.SetFont("s12 bold")
@@ -166,11 +149,10 @@ showNotification(message, timeout := 1200) {
     SetTimer(() => notify.Destroy(), -timeout)
 }
 
-; Function to check for outside clicks
+; Checks for clicks outside a GUI and closes it if detected
 CheckOutsideClick(shortcutsGui) {
     static isDestroying := false
 
-    ; Skip if we're already in the process of destroying or if GUI is gone
     if isDestroying || !IsObject(shortcutsGui)
         return
 
@@ -193,7 +175,6 @@ CheckOutsideClick(shortcutsGui) {
             isDestroying := false
         }
     } catch {
-        ; If any error occurs, stop the timer
         SetTimer(() => CheckOutsideClick(shortcutsGui), 0)
     }
 }
