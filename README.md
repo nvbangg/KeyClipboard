@@ -12,9 +12,7 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - **Quick Translation**: Translate Chrome pages instantly with a shortcut.
 
 
-## Shortcuts
-
-### Core Shortcuts
+## Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup.  
 - `CapsLock + W`: Toggle Always-on-Top for active **Window**.  
 - `CapsLock + T`: **Translate** Chrome page.  
@@ -27,11 +25,15 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - `Alt + ↑/↓`: Move selected item up/down.  
 - `CapsLock + F`: Specific **Format** (Paste combined previous and current items).
 
-### Mouse Mode
-- `Right Alt`: Left mouse click. 
-- `Right Ctrl`: Right mouse click
+## Settings Options
 
-## Formatting Options
+### Keyboard Options
+- Mouse Clicks Mode
+  - `Right Alt`: Left mouse click. 
+  - `Right Ctrl`: Right mouse click
+- Always Enable NumLock
+
+### Format Options
 
 - **Remove accents**
 - **Normalize Punctuation Space**
