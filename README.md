@@ -5,10 +5,9 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 ## Features
 
 ### Clipboard Management
-
-- **Always on Top for active window**
-- **Smart Clipboard History**: Access and manipulate your clipboard history with ease
-- **Formatted Pasting**: Apply various text formatting options when pasting
+- **Smart Clipboard History**: Access and manipulate your clipboard history easily
+- **Always on Top**: Quickly toggle window pinning for any application
+- **Formatted Pasting**: Apply various text formatting options on paste
 - **Multi-item Operations**: Paste multiple clipboard items at once with custom formatting
 - **Content Editing**: Edit clipboard items directly within the history viewer
 - **Item Organization**: Rearrange clipboard items with keyboard shortcuts
@@ -21,23 +20,23 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 ## Keyboard Shortcuts
 
 ### Core Shortcuts
-- `CapsLock+Q`: Toggle Always-on-Top for active window
-- `CapsLock+C`: Open clipboard history viewer
+- `CapsLock+W`: Toggle Always-on-Top for active window
+- `CapsLock+Space`: Open clipboard history viewer
 - `CapsLock+V`: Paste latest clipboard item
+- `CapsLock+Shift+V`: Paste latest item with formatting
 - `CapsLock+B`: Paste the item before the latest
+- `CapsLock+Shift+B`: Paste the item before the latest with formatting
 - `CapsLock+A`: Paste all clipboard items consecutively
-- `CapsLock+F`: Paste with formatting options
-- `CapsLock+D`: Paste all items with formatting
-- `CapsLock+X`: Clear clipboard history
+- `CapsLock+Shift+A`: Paste all items with formatting
+- `CapsLock+F`: Paste with beforeLatest_Latest formatting
+- `CapsLock+C`: Clear clipboard history
 - `CapsLock+S`: Open settings window
-- `CapsLock+R`: Toggle beforeLatest_Latest feature
-- `CapsLock+T`: Translate current page in Chrome
+- `CapsLock+T`: Translate current page in Chrome (Chrome only)
 
 ### Clipboard History Viewer Shortcuts
 - `Double-click`: Paste selected item
 - `Enter`: Paste selected items
-- `Alt+↑`: Move selected item up in the list
-- `Alt+↓`: Move selected item down in the list
+- `Alt+↑/↓`: Move selected item up/down in the list
 - `Ctrl+Click`: Select multiple individual items
 - `Shift+Click`: Select a range of items
 - `Right-click`: Open context menu with more options
@@ -48,13 +47,16 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 
 ## Formatting Options
 
-- Paste with beforeLatest_Latest (toggle with CapsLock+R)
-- Remove diacritics
-- Fix spacing around punctuation
+- **Text Combination**
+  - BeforeLatest_Latest formatting (combine previous and current clipboard items)
+
+- **Character Handling**
+  - Remove diacritics (accents)
+  - Fix spacing around punctuation
 
 - **Line Break Handling**
-  - None (preserve line breaks)
-  - Remove excessive line breaks (no empty lines)
+  - Preserve line breaks
+  - Remove excessive line breaks
   - Remove all line breaks
 
 - **Text Case Conversion**
@@ -94,6 +96,19 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
-### Changelog:
+### Changelog: - sửa lỗi line break handing ko đúng
 - Dùng menu thả lên để chọn mục từ settings
 - Sửa lỗi Mục About không hiển thị lên đầu khi nhấn từ Settings
+- Tối ưu lại code
+- Sửa đổi các phím tắt:
+- `CapsLock+W`: Toggle Always-on-Top for active window
+- `CapsLock+Space`: Open clipboard history viewer
+- `CapsLock+V`: Paste latest clipboard item
+- `CapsLock+Shift+V`: Paste latest item with formatting
+- `CapsLock+B`: Paste the item before the latest
+- `CapsLock+Shift+B`: Paste the item before the latest with formatting
+- `CapsLock+A`: Paste all clipboard items consecutively
+- `CapsLock+Shift+A`: Paste all items with formatting
+- `CapsLock+F`: Paste with beforeLatest_Latest formatting
+- `CapsLock+C`: Clear clipboard history
+- `CapsLock+S`: Open settings window
