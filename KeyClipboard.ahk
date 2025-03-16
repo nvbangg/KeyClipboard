@@ -106,23 +106,21 @@ showShortcuts(*) {
     shortcutsGui.OnEvent("Escape", CloseShortcutsGui)
 
     ; Add shortcuts text
-    shortcutsGui.Add("Text", "w450",
+    shortcutsGui.Add("Text", "w375",
         "CapsLock+S: Show Settings Popup`n" .
         "CapsLock+W: Toggle Always-on-Top for active Window`n" .
+        "CapsLock+T: Translate page in Chrome`n`n" .
+        ;
         "CapsLock+V: Paste latest item from clipboard history`n" .
-        "CapsLock+Shift+V: Paste latest item with format`n" .
         "CapsLock+B: Paste the item before the latest`n" .
-        "CapsLock+Shift+B: Paste the item before the latest with format`n" .
-        "CapsLock+F: Paste combining previous and current items`n" .
         "CapsLock+A: Paste all clipboard items`n" .
-        "CapsLock+Shift+A: Paste all items with format`n" .
-        "CapsLock+C: Clear clipboard history`n" .
+        "CapsLock+Shift+V/ B/ A: Paste item with format`n`n" .
+        ;
         "CapsLock+Space: Show Clipboard History`n" .
-        "   -Double click: Paste selected item`n" .
-        "   -Enter: Paste selected items`n" .
-        "   -Alt+Up/Down: Move selected item up/down in the list`n" .
-        "MouseMode: Right Alt to Click/ Right Ctrl to Right Click`n" .
-        "CapsLock+T: Translate page in Chrome")
+        "CapsLock+C: Clear clipboard history`n" .
+        "Alt+Up/Down: Move selected item up/down in the list`n" .
+        "CapsLock+F: Paste combining previous and current items`n"
+    )
 
     shortcutsGui.Add("Button", "Default w80", "OK").OnEvent("Click", CloseShortcutsGui)
     shortcutsGui.Show()

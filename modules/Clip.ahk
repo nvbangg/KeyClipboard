@@ -96,7 +96,13 @@ showClipboard() {
     HotIf()
 
     updateLV(LV)
-    updateContent(LV, contentViewer)
+
+    ; Select and focus the last item (most recent)
+    lastRow := LV.GetCount()
+    if (lastRow > 0) {
+        LV.Modify(lastRow, "Select Focus Vis")
+        updateContent(LV, contentViewer)
+    }
 
     ; Add action buttons
     buttonOptions := [
