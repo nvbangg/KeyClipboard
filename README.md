@@ -11,6 +11,7 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - **Organize Items**: Adjust the position of items in the clipboard. 
 - **Quick Translation**: Translate Chrome pages instantly with a shortcut.
 
+![image](https://github.com/user-attachments/assets/3942361e-097a-422c-a8eb-bd4ca9858678)
 
 ## Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup.  
@@ -26,6 +27,7 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - `CapsLock + F`: Specific **Format** (Paste combined previous and current items).
 
 ## Settings Options
+![image](https://github.com/user-attachments/assets/99076f93-7f65-402c-8519-9ffae92476b6)
 
 ### Keyboard Options
 - Mouse Clicks Mode
