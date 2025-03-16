@@ -73,6 +73,7 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 ### Changelog: 
 - Xoá lựa chọn beforeLatest_Latest trong tuỳ chỉnh định dạng (dùng Capslock+F để thay thế)
 - Sửa để luôn removeAccents khi nhấn Capslock+F
-- Sửa lỗi chức năng normSpace không xoá khoảng trắng đầu dòng 2 trở đi
-- Sửa lại giao diện cho dễ dùng
 - Mở clipboard luôn hiển thị từ mục cuối cùng
+- Sửa lại giao diện cho dễ dùng
+- Sửa lỗi chức năng normSpace không xoá khoảng trắng đầu dòng 2 trở đi
+- Sửa lỗi xảy ra khi mở nhiều cửa sổ settings
