@@ -6,52 +6,42 @@ global clipHistory := []             ; Stores clipboard history items
 global isFormatting := false         ; Flag for formatting in progress
 global originalClip := ""            ; Stores original clipboard content
 global clipHistoryGuiInstance := 0   ; Reference to clipboard history GUI
-global removeDiacriticsEnabled := false
-global normSpaceEnabled := false
-global lineBreakOption := 0
 
 #Include "Clip_utils.ahk"
 #Include "Clip_format.ahk"
 
 ; Add clipboard settings UI to settings panel
 addClipSettings(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w440 h350", "Paste Format (Caps+F)")
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h175", "Format Options")
     yPos += 25
 
-    settingsGui.Add("GroupBox", "x20 y" . yPos . " w420 h110", "Format Options")
+    settingsGui.Add("CheckBox", "x20 y" . yPos . " vnoAccentsEnabled Checked" . noAccentsEnabled,
+        "Remove Accents")
     yPos += 25
 
-    settingsGui.Add("CheckBox", "x40 y" . yPos . " vbeforeLatest_LatestEnabled Checked" . beforeLatest_LatestEnabled,
-        "Enable beforeLatest_Latest")
-    yPos += 25
-
-    settingsGui.Add("CheckBox", "x40 y" . yPos . " vremoveDiacriticsEnabled Checked" . removeDiacriticsEnabled,
-        "Remove Diacritics")
-    yPos += 25
-
-    settingsGui.Add("CheckBox", "x40 y" . yPos . " vremoveExcessiveSpacesEnabled Checked" .
+    settingsGui.Add("CheckBox", "x20 y" . yPos . " vnormSpaceEnabled Checked" .
         normSpaceEnabled,
-        "Fix Spacing Around Punctuation")
+        "Normalize Spaces")
     yPos += 35
 
     ; Text formatting options
-    settingsGui.Add("Text", "x20 y" . yPos . " w150", "Line Break Handling:")
-    lineBreakChoices := ["None", "Remove Excessive Line Breaks", "Remove All Line Breaks"]
-    settingsGui.Add("DropDownList", "x180 y" . (yPos - 3) . " w250 AltSubmit vLineBreakOption Choose" . (
+    settingsGui.Add("Text", "x20 y" . yPos . " w150", "Line Break:")
+    lineBreakChoices := ["None", "Trim Lines", "Remove All Line Breaks"]
+    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vLineBreakOption Choose" . (
         lineBreakOption + 1),
     lineBreakChoices)
     yPos += 30
 
     settingsGui.Add("Text", "x20 y" . yPos . " w150", "Text Case:")
     caseChoices := ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"]
-    settingsGui.Add("DropDownList", "x180 y" . (yPos - 3) . " w250 AltSubmit vCaseOption Choose" . (formatCaseOption +
+    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vCaseOption Choose" . (formatCaseOption +
         1),
     caseChoices)
     yPos += 30
 
     settingsGui.Add("Text", "x20 y" . yPos . " w150", "Word Separator:")
     separatorChoices := ["None", "Underscore (_)", "Hyphen (-)", "Remove Spaces"]
-    settingsGui.Add("DropDownList", "x180 y" . (yPos - 3) . " w250 AltSubmit vSeparatorOption Choose" . (
+    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vSeparatorOption Choose" . (
         formatSeparator + 1),
     separatorChoices)
     yPos += 30
@@ -137,8 +127,8 @@ showContextMenu(LV, clipHistoryGui, Item, X, Y) {
 }
 
 ; Paste item from history with optional formatting
-pasteFromHistory(offset := 0, formatTextEnable := false) {
-    global clipHistory, beforeLatest_LatestEnabled
+pastePrev(offset := 0, formatTextEnable := false) {
+    global clipHistory
 
     if (clipHistory.Length < offset + 1) {
         showNotification("Not enough items in clipboard history")
@@ -146,32 +136,22 @@ pasteFromHistory(offset := 0, formatTextEnable := false) {
     }
 
     content := clipHistory[clipHistory.Length - offset]
-
-    if (formatTextEnable && beforeLatest_LatestEnabled) {
-        if (clipHistory.Length > offset + 1) {
-            prevContent := clipHistory[clipHistory.Length - offset - 1]
-            content := prevContent . "_" . content
-        }
-    }
-
     paste(content, formatTextEnable)
 }
 
 ; Paste with specialized formatting options
 pasteSpecific() {
-    global clipHistory, removeDiacriticsEnabled
+    global clipHistory
 
     if (clipHistory.Length < 2) {
         showNotification("Not enough items in clipboard history")
         return
     }
-
     latest := clipHistory[clipHistory.Length]
     beforeLatest := clipHistory[clipHistory.Length - 1]
     content := beforeLatest . "_" . latest
 
-    if (removeDiacriticsEnabled)
-        content := removeAccents(content)
+    content := removeAccents(content)
 
     paste(content, false)
 }

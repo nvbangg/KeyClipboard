@@ -144,8 +144,8 @@ paste(text, formatTextEnable := false) {
 }
 
 ; Process clipboard items for pasting
-processClipItems(LV := 0, formatTextEnable := false) {
-    global clipHistory, beforeLatest_LatestEnabled
+prepareClipItems(LV := 0, formatTextEnable := false) {
+    global clipHistory
     if (clipHistory.Length = 0) {
         showNotification("No items in clipboard history")
         return []
@@ -165,22 +165,12 @@ processClipItems(LV := 0, formatTextEnable := false) {
     else
         contentItems := clipHistory.Clone()
 
-    if (beforeLatest_LatestEnabled && formatTextEnable) {
-        index := contentItems.Length
-        while (index > 1) {
-            contentItems[index] := contentItems[index - 1] . "_" . contentItems[index]
-            index--
-        }
-        if (firstItemIndex > 1) {
-            contentItems[1] := clipHistory[firstItemIndex - 1] . "_" . contentItems[1]
-        }
-    }
     return contentItems
 }
 
 ; Paste selected clipboard items
 pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
-    contentItems := processClipItems(LV, formatTextEnable)
+    contentItems := prepareClipItems(LV, formatTextEnable)
     if (!IsObject(contentItems) || contentItems.Length < 1)
         return
     mergedItems := ""
@@ -196,7 +186,7 @@ pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
 ; Merge selected items into clipboard history
 saveToClipboard(LV := 0, formatTextEnable := false) {
     global isFormatting, clipHistory
-    contentItems := processClipItems(LV, formatTextEnable)
+    contentItems := prepareClipItems(LV, formatTextEnable)
     for _, item in contentItems {
         if (formatTextEnable)
             item := formatText(item)

@@ -5,16 +5,15 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 ## Features
 
 ### Clipboard Management
-- **Smart Clipboard History**: Access and manipulate your clipboard history easily
-- **Always on Top**: Quickly toggle window pinning for any application
-- **Formatted Pasting**: Apply various text formatting options on paste
+- **Always on Top**: Quickly toggle window pinning for any application with a single shortcut
+- **Formatted Pasting**: Apply various text formatting options when pasting content
 - **Multi-item Operations**: Paste multiple clipboard items at once with custom formatting
 - **Content Editing**: Edit clipboard items directly within the history viewer
-- **Item Organization**: Rearrange clipboard items with keyboard shortcuts
+- **Item Organization**: Rearrange clipboard history items 
 
 ### Keyboard Enhancements
 - **Quick Translation**: Instantly translate web pages in Chrome
-- **Mouse Emulation**: Control mouse clicks with keyboard shortcuts
+- **Mouse Emulation**: Control mouse clicks using keyboard shortcuts (RAlt/RCtrl)
 - **NumLock Control**: Option to keep NumLock always enabled
 
 ## Keyboard Shortcuts
@@ -23,12 +22,12 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - `CapsLock+W`: Toggle Always-on-Top for active window
 - `CapsLock+Space`: Open clipboard history viewer
 - `CapsLock+V`: Paste latest clipboard item
-- `CapsLock+Shift+V`: Paste latest item with formatting
+- `CapsLock+Shift+V`: Paste latest item with text formatting
 - `CapsLock+B`: Paste the item before the latest
-- `CapsLock+Shift+B`: Paste the item before the latest with formatting
-- `CapsLock+A`: Paste all clipboard items consecutively
-- `CapsLock+Shift+A`: Paste all items with formatting
-- `CapsLock+F`: Paste with beforeLatest_Latest formatting
+- `CapsLock+Shift+B`: Paste the item before the latest with text formatting
+- `CapsLock+F`: Paste combining previous and current items (with accents removed)
+- `CapsLock+A`: Paste all clipboard items
+- `CapsLock+Shift+A`: Paste all items with text formatting
 - `CapsLock+C`: Clear clipboard history
 - `CapsLock+S`: Open settings window
 - `CapsLock+T`: Translate current page in Chrome (Chrome only)
@@ -47,28 +46,27 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 
 ## Formatting Options
 
-- **Text Combination**
-  - BeforeLatest_Latest formatting (combine previous and current clipboard items)
-
 - **Character Handling**
-  - Remove diacritics (accents)
-  - Fix spacing around punctuation
+  - Remove accents (diacritical marks)
+  - Normalize spaces around punctuation
 
 - **Line Break Handling**
-  - Preserve line breaks
-  - Remove excessive line breaks
-  - Remove all line breaks
+  - None: Preserve line breaks
+  - Trim lines: Remove excessive line breaks
+  - Remove all: Convert all line breaks to spaces
 
 - **Text Case Conversion**
-  - UPPERCASE
-  - lowercase
-  - Title Case
-  - Sentence case
-  
-- **Word Separators**
-  - Underscore (_)
-  - Hyphen (-)
-  - No spaces
+  - None: Keep original case
+  - UPPERCASE: Convert all text to uppercase
+  - lowercase: Convert all text to lowercase
+  - Title Case: Capitalize First Letter Of Each Word
+  - Sentence case: Capitalize first letter of each sentence
+
+- **Word Se parators**
+  - None: Keep spaces as-is
+  - Underscore (_): Replace spaces with underscores
+  - Hyphen (-): Replace spaces with hyphens
+  - No spaces: Remove all spaces
 
 ## Installation
 
@@ -89,6 +87,8 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 4. The application will now start automatically when you boot your computer
 
 ## Tính năng dự kiến
+
+- Sửa luôn hiển thị mục cuối cùng từ cliboard
 - Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
 - Thêm tuỳ chọn xoá định dạng (in đậm, ...)
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
@@ -96,19 +96,8 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
-### Changelog: - sửa lỗi line break handing ko đúng
-- Dùng menu thả lên để chọn mục từ settings
-- Sửa lỗi Mục About không hiển thị lên đầu khi nhấn từ Settings
-- Tối ưu lại code
-- Sửa đổi các phím tắt:
-- `CapsLock+W`: Toggle Always-on-Top for active window
-- `CapsLock+Space`: Open clipboard history viewer
-- `CapsLock+V`: Paste latest clipboard item
-- `CapsLock+Shift+V`: Paste latest item with formatting
-- `CapsLock+B`: Paste the item before the latest
-- `CapsLock+Shift+B`: Paste the item before the latest with formatting
-- `CapsLock+A`: Paste all clipboard items consecutively
-- `CapsLock+Shift+A`: Paste all items with formatting
-- `CapsLock+F`: Paste with beforeLatest_Latest formatting
-- `CapsLock+C`: Clear clipboard history
-- `CapsLock+S`: Open settings window
+### Changelog: 
+- Xoá lựa chọn beforeLatest_Latest trong tuỳ chỉnh định dạng (dùng Capslock+F để thay thế)
+- Sửa để luôn removeAccents khi nhấn Capslock+F
+- Sửa lỗi chức năng normSpace không xoá khoảng trắng đầu dòng 2 trở đi
+- Sửa lại giao diện cho dễ dùng

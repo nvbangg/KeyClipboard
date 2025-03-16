@@ -28,10 +28,10 @@ CapsLock & c:: clearClipboard()
 CapsLock & f:: pasteSpecific()
 
 #HotIf GetKeyState("CapsLock", "P")
-v:: pasteFromHistory(0, false)
-+v:: pasteFromHistory(0, true)
-b:: pasteFromHistory(1, false)
-+b:: pasteFromHistory(1, true)
+v:: pastePrev(0, false)
++v:: pastePrev(0, true)
+b:: pastePrev(1, false)
++b:: pastePrev(1, true)
 a:: pasteSelected()
 +a:: pasteSelected(, , true)
 #HotIf
@@ -66,7 +66,7 @@ showAbout(*) {
     }
 
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.5.3`n" .
+        "Version: 1.5.3.1`n" .
         "Date: 16/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
@@ -113,7 +113,7 @@ showShortcuts(*) {
         "CapsLock+Shift+V: Paste latest item with format`n" .
         "CapsLock+B: Paste the item before the latest`n" .
         "CapsLock+Shift+B: Paste the item before the latest with format`n" .
-        "CapsLock+F: Paste latest item with beforeLatest_Latest and Remove Diacritics`n" .
+        "CapsLock+F: Paste combining previous and current items`n" .
         "CapsLock+A: Paste all clipboard items`n" .
         "CapsLock+Shift+A: Paste all items with format`n" .
         "CapsLock+C: Clear clipboard history`n" .

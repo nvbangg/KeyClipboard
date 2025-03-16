@@ -1,11 +1,12 @@
 ; Formats text according to user-defined settings
 formatText(text) {
-    global formatCaseOption, formatSeparator, removeDiacriticsEnabled, lineBreakOption, normSpaceEnabled
+    global noAccentsEnabled, normSpaceEnabled
+    global lineBreakOption, formatCaseOption, formatSeparator
     if (text = "")
         return ""
 
     ; Apply independent formatting options
-    if (removeDiacriticsEnabled)
+    if (noAccentsEnabled)
         text := removeAccents(text)
 
     if (normSpaceEnabled)
@@ -13,7 +14,7 @@ formatText(text) {
 
     ; Apply line break formatting
     switch lineBreakOption {
-        case 1: text := removeExcessiveLineBreaks(text)
+        case 1: text := trimLines(text)
         case 2: text := removeLineBreaks(text)
     }
 
@@ -37,46 +38,66 @@ formatText(text) {
 
 ; Removes redundant spaces and fixes punctuation spacing
 normSpace(str) {
-    str := RegExReplace(str, "^\s+", "")
+    ; Split by line breaks to process each line
+    str := StrReplace(str, "`r`n", "`n")
+    str := StrReplace(str, "`r", "`n")
+    lines := StrSplit(str, "`n")
 
-    ; Collapse multiple spaces to single space
-    loop {
-        oldStr := str
-        str := StrReplace(str, "  ", " ")
-        if (str = oldStr)
-            break
-    }
+    ; Process each line individually
+    for i, line in lines {
+        ; Remove leading spaces from each line
+        line := RegExReplace(line, "^\s+", "")
 
-    ; Handle punctuation spacing
-    punctuation := [".", ",", ";", ":"]
-
-    ; Remove spaces before punctuation
-    for punct in punctuation {
-        str := StrReplace(str, " " . punct, punct)
-    }
-
-    ; Ensure one space after punctuation (except at end of text)
-    for punct in punctuation {
-        pos := 1
-        while (pos := InStr(str, punct, false, pos)) {
-            if (pos = 0)
+        ; Collapse multiple spaces to single space
+        loop {
+            oldLine := line
+            line := StrReplace(line, "  ", " ")
+            if (line = oldLine)
                 break
-
-            if (pos < StrLen(str)) {
-                nextChar := SubStr(str, pos + 1, 1)
-                if (nextChar != " " && !InStr(".,;:", nextChar)) {
-                    str := SubStr(str, 1, pos) . " " . SubStr(str, pos + 1)
-                }
-            }
-            pos += 1
         }
+
+        ; Apply punctuation spacing rules
+        punctuation := [".", ",", ";", ":"]
+
+        ; Remove spaces before punctuation
+        for punct in punctuation {
+            line := StrReplace(line, " " . punct, punct)
+        }
+
+        ; Ensure one space after punctuation (except at end of text)
+        for punct in punctuation {
+            pos := 1
+            while (pos := InStr(line, punct, false, pos)) {
+                if (pos = 0)
+                    break
+
+                if (pos < StrLen(line)) {
+                    nextChar := SubStr(line, pos + 1, 1)
+                    if (nextChar != " " && !InStr(".,;:", nextChar)) {
+                        line := SubStr(line, 1, pos) . " " . SubStr(line, pos + 1)
+                    }
+                }
+                pos += 1
+            }
+        }
+
+        ; Update the processed line
+        lines[i] := line
     }
 
-    return str
+    ; Rejoin lines
+    result := ""
+    for i, line in lines {
+        if (i > 1)
+            result .= "`r`n"
+        result .= line
+    }
+
+    return result
 }
 
 ; Removes empty lines but preserves paragraph breaks
-removeExcessiveLineBreaks(str) {
+trimLines(str) {
     str := StrReplace(str, "`r`n", "`n")
     str := StrReplace(str, "`r", "`n")
     lines := StrSplit(str, "`n")

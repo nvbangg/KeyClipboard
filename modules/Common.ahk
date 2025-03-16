@@ -13,14 +13,13 @@ ensureFilesExist() {
 
 ; Loads settings from INI file into global variables
 initSettings() {
-    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
-    global removeDiacriticsEnabled, lineBreakOption, normSpaceEnabled
+    global mouseEnabled, numLockEnabled, noAccentsEnabled, normSpaceEnabled
+    global lineBreakOption, formatCaseOption, formatSeparator
     ensureFilesExist()
 
     mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
     numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
-    beforeLatest_LatestEnabled := IniRead(settingsFilePath, "Settings", "beforeLatest_LatestEnabled", "1") = "1"
-    removeDiacriticsEnabled := IniRead(settingsFilePath, "Settings", "removeDiacriticsEnabled", "0") = "1"
+    noAccentsEnabled := IniRead(settingsFilePath, "Settings", "noAccentsEnabled", "0") = "1"
     normSpaceEnabled := IniRead(settingsFilePath, "Settings", "normSpaceEnabled", "0") = "1"
     lineBreakOption := Integer(IniRead(settingsFilePath, "Settings", "lineBreakOption", "1"))
     formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "0"))
@@ -31,15 +30,14 @@ initSettings() {
 
 ; Saves settings to INI file and updates global variables
 saveSettings(savedValues) {
-    global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
-    global removeDiacriticsEnabled, lineBreakOption, normSpaceEnabled
+    global mouseEnabled, numLockEnabled, noAccentsEnabled, normSpaceEnabled
+    global lineBreakOption, formatCaseOption, formatSeparator
     ensureFilesExist()
 
-    beforeLatest_LatestEnabled := !!savedValues.beforeLatest_LatestEnabled
-    removeDiacriticsEnabled := !!savedValues.removeDiacriticsEnabled
-    normSpaceEnabled := !!savedValues.removeExcessiveSpacesEnabled
-    mouseEnabled := !!savedValues.MouseClick
-    numLockEnabled := !!savedValues.NumLock
+    mouseEnabled := !!savedValues.mouseEnabled
+    numLockEnabled := !!savedValues.numLockEnabled
+    noAccentsEnabled := !!savedValues.noAccentsEnabled
+    normSpaceEnabled := !!savedValues.normSpaceEnabled
 
     lineBreakOption := savedValues.LineBreakOption - 1
     formatCaseOption := savedValues.CaseOption - 1
@@ -47,8 +45,7 @@ saveSettings(savedValues) {
 
     IniWrite(mouseEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseEnabled")
     IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
-    IniWrite(beforeLatest_LatestEnabled ? "1" : "0", settingsFilePath, "Settings", "beforeLatest_LatestEnabled")
-    IniWrite(removeDiacriticsEnabled ? "1" : "0", settingsFilePath, "Settings", "removeDiacriticsEnabled")
+    IniWrite(noAccentsEnabled ? "1" : "0", settingsFilePath, "Settings", "noAccentsEnabled")
     IniWrite(normSpaceEnabled ? "1" : "0", settingsFilePath, "Settings", "normSpaceEnabled")
     IniWrite(lineBreakOption, settingsFilePath, "Settings", "lineBreakOption")
     IniWrite(formatCaseOption, settingsFilePath, "Settings", "formatCaseOption")
@@ -79,7 +76,7 @@ showSettings(*) {
     settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
     settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About").OnEvent("Click", (*) => showAbout())
 
-    settingsGui.Show("w460 h" . (yPos + 50))
+    settingsGui.Show("w375 h" . (yPos + 50))
     settingsGui.OnEvent("Escape", CloseSettingsGui)
 
     SetTimer(CheckSettingsOutsideClick, 100)
