@@ -57,35 +57,66 @@ saveSettings(savedValues) {
 ; Creates and displays the settings GUI
 showSettings(*) {
     static settingsGui := 0
+    static isCreating := false
 
+    if (isCreating)
+        return
+
+    isCreating := true
+
+    ; Clean up any existing GUI
     try {
-        if IsObject(settingsGui) && settingsGui.HasProp("Hwnd")
-            if WinExist("ahk_id " . settingsGui.Hwnd)
+        if IsObject(settingsGui) && settingsGui.HasProp("Hwnd") {
+            if WinExist("ahk_id " . settingsGui.Hwnd) {
+                SetTimer(CheckSettingsOutsideClick, 0)
                 settingsGui.Destroy()
+            }
+            settingsGui := 0
+        }
     } catch {
-        ; If any error occurs, just create a new GUI
+        settingsGui := 0
     }
 
-    settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
-    settingsGui.SetFont("s10")
-    yPos := 10
-    yPos := addKeySettings(settingsGui, yPos)
-    yPos := addClipSettings(settingsGui, yPos)
+    ; Create new GUI
+    try {
+        settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
+        settingsGui.SetFont("s10")
 
-    settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save").OnEvent("Click", CloseSettingsGui)
-    settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
-    settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About").OnEvent("Click", (*) => showAbout())
+        ; Initialize position tracking
+        yPos := 10
 
-    settingsGui.Show("w375 h" . (yPos + 50))
-    settingsGui.OnEvent("Escape", CloseSettingsGui)
+        ; Add settings sections
+        yPos := addKeySettings(settingsGui, yPos)
+        yPos := addClipSettings(settingsGui, yPos)
 
-    SetTimer(CheckSettingsOutsideClick, 100)
+        ; Add buttons
+        settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save").OnEvent("Click", CloseSettingsGui)
+        settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
+        settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About").OnEvent("Click", (*) => showAbout())
+
+        ; Show the GUI
+        settingsGui.Show("w375 h" . (yPos + 50))
+        settingsGui.OnEvent("Escape", CloseSettingsGui)
+
+        ; Start checking for outside clicks
+        SetTimer(CheckSettingsOutsideClick, 100)
+    } catch as e {
+        MsgBox("Error creating settings: " . e.Message)
+        settingsGui := 0
+    }
+
+    isCreating := false
 
     CloseSettingsGui(*) {
         SetTimer(CheckSettingsOutsideClick, 0)
-        saveSettings(settingsGui.Submit())
-        if IsObject(settingsGui) {
-            try settingsGui.Destroy()
+        try {
+            saveSettings(settingsGui.Submit())
+            if IsObject(settingsGui) {
+                settingsGui.Destroy()
+                settingsGui := 0
+            }
+        } catch as e {
+            MsgBox("Error closing settings: " . e.Message)
             settingsGui := 0
         }
     }
@@ -124,13 +155,15 @@ showSettings(*) {
             if mouseIsOutside && GetKeyState("LButton", "P") {
                 isDestroying := true
                 SetTimer(CheckSettingsOutsideClick, 0)
-                saveSettings(settingsGui.Submit())
-                try settingsGui.Destroy()
+                try {
+                    saveSettings(settingsGui.Submit())
+                    settingsGui.Destroy()
+                } catch {
+                }
                 settingsGui := 0
                 isDestroying := false
             }
-        }
-        catch {
+        } catch {
             SetTimer(CheckSettingsOutsideClick, 0)
             settingsGui := 0
         }
