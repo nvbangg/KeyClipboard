@@ -1,6 +1,6 @@
 ; Formats text according to user-defined settings
 formatText(text) {
-    global formatCaseOption, formatSeparator, removeDiacriticsEnabled, lineBreakOption, removeExcessiveSpacesEnabled
+    global formatCaseOption, formatSeparator, removeDiacriticsEnabled, lineBreakOption, normSpaceEnabled
     if (text = "")
         return ""
 
@@ -8,8 +8,8 @@ formatText(text) {
     if (removeDiacriticsEnabled)
         text := removeAccents(text)
 
-    if (removeExcessiveSpacesEnabled)
-        text := removeExcessiveSpaces(text)
+    if (normSpaceEnabled)
+        text := normSpace(text)
 
     ; Apply line break formatting
     switch lineBreakOption {
@@ -36,7 +36,7 @@ formatText(text) {
 }
 
 ; Removes redundant spaces and fixes punctuation spacing
-removeExcessiveSpaces(str) {
+normSpace(str) {
     str := RegExReplace(str, "^\s+", "")
 
     ; Collapse multiple spaces to single space

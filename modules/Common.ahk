@@ -14,14 +14,14 @@ ensureFilesExist() {
 ; Loads settings from INI file into global variables
 initSettings() {
     global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
-    global removeDiacriticsEnabled, lineBreakOption, removeExcessiveSpacesEnabled
+    global removeDiacriticsEnabled, lineBreakOption, normSpaceEnabled
     ensureFilesExist()
 
     mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
     numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
     beforeLatest_LatestEnabled := IniRead(settingsFilePath, "Settings", "beforeLatest_LatestEnabled", "1") = "1"
     removeDiacriticsEnabled := IniRead(settingsFilePath, "Settings", "removeDiacriticsEnabled", "0") = "1"
-    removeExcessiveSpacesEnabled := IniRead(settingsFilePath, "Settings", "removeExcessiveSpacesEnabled", "0") = "1"
+    normSpaceEnabled := IniRead(settingsFilePath, "Settings", "normSpaceEnabled", "0") = "1"
     lineBreakOption := Integer(IniRead(settingsFilePath, "Settings", "lineBreakOption", "1"))
     formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "0"))
     formatSeparator := Integer(IniRead(settingsFilePath, "Settings", "formatSeparator", "0"))
@@ -32,12 +32,12 @@ initSettings() {
 ; Saves settings to INI file and updates global variables
 saveSettings(savedValues) {
     global mouseEnabled, numLockEnabled, formatCaseOption, formatSeparator, beforeLatest_LatestEnabled
-    global removeDiacriticsEnabled, lineBreakOption, removeExcessiveSpacesEnabled
+    global removeDiacriticsEnabled, lineBreakOption, normSpaceEnabled
     ensureFilesExist()
 
     beforeLatest_LatestEnabled := !!savedValues.beforeLatest_LatestEnabled
     removeDiacriticsEnabled := !!savedValues.removeDiacriticsEnabled
-    removeExcessiveSpacesEnabled := !!savedValues.removeExcessiveSpacesEnabled
+    normSpaceEnabled := !!savedValues.removeExcessiveSpacesEnabled
     mouseEnabled := !!savedValues.MouseClick
     numLockEnabled := !!savedValues.NumLock
 
@@ -49,7 +49,7 @@ saveSettings(savedValues) {
     IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
     IniWrite(beforeLatest_LatestEnabled ? "1" : "0", settingsFilePath, "Settings", "beforeLatest_LatestEnabled")
     IniWrite(removeDiacriticsEnabled ? "1" : "0", settingsFilePath, "Settings", "removeDiacriticsEnabled")
-    IniWrite(removeExcessiveSpacesEnabled ? "1" : "0", settingsFilePath, "Settings", "removeExcessiveSpacesEnabled")
+    IniWrite(normSpaceEnabled ? "1" : "0", settingsFilePath, "Settings", "normSpaceEnabled")
     IniWrite(lineBreakOption, settingsFilePath, "Settings", "lineBreakOption")
     IniWrite(formatCaseOption, settingsFilePath, "Settings", "formatCaseOption")
     IniWrite(formatSeparator, settingsFilePath, "Settings", "formatSeparator")

@@ -7,7 +7,7 @@ global isFormatting := false         ; Flag for formatting in progress
 global originalClip := ""            ; Stores original clipboard content
 global clipHistoryGuiInstance := 0   ; Reference to clipboard history GUI
 global removeDiacriticsEnabled := false
-global removeExcessiveSpacesEnabled := false
+global normSpaceEnabled := false
 global lineBreakOption := 0
 
 #Include "Clip_utils.ahk"
@@ -30,7 +30,7 @@ addClipSettings(settingsGui, yPos) {
     yPos += 25
 
     settingsGui.Add("CheckBox", "x40 y" . yPos . " vremoveExcessiveSpacesEnabled Checked" .
-        removeExcessiveSpacesEnabled,
+        normSpaceEnabled,
         "Fix Spacing Around Punctuation")
     yPos += 35
 
