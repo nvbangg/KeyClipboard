@@ -1,6 +1,6 @@
 # KeyClipboard
 
-An advanced clipboard manager and keyboard automation tool with flexible shortcuts and powerful features.
+Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ## Highlighted Features
 
@@ -76,4 +76,4 @@ An advanced clipboard manager and keyboard automation tool with flexible shortcu
 - Mở clipboard luôn hiển thị từ mục cuối cùng
 - Sửa lại giao diện cho dễ dùng
 - Sửa lỗi chức năng normSpace không xoá khoảng trắng đầu dòng 2 trở đi
-- Sửa lỗi xảy ra khi mở nhiều cửa sổ settings
+- Sửa lỗi xảy ra khi mở nhiều cửa sổ settings (ở v1.5.3.1)
