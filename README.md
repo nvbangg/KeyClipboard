@@ -46,7 +46,7 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 ## Installation
 
 ### Method 1: Direct Download (Recommended)
-1. Download [KeyClipboard.exe](https://github.com/nvbangg/KeyClipboard/releases/latest)
+1. Download [KeyClipboard.exe](https://github.com/nvbangg/KeyClipboard/releases)
 2. Run `KeyClipboard.exe`
 3. Look for the app icon in the system tray
 
@@ -65,8 +65,9 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ## Tính năng dự kiến
 
-- Giữ nguyên các định dạng (in đậm, nghiêng,...) của nội dung khi sao chép
-- Thêm tuỳ chọn xoá định dạng (in đậm, ...)
+- Lưu định dạng(in đậm,...) và có lựa chọn mặc định có dán theo (in đậm,..) hay không
+  - Có thể dán nội dung không format theo định dạng/plaintext
+  - còn nếu format thì buộc plaintext
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
 - Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
