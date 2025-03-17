@@ -79,3 +79,4 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - Sửa lại giao diện cho dễ dùng
 - Sửa lỗi chức năng normSpace không xoá khoảng trắng đầu dòng 2 trở đi
 - Sửa lỗi xảy ra khi mở nhiều cửa sổ settings (ở v1.5.3.1)
+- Thêm Tuỳ chọn Xoá kí tự đặc biệt (# *) khi dán

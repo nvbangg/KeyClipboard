@@ -13,12 +13,14 @@ ensureFilesExist() {
 
 ; Loads settings from INI file into global variables
 initSettings() {
-    global mouseEnabled, numLockEnabled, noAccentsEnabled, normSpaceEnabled
-    global lineBreakOption, formatCaseOption, formatSeparator
+    global mouseEnabled, numLockEnabled, removeSpecialEnabled
+    global noAccentsEnabled, normSpaceEnabled, lineBreakOption, formatCaseOption, formatSeparator
     ensureFilesExist()
 
     mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
     numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
+    removeSpecialEnabled := IniRead(settingsFilePath, "Settings", "removeSpecialEnabled", "1") = "1"
+
     noAccentsEnabled := IniRead(settingsFilePath, "Settings", "noAccentsEnabled", "0") = "1"
     normSpaceEnabled := IniRead(settingsFilePath, "Settings", "normSpaceEnabled", "0") = "1"
     lineBreakOption := Integer(IniRead(settingsFilePath, "Settings", "lineBreakOption", "1"))
@@ -31,20 +33,23 @@ initSettings() {
 ; Saves settings to INI file and updates global variables
 saveSettings(savedValues) {
     global mouseEnabled, numLockEnabled, noAccentsEnabled, normSpaceEnabled
-    global lineBreakOption, formatCaseOption, formatSeparator
+    global lineBreakOption, formatCaseOption, formatSeparator, removeSpecialEnabled
     ensureFilesExist()
 
     mouseEnabled := !!savedValues.mouseEnabled
     numLockEnabled := !!savedValues.numLockEnabled
+    removeSpecialEnabled := !!savedValues.removeSpecialEnabled
+
     noAccentsEnabled := !!savedValues.noAccentsEnabled
     normSpaceEnabled := !!savedValues.normSpaceEnabled
-
     lineBreakOption := savedValues.LineBreakOption - 1
     formatCaseOption := savedValues.CaseOption - 1
     formatSeparator := savedValues.SeparatorOption - 1
 
     IniWrite(mouseEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseEnabled")
     IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
+    IniWrite(removeSpecialEnabled ? "1" : "0", settingsFilePath, "Settings", "removeSpecialEnabled")
+
     IniWrite(noAccentsEnabled ? "1" : "0", settingsFilePath, "Settings", "noAccentsEnabled")
     IniWrite(normSpaceEnabled ? "1" : "0", settingsFilePath, "Settings", "normSpaceEnabled")
     IniWrite(lineBreakOption, settingsFilePath, "Settings", "lineBreakOption")

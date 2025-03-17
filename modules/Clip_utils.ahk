@@ -130,6 +130,7 @@ paste(text, formatTextEnable := false) {
 
     if (formatTextEnable)
         text := formatText(text)
+
     A_Clipboard := text
     ClipWait(0.3)
     Send("^v")
@@ -144,7 +145,7 @@ paste(text, formatTextEnable := false) {
 }
 
 ; Process clipboard items for pasting
-prepareClipItems(LV := 0, formatTextEnable := false) {
+prepareClipItems(LV := 0) {
     global clipHistory
     if (clipHistory.Length = 0) {
         showNotification("No items in clipboard history")
@@ -170,7 +171,7 @@ prepareClipItems(LV := 0, formatTextEnable := false) {
 
 ; Paste selected clipboard items
 pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
-    contentItems := prepareClipItems(LV, formatTextEnable)
+    contentItems := prepareClipItems(LV)
     if (!IsObject(contentItems) || contentItems.Length < 1)
         return
     mergedItems := ""
@@ -186,7 +187,7 @@ pasteSelected(LV := 0, clipHistoryGui := 0, formatTextEnable := false) {
 ; Merge selected items into clipboard history
 saveToClipboard(LV := 0, formatTextEnable := false) {
     global isFormatting, clipHistory
-    contentItems := prepareClipItems(LV, formatTextEnable)
+    contentItems := prepareClipItems(LV)
     for _, item in contentItems {
         if (formatTextEnable)
             item := formatText(item)
@@ -196,7 +197,7 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
 }
 
 ; Delete selected clipboard history items
-deleteSelected(LV, clipHistoryGui) {
+deleteSelected(LV) {
     global clipHistory
 
     selectedItems := getSelected(LV)

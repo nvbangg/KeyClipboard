@@ -12,7 +12,11 @@ global clipHistoryGuiInstance := 0   ; Reference to clipboard history GUI
 
 ; Add clipboard settings UI to settings panel
 addClipSettings(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h175", "Format Options")
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h200", "Format Options")
+    yPos += 25
+
+    settingsGui.Add("CheckBox", "x20 y" . yPos . " vremoveSpecialEnabled Checked" . removeSpecialEnabled,
+        "Remove Special Characters (# *)")
     yPos += 25
 
     settingsGui.Add("CheckBox", "x20 y" . yPos . " vnoAccentsEnabled Checked" . noAccentsEnabled,
@@ -128,7 +132,7 @@ showContextMenu(LV, clipHistoryGui, Item, X, Y) {
     contextMenu.Add("Paste with Format", (*) => pasteSelected(LV, clipHistoryGui, true))
     contextMenu.Add("Save Format to Clipboard", (*) => saveToClipboard(LV, true))
     contextMenu.Add()
-    contextMenu.Add("Delete Item", (*) => deleteSelected(LV, clipHistoryGui))
+    contextMenu.Add("Delete Item", (*) => deleteSelected(LV))
     contextMenu.Show(X, Y)
 }
 

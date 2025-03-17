@@ -1,11 +1,14 @@
 ; Formats text according to user-defined settings
 formatText(text) {
-    global noAccentsEnabled, normSpaceEnabled
+    global noAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineBreakOption, formatCaseOption, formatSeparator
     if (text = "")
         return ""
 
     ; Apply independent formatting options
+    if (removeSpecialEnabled)
+        text := removeSpecial(text)
+
     if (noAccentsEnabled)
         text := removeAccents(text)
 
@@ -34,6 +37,13 @@ formatText(text) {
     }
 
     return text
+}
+
+; Removes specified special characters (# and *)
+removeSpecial(str) {
+    str := StrReplace(str, "#", "")
+    str := StrReplace(str, "*", "")
+    return str
 }
 
 ; Removes redundant spaces and fixes punctuation spacing
