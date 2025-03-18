@@ -1,144 +1,35 @@
-; Formats text according to user-defined settings
+; === Clip_format Module ===
+
 formatText(text) {
-    global noAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
-    global lineBreakOption, formatCaseOption, formatSeparator
+    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global lineOption, caseOption, separatorOption
     if (text = "")
         return ""
 
-    ; Apply independent formatting options
     if (removeSpecialEnabled)
         text := removeSpecial(text)
-
-    if (noAccentsEnabled)
+    if (removeAccentsEnabled)
         text := removeAccents(text)
-
     if (normSpaceEnabled)
         text := normSpace(text)
 
-    ; Apply line break formatting
-    switch lineBreakOption {
+    switch lineOption {
         case 1: text := trimLines(text)
         case 2: text := removeLineBreaks(text)
     }
-
-    ; Apply case formatting
-    switch formatCaseOption {
+    switch caseOption {
         case 1: text := StrUpper(text)
         case 2: text := StrLower(text)
         case 3: text := TitleCase(text)
         case 4: text := SentenceCase(text)
     }
-
-    ; Apply separator formatting
-    switch formatSeparator {
+    switch separatorOption {
         case 1: text := StrReplace(text, " ", "_")
         case 2: text := StrReplace(text, " ", "-")
         case 3: text := StrReplace(text, " ", "")
     }
 
     return text
-}
-
-; Removes specified special characters (# and *)
-removeSpecial(str) {
-    str := StrReplace(str, "#", "")
-    str := StrReplace(str, "*", "")
-    return str
-}
-
-; Removes redundant spaces and fixes punctuation spacing
-normSpace(str) {
-    ; Split by line breaks to process each line
-    str := StrReplace(str, "`r`n", "`n")
-    str := StrReplace(str, "`r", "`n")
-    lines := StrSplit(str, "`n")
-
-    ; Process each line individually
-    for i, line in lines {
-        ; Remove leading spaces from each line
-        line := RegExReplace(line, "^\s+", "")
-
-        ; Collapse multiple spaces to single space
-        loop {
-            oldLine := line
-            line := StrReplace(line, "  ", " ")
-            if (line = oldLine)
-                break
-        }
-
-        ; Apply punctuation spacing rules
-        punctuation := [".", ",", ";", ":"]
-
-        ; Remove spaces before punctuation
-        for punct in punctuation {
-            line := StrReplace(line, " " . punct, punct)
-        }
-
-        ; Ensure one space after punctuation (except at end of text)
-        for punct in punctuation {
-            pos := 1
-            while (pos := InStr(line, punct, false, pos)) {
-                if (pos = 0)
-                    break
-
-                if (pos < StrLen(line)) {
-                    nextChar := SubStr(line, pos + 1, 1)
-                    if (nextChar != " " && !InStr(".,;:", nextChar)) {
-                        line := SubStr(line, 1, pos) . " " . SubStr(line, pos + 1)
-                    }
-                }
-                pos += 1
-            }
-        }
-
-        ; Update the processed line
-        lines[i] := line
-    }
-
-    ; Rejoin lines
-    result := ""
-    for i, line in lines {
-        if (i > 1)
-            result .= "`r`n"
-        result .= line
-    }
-
-    return result
-}
-
-; Removes empty lines but preserves paragraph breaks
-trimLines(str) {
-    str := StrReplace(str, "`r`n", "`n")
-    str := StrReplace(str, "`r", "`n")
-    lines := StrSplit(str, "`n")
-    output := ""
-
-    for i, line in lines {
-        if (Trim(line) != "") {
-            if (output != "")
-                output .= "`n"
-            output .= line
-        }
-    }
-
-    return StrReplace(output, "`n", "`r`n")
-}
-
-; Converts all line breaks to spaces
-removeLineBreaks(str) {
-    str := StrReplace(str, "`r`n", " ")
-    str := StrReplace(str, "`n", " ")
-    str := StrReplace(str, "`r", " ")
-
-    ; Replace multiple spaces with a single space
-    loop {
-        oldStr := str
-        str := StrReplace(str, "  ", " ")
-        if (str = oldStr)
-            break
-    }
-
-    return str
 }
 
 ; Mapping of accented characters to their non-accented equivalents
@@ -169,7 +60,6 @@ global accentMap := Map(
     "Ỳ", "Y", "Ý", "Y", "Ỷ", "Y", "Ỹ", "Y", "Ỵ", "Y", "Đ", "D"
 )
 
-; Removes diacritical marks from text
 removeAccents(str) {
     result := ""
     loop parse, str
@@ -177,7 +67,99 @@ removeAccents(str) {
     return result
 }
 
-; Capitalizes first letter of each word
+; Removes redundant spaces and fixes punctuation spacing
+normSpace(str) {
+    str := StrReplace(str, "`r`n", "`n")
+    str := StrReplace(str, "`r", "`n")
+    lines := StrSplit(str, "`n")
+
+    for i, line in lines {
+        line := RegExReplace(line, "^\s+", "")
+
+        ; Collapse multiple spaces to single space
+        loop {
+            oldLine := line
+            line := StrReplace(line, "  ", " ")
+            if (line = oldLine)
+                break
+        }
+
+        punctuation := [".", ",", ";", ":"]
+        for punct in punctuation {
+            line := StrReplace(line, " " . punct, punct)
+        }
+
+        ; Ensure one space after punctuation (except at end of text)
+        for punct in punctuation {
+            pos := 1
+            while (pos := InStr(line, punct, false, pos)) {
+                if (pos = 0)
+                    break
+
+                if (pos < StrLen(line)) {
+                    nextChar := SubStr(line, pos + 1, 1)
+                    if (nextChar != " " && !InStr(".,;:", nextChar)) {
+                        line := SubStr(line, 1, pos) . " " . SubStr(line, pos + 1)
+                    }
+                }
+                pos += 1
+            }
+        }
+        lines[i] := line
+    }
+
+    ; Rejoin lines
+    result := ""
+    for i, line in lines {
+        if (i > 1)
+            result .= "`r`n"
+        result .= line
+    }
+
+    return result
+}
+
+; Removes specified special characters (# and *)
+removeSpecial(str) {
+    str := StrReplace(str, "#", "")
+    str := StrReplace(str, "*", "")
+    return str
+}
+
+; Removes empty lines but preserves paragraph breaks
+trimLines(str) {
+    str := StrReplace(str, "`r`n", "`n")
+    str := StrReplace(str, "`r", "`n")
+    lines := StrSplit(str, "`n")
+    output := ""
+
+    for i, line in lines {
+        if (Trim(line) != "") {
+            if (output != "")
+                output .= "`n"
+            output .= line
+        }
+    }
+
+    return StrReplace(output, "`n", "`r`n")
+}
+
+removeLineBreaks(str) {
+    str := StrReplace(str, "`r`n", " ")
+    str := StrReplace(str, "`n", " ")
+    str := StrReplace(str, "`r", " ")
+
+    ; Replace multiple spaces with a single space
+    loop {
+        oldStr := str
+        str := StrReplace(str, "  ", " ")
+        if (str = oldStr)
+            break
+    }
+
+    return str
+}
+
 TitleCase(str) {
     result := ""
     nextIsTitle := true
@@ -196,7 +178,6 @@ TitleCase(str) {
     return result
 }
 
-; Capitalizes first letter of each sentence
 SentenceCase(str) {
     str := StrLower(str)
     str := StrReplace(str, "`r`n", "`n")

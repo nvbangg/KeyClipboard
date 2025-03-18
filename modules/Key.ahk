@@ -1,5 +1,4 @@
 ; === KEY MODULE ===
-; Functions for keyboard shortcuts and mouse emulation
 
 addKeySettings(settingsGui, y) {
     global mouseEnabled, numLockEnabled
@@ -13,7 +12,6 @@ addKeySettings(settingsGui, y) {
     return y + 110
 }
 
-; Chrome-specific translation shortcut
 translateInChrome() {
     BlockInput("On")
     MouseClick("Right")
@@ -26,13 +24,11 @@ translateInChrome() {
     BlockInput("Off")
 }
 
-; Toggle NumLock based on settings
 updateNumLock() {
     SetNumLockState(numLockEnabled ? "AlwaysOn" : "Default")
 }
 
-; Toggle always-on-top for active window and show status notification
-toggleAlwaysOnTop() {
+alwaysOnTop() {
     WinSetAlwaysOnTop(-1, "A")
     isAlwaysOnTop := WinGetExStyle("A") & 0x8
     showNotification("Always On Top: " . (isAlwaysOnTop ? "Enabled" : "Disabled"))

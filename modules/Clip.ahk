@@ -1,61 +1,51 @@
 ; === CLIPBOARD MODULE ===
-; Manages clipboard history, formatting, and paste operations
 
-; Global state variables
 global clipHistory := []             ; Stores clipboard history items
 global isFormatting := false         ; Flag for formatting in progress
 global originalClip := ""            ; Stores original clipboard content
 global clipHistoryGuiInstance := 0   ; Reference to clipboard history GUI
-
 #Include "Clip_utils.ahk"
 #Include "Clip_format.ahk"
 
-; Add clipboard settings UI to settings panel
 addClipSettings(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h200", "Format Options")
     yPos += 25
-
-    settingsGui.Add("CheckBox", "x20 y" . yPos . " vremoveSpecialEnabled Checked" . removeSpecialEnabled,
-        "Remove Special Characters (# *)")
-    yPos += 25
-
-    settingsGui.Add("CheckBox", "x20 y" . yPos . " vnoAccentsEnabled Checked" . noAccentsEnabled,
+    settingsGui.Add("CheckBox", "x20 y" . yPos . " vremoveAccentsEnabled Checked" . removeAccentsEnabled,
         "Remove Accents")
     yPos += 25
-
     settingsGui.Add("CheckBox", "x20 y" . yPos . " vnormSpaceEnabled Checked" .
         normSpaceEnabled,
         "Normalize Spaces")
+    yPos += 25
+    settingsGui.Add("CheckBox", "x20 y" . yPos . " vremoveSpecialEnabled Checked" . removeSpecialEnabled,
+        "Remove Special Characters (# *)")
     yPos += 35
 
     ; Text formatting options
     settingsGui.Add("Text", "x20 y" . yPos . " w150", "Line Break:")
-    lineBreakChoices := ["None", "Trim Lines", "Remove All Line Breaks"]
-    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vLineBreakOption Choose" . (
-        lineBreakOption + 1),
-    lineBreakChoices)
+    lineChoices := ["None", "Trim Lines", "Remove All Line Breaks"]
+    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vlineOption Choose" . (
+        lineOption + 1),
+    lineChoices)
     yPos += 30
 
     settingsGui.Add("Text", "x20 y" . yPos . " w150", "Text Case:")
     caseChoices := ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"]
-    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vCaseOption Choose" . (formatCaseOption +
+    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vcaseOption Choose" . (caseOption +
         1),
     caseChoices)
     yPos += 30
 
     settingsGui.Add("Text", "x20 y" . yPos . " w150", "Word Separator:")
     separatorChoices := ["None", "Underscore (_)", "Hyphen (-)", "Remove Spaces"]
-    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vSeparatorOption Choose" . (
-        formatSeparator + 1),
+    settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit vseparatorOption Choose" . (
+        separatorOption + 1),
     separatorChoices)
     yPos += 30
 
     return yPos + 15
 }
 
-initClipboard()
-
-; Display clipboard history in a GUI window
 showClipboard() {
     global clipHistory, clipHistoryGuiInstance
     try {
@@ -114,7 +104,8 @@ showClipboard() {
             pasteSelected(getAll(LV), clipHistoryGui)],
         ["x120 y530 w120", "Format Paste All", (*) => pasteSelected(getAll(LV), clipHistoryGui, true)],
         ["x250 y530 w100", "Clear All", (*) => clearClipboard(clipHistoryGui)],
-        ["x360 y530 w120", "Save Changes", (*) => saveContent(LV, contentViewer, clipHistoryGui)]
+        ["x360 y530 w120", "Save Changes", (*) => saveContent(LV, contentViewer, clipHistoryGui)],
+        ["x490 y530 w120", "Paste Original All", (*) => pasteSelected(getAll(LV), clipHistoryGui, -1)]
     ]
 
     for option in buttonOptions
@@ -130,47 +121,9 @@ showContextMenu(LV, clipHistoryGui, Item, X, Y) {
     contextMenu := Menu()
     contextMenu.Add("Paste", (*) => pasteSelected(LV, clipHistoryGui))
     contextMenu.Add("Paste with Format", (*) => pasteSelected(LV, clipHistoryGui, true))
+    contextMenu.Add("Paste as Original Format", (*) => pasteSelected(LV, clipHistoryGui, -1))
     contextMenu.Add("Save Format to Clipboard", (*) => saveToClipboard(LV, true))
     contextMenu.Add()
     contextMenu.Add("Delete Item", (*) => deleteSelected(LV))
     contextMenu.Show(X, Y)
-}
-
-; Paste item from history with optional formatting
-pastePrev(offset := 0, formatTextEnable := false) {
-    global clipHistory
-
-    if (clipHistory.Length < offset + 1) {
-        showNotification("Not enough items in clipboard history")
-        return
-    }
-
-    content := clipHistory[clipHistory.Length - offset]
-    paste(content, formatTextEnable)
-}
-
-; Paste with specialized formatting options
-pasteSpecific() {
-    global clipHistory
-
-    if (clipHistory.Length < 2) {
-        showNotification("Not enough items in clipboard history")
-        return
-    }
-    latest := clipHistory[clipHistory.Length]
-    beforeLatest := clipHistory[clipHistory.Length - 1]
-    content := beforeLatest . "_" . latest
-
-    content := removeAccents(content)
-
-    paste(content, false)
-}
-
-; Clear clipboard history
-clearClipboard(clipHistoryGui := 0) {
-    if (clipHistoryGui)
-        clipHistoryGui.Destroy()
-    global clipHistory
-    clipHistory := []
-    showNotification("All items have been cleared")
 }

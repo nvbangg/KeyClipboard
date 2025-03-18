@@ -5,35 +5,33 @@
 #Include "modules\Clip.ahk"
 #Include "modules\Key.ahk"
 
-; === INITIALIZATION ===
-initSettings()
-
-; === KeyBoard HOTKEYS ===
+; === HOTKEYS ===
 
 #HotIf mouseEnabled
-RAlt:: Click()
-RCtrl:: Click("Right")
+RAlt:: Click()           ; Right Alt to left click
+RCtrl:: Click("Right")   ; Right Ctrl to right click
 #HotIf
 
 #HotIf WinActive("ahk_exe chrome.exe")
 CapsLock & t:: translateInChrome()
 #HotIf
 
-CapsLock & w:: toggleAlwaysOnTop()
+CapsLock & w:: alwaysOnTop()
 CapsLock & s:: showSettings()
-
-; === CLIPBOARD MANAGEMENT ===
 CapsLock & Space:: showClipboard()
 CapsLock & c:: clearClipboard()
-CapsLock & f:: pasteSpecific()
+CapsLock & f:: pasteSpecific() ; Paste combining previous and current item
 
 #HotIf GetKeyState("CapsLock", "P")
-v:: pastePrev(0, false)
-+v:: pastePrev(0, true)
-b:: pastePrev(1, false)
-+b:: pastePrev(1, true)
-a:: pasteSelected()
-+a:: pasteSelected(, , true)
+v:: pastePrev(0)            ; Paste latest item from clipboard history
++v:: pastePrev(0, 1)        ; Paste latest item with format
+^v:: pastePrev(0, -1)       ; Paste latest item as original
+b:: pastePrev(1)            ; Paste the item before the latest
++b:: pastePrev(1, 1)        ; Paste the item before the latest with format
+^b:: pastePrev(1, -1)       ; Paste the item before the latest as original
+a:: pasteSelected()         ; Paste all clipboard items
++a:: pasteSelected(, , 1)   ; Paste all clipboard items with format
+^a:: pasteSelected(, , -1)  ; Paste all clipboard items as original
 #HotIf
 
 ; CapsLock toggle handling
@@ -66,8 +64,8 @@ showAbout(*) {
     }
 
     result := MsgBox("KeyClipboard`n" .
-        "Version: 1.5.3.3`n" .
-        "Date: 17/03/2025`n" .
+        "Version: 1.5.4`n" .
+        "Date: 18/03/2025`n" .
         "`nSource: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard", "YesNo")
@@ -115,6 +113,7 @@ showShortcuts(*) {
         "CapsLock+B: Paste the item before the latest`n" .
         "CapsLock+A: Paste all clipboard items`n" .
         "CapsLock+Shift+V/ B/ A: Paste item with format`n`n" .
+        "CapsLock+Ctrl+V/ B/ A: Paste items as Original`n`n" .
         ;
         "CapsLock+Space: Show Clipboard History`n" .
         "CapsLock+C: Clear clipboard history`n" .

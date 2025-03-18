@@ -1,6 +1,7 @@
+; === COMMON MODULE ===
+
 global settingsFilePath := A_ScriptDir . "\data\settings.ini"
 
-; Ensures required directories and files exist
 ensureFilesExist() {
     dataDir := A_ScriptDir . "\data"
     if !DirExist(dataDir) {
@@ -12,61 +13,64 @@ ensureFilesExist() {
 }
 
 ; Loads settings from INI file into global variables
+initSettings()
 initSettings() {
-    global mouseEnabled, numLockEnabled, removeSpecialEnabled
-    global noAccentsEnabled, normSpaceEnabled, lineBreakOption, formatCaseOption, formatSeparator
+    global mouseEnabled, numLockEnabled
+    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global lineOption, caseOption, separatorOption
     ensureFilesExist()
 
     mouseEnabled := IniRead(settingsFilePath, "Settings", "mouseEnabled", "0") = "1"
     numLockEnabled := IniRead(settingsFilePath, "Settings", "numLockEnabled", "1") = "1"
-    removeSpecialEnabled := IniRead(settingsFilePath, "Settings", "removeSpecialEnabled", "1") = "1"
 
-    noAccentsEnabled := IniRead(settingsFilePath, "Settings", "noAccentsEnabled", "0") = "1"
-    normSpaceEnabled := IniRead(settingsFilePath, "Settings", "normSpaceEnabled", "0") = "1"
-    lineBreakOption := Integer(IniRead(settingsFilePath, "Settings", "lineBreakOption", "1"))
-    formatCaseOption := Integer(IniRead(settingsFilePath, "Settings", "formatCaseOption", "0"))
-    formatSeparator := Integer(IniRead(settingsFilePath, "Settings", "formatSeparator", "0"))
+    removeAccentsEnabled := IniRead(settingsFilePath, "Settings", "removeAccentsEnabled", "0") = "1"
+    normSpaceEnabled := IniRead(settingsFilePath, "Settings", "normSpaceEnabled", "1") = "1"
+    removeSpecialEnabled := IniRead(settingsFilePath, "Settings", "removeSpecialEnabled", "0") = "1"
+
+    lineOption := Integer(IniRead(settingsFilePath, "Settings", "lineOption", "1"))
+    caseOption := Integer(IniRead(settingsFilePath, "Settings", "caseOption", "0"))
+    separatorOption := Integer(IniRead(settingsFilePath, "Settings", "separatorOption", "0"))
 
     updateNumLock()
 }
 
 ; Saves settings to INI file and updates global variables
 saveSettings(savedValues) {
-    global mouseEnabled, numLockEnabled, noAccentsEnabled, normSpaceEnabled
-    global lineBreakOption, formatCaseOption, formatSeparator, removeSpecialEnabled
+    global mouseEnabled, numLockEnabled
+    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global lineOption, caseOption, separatorOption
     ensureFilesExist()
 
     mouseEnabled := !!savedValues.mouseEnabled
     numLockEnabled := !!savedValues.numLockEnabled
+
+    removeAccentsEnabled := !!savedValues.removeAccentsEnabled
+    normSpaceEnabled := !!savedValues.normSpaceEnabled
     removeSpecialEnabled := !!savedValues.removeSpecialEnabled
 
-    noAccentsEnabled := !!savedValues.noAccentsEnabled
-    normSpaceEnabled := !!savedValues.normSpaceEnabled
-    lineBreakOption := savedValues.LineBreakOption - 1
-    formatCaseOption := savedValues.CaseOption - 1
-    formatSeparator := savedValues.SeparatorOption - 1
+    lineOption := savedValues.lineOption - 1
+    caseOption := savedValues.caseOption - 1
+    separatorOption := savedValues.separatorOption - 1
 
     IniWrite(mouseEnabled ? "1" : "0", settingsFilePath, "Settings", "mouseEnabled")
     IniWrite(numLockEnabled ? "1" : "0", settingsFilePath, "Settings", "numLockEnabled")
+
+    IniWrite(removeAccentsEnabled ? "1" : "0", settingsFilePath, "Settings", "noAccentsEnabled")
+    IniWrite(normSpaceEnabled ? "1" : "0", settingsFilePath, "Settings", "normSpaceEnabled")
     IniWrite(removeSpecialEnabled ? "1" : "0", settingsFilePath, "Settings", "removeSpecialEnabled")
 
-    IniWrite(noAccentsEnabled ? "1" : "0", settingsFilePath, "Settings", "noAccentsEnabled")
-    IniWrite(normSpaceEnabled ? "1" : "0", settingsFilePath, "Settings", "normSpaceEnabled")
-    IniWrite(lineBreakOption, settingsFilePath, "Settings", "lineBreakOption")
-    IniWrite(formatCaseOption, settingsFilePath, "Settings", "formatCaseOption")
-    IniWrite(formatSeparator, settingsFilePath, "Settings", "formatSeparator")
+    IniWrite(lineOption, settingsFilePath, "Settings", "lineOption")
+    IniWrite(caseOption, settingsFilePath, "Settings", "caseOption")
+    IniWrite(separatorOption, settingsFilePath, "Settings", "separatorOption")
 
     updateNumLock()
 }
 
-; Creates and displays the settings GUI
 showSettings(*) {
     static settingsGui := 0
     static isCreating := false
-
     if (isCreating)
         return
-
     isCreating := true
 
     ; Clean up any existing GUI
@@ -86,30 +90,21 @@ showSettings(*) {
     try {
         settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
         settingsGui.SetFont("s10")
-
-        ; Initialize position tracking
         yPos := 10
-
-        ; Add settings sections
         yPos := addKeySettings(settingsGui, yPos)
         yPos := addClipSettings(settingsGui, yPos)
 
-        ; Add buttons
         settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save").OnEvent("Click", CloseSettingsGui)
         settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
         settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About").OnEvent("Click", (*) => showAbout())
-
-        ; Show the GUI
         settingsGui.Show("w375 h" . (yPos + 50))
         settingsGui.OnEvent("Escape", CloseSettingsGui)
 
-        ; Start checking for outside clicks
         SetTimer(CheckSettingsOutsideClick, 100)
     } catch as e {
         MsgBox("Error creating settings: " . e.Message)
         settingsGui := 0
     }
-
     isCreating := false
 
     CloseSettingsGui(*) {
@@ -129,7 +124,6 @@ showSettings(*) {
     CheckSettingsOutsideClick() {
         static isDestroying := false
         static isDropdownActive := false
-
         if isDestroying || !IsObject(settingsGui)
             return
 
@@ -141,7 +135,6 @@ showSettings(*) {
             }
 
             dropdownIsActive := WinExist("ahk_class ComboLBox") != 0
-
             if (dropdownIsActive) {
                 isDropdownActive := true
                 return
@@ -156,7 +149,6 @@ showSettings(*) {
             if winUnderCursor != settingsGui.Hwnd {
                 mouseIsOutside := true
             }
-
             if mouseIsOutside && GetKeyState("LButton", "P") {
                 isDestroying := true
                 SetTimer(CheckSettingsOutsideClick, 0)
@@ -175,7 +167,6 @@ showSettings(*) {
     }
 }
 
-; Shows a temporary notification popup
 showNotification(message, timeout := 1200) {
     notify := Gui("+AlwaysOnTop -Caption +ToolWindow")
     notify.SetFont("s12 bold")
