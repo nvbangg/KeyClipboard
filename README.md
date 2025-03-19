@@ -11,7 +11,8 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - **Organize Items**: Adjust the position of items in the clipboard
 - **Quick Translation**: Translate Chrome pages instantly with a shortcut
 
-![image](https://github.com/user-attachments/assets/3942361e-097a-422c-a8eb-bd4ca9858678)
+![image](https://github.com/user-attachments/assets/c4861c92-1074-4baa-9a18-c241e50ee672)
+
 
 ## Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
@@ -28,7 +29,8 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - `CapsLock + Shift + V/B/A`: Paste item(s) as Original
 
 ## Settings Options
-![image](https://github.com/user-attachments/assets/99076f93-7f65-402c-8519-9ffae92476b6)
+![image](https://github.com/user-attachments/assets/31e67eeb-3424-45af-b28d-768b80af151d)
+
 
 ### Keyboard Options
 - Mouse Clicks Mode
@@ -40,6 +42,7 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 - **Remove accents**
 - **Normalize Punctuation Space**
+- **Remove Special Characters**
 - **Line Break Options**: Trim excess line breaks, Remove all line breaks
 - **Text Case Options**: UPPERCASE, lowercase, Title Case, Sentence case
 - **Word Separator Options**: Underscore (_), Hyphen (-), Remove all spaces
