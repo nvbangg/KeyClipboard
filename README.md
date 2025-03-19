@@ -12,7 +12,8 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - **Quick Search**: Rapidly search through clipboard content.
 - **Quick Translation**: Translate Chrome pages instantly with a shortcut
 
-![image](https://github.com/user-attachments/assets/c4861c92-1074-4baa-9a18-c241e50ee672)
+![image](https://github.com/user-attachments/assets/09264c1a-a0ea-460e-adea-750caefd8fe6)
+
 
 ## Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
