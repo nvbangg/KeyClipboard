@@ -1,5 +1,5 @@
-; KeyClipboard - Advanced clipboard manager and keyboard automation tool
-#Requires AutoHotkey v2.0
+; KeyClipboard - Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
+
 #SingleInstance Force
 #Include "modules\Common.ahk"
 #Include "modules\Clip.ahk"
@@ -52,85 +52,80 @@ A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
 A_IconTip := "KeyClipboard - Right click to see more"
 
-showAbout(*) {
-    ; Find settings window if it exists
-    settingsHwnd := WinExist("KeyClipboard - Settings")
-
-    ; If settings window exists, temporarily remove its always-on-top status
-    wasAlwaysOnTop := false
-    if (settingsHwnd) {
-        wasAlwaysOnTop := WinGetExStyle(settingsHwnd) & 0x8
-        WinSetAlwaysOnTop(0, "ahk_id " . settingsHwnd)
-    }
-
-    result := MsgBox("KeyClipboard`n" .
-        "Version: 1.5.4`n" .
-        "Date: 18/03/2025`n" .
-        "`nSource: github.com/nvbangg/KeyClipboard`n" .
-        "Click Yes to open",
-        "About KeyClipboard", "YesNo")
-
-    ; Restore settings window's always-on-top status
-    if (settingsHwnd && wasAlwaysOnTop && WinExist("ahk_id " . settingsHwnd)) {
-        try {
-            WinSetAlwaysOnTop(1, "ahk_id " . settingsHwnd)
-        } catch {
-            ; Silently ignore if window can't be modified
-        }
-    }
-
-    if (result = "Yes")
-        Run("https://github.com/nvbangg/KeyClipboard")
-    else
-        Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-    ;   =)))))
-}
-
 showShortcuts(*) {
     static shortcutsGui := 0
 
-    try {
-        if IsObject(shortcutsGui) && shortcutsGui.HasProp("Hwnd")
-            if WinExist("ahk_id " . shortcutsGui.Hwnd)
-                shortcutsGui.Destroy()
-    } catch {
-        ; If any error occurs, just create a new GUI
+    if IsObject(shortcutsGui) {
+        SetTimer(() => CheckGuiOutsideClick(shortcutsGui, false), 0)
+        shortcutsGui.Destroy()
+        shortcutsGui := 0
     }
 
-    ; Create new GUI with appropriate options
-    shortcutsGui := Gui("+AlwaysOnTop +ToolWindow")
-    shortcutsGui.Title := "Shortcuts - KeyClipboard"
+    ; Create new GUI
+    shortcutsGui := Gui("+AlwaysOnTop +ToolWindow", "Shortcuts - KeyClipboard")
     shortcutsGui.SetFont("s10")
-    shortcutsGui.OnEvent("Escape", CloseShortcutsGui)
 
-    ; Add shortcuts text
     shortcutsGui.Add("Text", "w375",
         "CapsLock+S: Show Settings Popup`n" .
         "CapsLock+W: Toggle Always-on-Top for active Window`n" .
         "CapsLock+T: Translate page in Chrome`n`n" .
-        ;
         "CapsLock+V: Paste latest item from clipboard history`n" .
         "CapsLock+B: Paste the item before the latest`n" .
         "CapsLock+A: Paste all clipboard items`n" .
-        "CapsLock+Shift+V/ B/ A: Paste item with format`n`n" .
-        "CapsLock+Ctrl+V/ B/ A: Paste items as Original`n`n" .
-        ;
+        "CapsLock+Shift+V/ B/ A: Paste item(s) with Format`n" .
+        "CapsLock+Ctrl+V/ B/ A: Paste item(s) as Original`n`n" .
         "CapsLock+Space: Show Clipboard History`n" .
         "CapsLock+C: Clear clipboard history`n" .
-        "Alt+Up/Down: Move selected item up/down in the list`n" .
-        "CapsLock+F: Paste combining previous and current items`n"
+        "CapsLock+F: Paste combining previous and current items`n")
+
+    ; Show GUI and setup event handlers (button removed)
+    shortcutsGui.OnEvent("Escape", (*) => CloseShortcuts())
+    shortcutsGui.OnEvent("Close", (*) => CloseShortcuts())
+    shortcutsGui.Show()
+    WinActivate("ahk_id " . shortcutsGui.Hwnd)
+    SetTimer(() => CheckGuiOutsideClick(shortcutsGui, false), 100)
+
+    CloseShortcuts() {
+        SetTimer(() => CheckGuiOutsideClick(shortcutsGui, false), 0)
+        shortcutsGui.Destroy()
+        shortcutsGui := 0  ; Reset after destroying
+    }
+}
+
+showAbout(*) {
+    ; Suspend any active timers that might interfere
+    SetTimer(() => CheckGuiOutsideClick(A_Args[1], false), 0)
+    settingsHwnd := WinExist("KeyClipboard - Settings")
+    shortcutsHwnd := WinExist("Shortcuts - KeyClipboard")
+
+    settingsOnTop := settingsHwnd ? WinGetExStyle(settingsHwnd) & 0x8 : false
+    shortcutsOnTop := shortcutsHwnd ? WinGetExStyle(shortcutsHwnd) & 0x8 : false
+
+    ; Temporarily remove always-on-top from all windows
+    if (settingsHwnd)
+        WinSetAlwaysOnTop(0, "ahk_id " . settingsHwnd)
+    if (shortcutsHwnd)
+        WinSetAlwaysOnTop(0, "ahk_id " . shortcutsHwnd)
+
+    Sleep(50)
+    result := MsgBox(
+        "KeyClipboard`n" .
+        "Version: 1.5.4.1`n" .
+        "Date: 19/03/2025`n`n" .
+        "Source: github.com/nvbangg/KeyClipboard`n" .
+        "Click Yes to open",
+        "About KeyClipboard",
+        "YesNo 262144"  ; YesNo with AlwaysOnTop flag
     )
 
-    shortcutsGui.Add("Button", "Default w80", "OK").OnEvent("Click", CloseShortcutsGui)
-    shortcutsGui.Show()
-    myGui := shortcutsGui
-    SetTimer () => CheckOutsideClick(myGui), 100
+    ; Restore always-on-top states
+    if (settingsHwnd && settingsOnTop && WinExist("ahk_id " . settingsHwnd))
+        WinSetAlwaysOnTop(1, "ahk_id " . settingsHwnd)
+    if (shortcutsHwnd && shortcutsOnTop && WinExist("ahk_id " . shortcutsHwnd))
+        WinSetAlwaysOnTop(1, "ahk_id " . shortcutsHwnd)
 
-    CloseShortcutsGui(*) {
-        SetTimer () => CheckOutsideClick(myGui), 0
-        if IsObject(shortcutsGui) {
-            try shortcutsGui.Destroy()
-            shortcutsGui := 0
-        }
-    }
+    Run(result = "Yes"
+        ? "https://github.com/nvbangg/KeyClipboard"
+            : "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+    ; =)))))
 }

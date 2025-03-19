@@ -77,18 +77,11 @@ pasteSpecific() {
     paste(content)
 }
 
-; Get all items in the ListView
-getAll(LV) {
-    items := []
-    rowCount := LV.GetCount()
-    if (rowCount = 0)
-        return items
-    loop rowCount {
-        rowNum := A_Index
-        itemIndex := Integer(LV.GetText(rowNum, 1))
-        items.Push(itemIndex)
-    }
-    return items
+; Check if ListView has focus
+isListViewFocused() {
+    focusedHwnd := ControlGetFocus("A")
+    focusedControl := ControlGetClassNN(focusedHwnd)
+    return InStr(focusedControl, "SysListView32")
 }
 
 ; Get selected items from ListView
@@ -137,7 +130,6 @@ initClipboard() {
     global clipHistory := []
     OnClipboardChange(updateClipboard, 1)
 }
-
 ; Handle clipboard content changes
 updateClipboard(Type) {
     global clipHistory, isFormatting
@@ -156,8 +148,16 @@ updateClipboard(Type) {
 }
 
 ; Update ListView with clipboard history
-updateLV(LV) {
+updateLV(LV, clipHistoryGui := 0) {
     global clipHistory
+    if (clipHistory.Length = 0) {
+        if (clipHistoryGui) {
+            clipHistoryGui.Destroy()
+            showNotification("No items in clipboard history")
+        }
+        return
+    }
+
     LV.Delete()
     for index, content in clipHistory {
         displayContent := StrLen(content.text) > 100 ? SubStr(content.text, 1, 100) . "..." : content.text
@@ -180,8 +180,7 @@ updateContent(LV, contentViewer) {
     if (selectedItems.Length > 1) {
         mergedItems := ""
         for index, itemIndex in selectedItems {
-            mergedItems .= itemIndex . "`r`n" .
-                clipHistory[itemIndex].text .
+            mergedItems .= clipHistory[itemIndex].text .
                 (index < selectedItems.Length ? "`r`n`r`n" : "")
         }
         contentViewer.Value := mergedItems
@@ -190,7 +189,7 @@ updateContent(LV, contentViewer) {
 }
 
 ; Save edited content back to clipboard history
-saveContent(LV, contentViewer, clipHistoryGui, andPaste := false) {
+saveContent(LV, contentViewer, clipHistoryGui) {
     global clipHistory
     selectedItems := getSelected(LV)
     if (selectedItems.Length = 0)
@@ -200,56 +199,53 @@ saveContent(LV, contentViewer, clipHistoryGui, andPaste := false) {
         clipHistory[selectedItems[1]].text := contentViewer.Value
         ; Note: Original format is not updated when text is edited
 
-        if (!andPaste) {
-            rowNum := 1
-            loop LV.GetCount() {
-                if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
-                    displayContent := StrLen(contentViewer.Value) > 100 ?
-                        SubStr(contentViewer.Value, 1, 100) . "..." : contentViewer.Value
-                    LV.Modify(rowNum, , selectedItems[1], displayContent)
-                    break
-                }
-                rowNum++
+        rowNum := 1
+        loop LV.GetCount() {
+            if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
+                displayContent := StrLen(contentViewer.Value) > 100 ?
+                    SubStr(contentViewer.Value, 1, 100) . "..." : contentViewer.Value
+                LV.Modify(rowNum, , selectedItems[1], displayContent)
+                break
             }
-            showNotification("Changes saved")
+            rowNum++
         }
-    } else if (!andPaste) {
+        showNotification("Changes saved")
+    } else {
         showNotification("Cannot save changes when multiple items are selected.")
         return
     }
 
-    if (andPaste) {
-        mergedItems := ""
-        for index, item in selectedItems
-            mergedItems .= clipHistory[item].text . (index < selectedItems.Length ? "`r`n" : "")
-        clipHistoryGui.Destroy()
-        paste(mergedItems)
-        return
-    }
-    updateLV(LV)
+    updateLV(LV, clipHistoryGui)
 }
 
 ; Merge selected items into clipboard history
 saveToClipboard(LV := 0, formatTextEnable := false) {
-    global isFormatting, clipHistory
+    global clipHistory
     contentItems := prepareClipItems(LV)
+
     for _, item in contentItems {
         if (formatTextEnable) {
             formattedText := formatText(item.text)
             clipHistory.Push({
                 text: formattedText,
-                original: ClipboardAll(formattedText)
+                original: item.original  ; Keep the original formatting
             })
         } else {
-            clipHistory.Push(item)
+            ; Just create a new object directly without clipboard manipulation
+            clipHistory.Push({
+                text: item.text,
+                original: item.original
+            })
         }
     }
+
     updateLV(LV)
 }
 
 moveSelectedItem(LV, contentViewer, direction) {
     global clipHistory
-
+    if (!isListViewFocused())
+        return
     selectedRow := LV.GetNext(0)
     if (!selectedRow)
         return
@@ -277,12 +273,15 @@ moveSelectedItem(LV, contentViewer, direction) {
             break
         }
     }
-
     updateContent(LV, contentViewer)
 }
 
-deleteSelected(LV) {
+deleteSelected(LV, clipHistoryGui := 0) {
     global clipHistory
+    if (!isListViewFocused()) {
+        Send("{Delete}")
+        return
+    }
 
     selectedItems := getSelected(LV)
     if (selectedItems.Length = 0)
@@ -304,7 +303,8 @@ deleteSelected(LV) {
 
     for i, item in selectedItems
         clipHistory.RemoveAt(item)
-    updateLV(LV)
+
+    updateLV(LV, clipHistoryGui)
 }
 
 clearClipboard(clipHistoryGui := 0) {

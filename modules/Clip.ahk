@@ -13,8 +13,7 @@ addClipSettings(settingsGui, yPos) {
     settingsGui.Add("CheckBox", "x20 y" . yPos . " vremoveAccentsEnabled Checked" . removeAccentsEnabled,
         "Remove Accents")
     yPos += 25
-    settingsGui.Add("CheckBox", "x20 y" . yPos . " vnormSpaceEnabled Checked" .
-        normSpaceEnabled,
+    settingsGui.Add("CheckBox", "x20 y" . yPos . " vnormSpaceEnabled Checked" . normSpaceEnabled,
         "Normalize Spaces")
     yPos += 25
     settingsGui.Add("CheckBox", "x20 y" . yPos . " vremoveSpecialEnabled Checked" . removeSpecialEnabled,
@@ -84,12 +83,14 @@ showClipboard() {
 
     ; Special hotkeys when clipboard history is active
     HotIfWinActive("ahk_id " . clipHistoryGui.Hwnd)
-    Hotkey "Enter", (*) => saveContent(LV, contentViewer, clipHistoryGui, true)
+    Hotkey "Enter", (*) => isListViewFocused() ? pasteSelected(LV, clipHistoryGui) : Send("{Enter}")
     Hotkey "!Up", (*) => moveSelectedItem(LV, contentViewer, -1)
     Hotkey "!Down", (*) => moveSelectedItem(LV, contentViewer, 1)
+    Hotkey "^a", (*) => isListViewFocused() ? LV.Modify(0, "Select") : Send("^a")
+    Hotkey "Delete", (*) => deleteSelected(LV, clipHistoryGui)
     HotIf()
 
-    updateLV(LV)
+    updateLV(LV, clipHistoryGui)
 
     ; Select and focus the last item (most recent)
     lastRow := LV.GetCount()
@@ -98,14 +99,11 @@ showClipboard() {
         updateContent(LV, contentViewer)
     }
 
-    ; Add action buttons
+    ; Add action buttons - now with help button
     buttonOptions := [
-        ["x10 y530 w100", "Paste All", (*) =>
-            pasteSelected(getAll(LV), clipHistoryGui)],
-        ["x120 y530 w120", "Format Paste All", (*) => pasteSelected(getAll(LV), clipHistoryGui, true)],
-        ["x250 y530 w100", "Clear All", (*) => clearClipboard(clipHistoryGui)],
-        ["x360 y530 w120", "Save Changes", (*) => saveContent(LV, contentViewer, clipHistoryGui)],
-        ["x490 y530 w120", "Paste Original All", (*) => pasteSelected(getAll(LV), clipHistoryGui, -1)]
+        ["x150 y530 w120", "Save Changes", (*) => saveContent(LV, contentViewer, clipHistoryGui)],
+        ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipHistoryGui)],
+        ["x410 y530 w120", "Help", (*) => showClipboardHelp()]
     ]
 
     for option in buttonOptions
@@ -114,16 +112,46 @@ showClipboard() {
     clipHistoryGui.Show("w720 h570")
 }
 
+; Show clipboard usage instructions
+showClipboardHelp(*) {
+    helpGui := Gui("+AlwaysOnTop +ToolWindow", "Clipboard Help")
+    helpGui.SetFont("s10")
+
+    helpText :=
+        "CLIPBOARD HISTORY USAGE GUIDE`n`n" .
+        "• Double-click/ Enter: Paste selected items`n" .
+        "• Click: Select a single item`n" .
+        "• Ctrl+Click: Select multiple non-consecutive items`n" .
+        "• Shift+Click: Select a range of items`n" .
+        "• Ctrl+A: Select all items in the list`n`n" .
+        "MANAGEMENT:`n" .
+        "• Delete: Delete selected item(s) (when list is focused)`n" .
+        "• Alt+Up/Down: Move selected item up/down in the list`n" .
+        "• Right-click: Show context menu with more options`n`n"
+
+    helpGui.Add("Text", "w400", helpText)
+    helpGui.Add("Button", "w100 x150 y330 Default", "OK").OnEvent("Click", (*) => helpGui.Destroy())
+
+    helpGui.OnEvent("Escape", (*) => helpGui.Destroy())
+    helpGui.OnEvent("Close", (*) => helpGui.Destroy())
+
+    helpGui.Show()
+}
+
 ; Context menu for clipboard items
 showContextMenu(LV, clipHistoryGui, Item, X, Y) {
     if (Item = 0)
         return
+
+    contentViewer := 0
+    try contentViewer := clipHistoryGui.FindControl("Edit1")
+
     contextMenu := Menu()
     contextMenu.Add("Paste", (*) => pasteSelected(LV, clipHistoryGui))
     contextMenu.Add("Paste with Format", (*) => pasteSelected(LV, clipHistoryGui, true))
     contextMenu.Add("Paste as Original Format", (*) => pasteSelected(LV, clipHistoryGui, -1))
     contextMenu.Add("Save Format to Clipboard", (*) => saveToClipboard(LV, true))
     contextMenu.Add()
-    contextMenu.Add("Delete Item", (*) => deleteSelected(LV))
+    contextMenu.Add("Delete Item", (*) => deleteSelected(LV, clipHistoryGui))
     contextMenu.Show(X, Y)
 }

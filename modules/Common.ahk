@@ -73,97 +73,94 @@ showSettings(*) {
         return
     isCreating := true
 
-    ; Clean up any existing GUI
-    try {
-        if IsObject(settingsGui) && settingsGui.HasProp("Hwnd") {
-            if WinExist("ahk_id " . settingsGui.Hwnd) {
-                SetTimer(CheckSettingsOutsideClick, 0)
-                settingsGui.Destroy()
-            }
-            settingsGui := 0
-        }
-    } catch {
-        settingsGui := 0
+    ; Clean up existing GUI - safer checking
+
+    if IsObject(settingsGui) {
+        SetTimer(() => CheckGuiOutsideClick(settingsGui, true), 0)
+        settingsGui.Destroy()
+        settingsGui := 0  ; Reset to prevent errors with destroyed GUI
     }
 
-    ; Create new GUI
-    try {
-        settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
-        settingsGui.SetFont("s10")
-        yPos := 10
-        yPos := addKeySettings(settingsGui, yPos)
-        yPos := addClipSettings(settingsGui, yPos)
+    ; Create new settings GUI
+    settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
+    settingsGui.SetFont("s10")
+    yPos := 10
+    yPos := addKeySettings(settingsGui, yPos)
+    yPos := addClipSettings(settingsGui, yPos)
 
-        settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save").OnEvent("Click", CloseSettingsGui)
-        settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts").OnEvent("Click", (*) => showShortcuts())
-        settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About").OnEvent("Click", (*) => showAbout())
-        settingsGui.Show("w375 h" . (yPos + 50))
-        settingsGui.OnEvent("Escape", CloseSettingsGui)
+    settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
+    .OnEvent("Click", (*) => CloseAndSave())
+    settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts")
+    .OnEvent("Click", (*) => showShortcuts())
+    settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About")
+    .OnEvent("Click", (*) => showAbout())
 
-        SetTimer(CheckSettingsOutsideClick, 100)
-    } catch as e {
-        MsgBox("Error creating settings: " . e.Message)
-        settingsGui := 0
-    }
+    settingsGui.Show("w375 h" . (yPos + 50))
+    settingsGui.OnEvent("Escape", (*) => CloseAndSave())
+    settingsGui.OnEvent("Close", (*) => CloseAndSave())
+    SetTimer(() => CheckGuiOutsideClick(settingsGui, true), 100)
+
     isCreating := false
 
-    CloseSettingsGui(*) {
-        SetTimer(CheckSettingsOutsideClick, 0)
-        try {
-            saveSettings(settingsGui.Submit())
-            if IsObject(settingsGui) {
-                settingsGui.Destroy()
-                settingsGui := 0
-            }
-        } catch as e {
-            MsgBox("Error closing settings: " . e.Message)
-            settingsGui := 0
+    ; Helper function for saving and closing
+    CloseAndSave() {
+        SetTimer(() => CheckGuiOutsideClick(settingsGui, true), 0)
+        saveSettings(settingsGui.Submit())
+        settingsGui.Destroy()
+        settingsGui := 0  ; Reset after destroying
+
+    }
+}
+; Checks for clicks outside a GUI and closes it
+CheckGuiOutsideClick(guiObj, saveSettingsOnClose := false) {
+    static destroyingMap := Map()
+    static dropdownActiveMap := Map()
+    guiHwnd := 0
+    try guiHwnd := guiObj.HasProp("Hwnd") ? guiObj.Hwnd : 0
+    catch {
+        SetTimer(() => CheckGuiOutsideClick(guiObj, saveSettingsOnClose), 0)
+        return
+    }
+
+    ; Exit if invalid handle or already destroying
+    if (!guiHwnd || !WinExist("ahk_id " . guiHwnd)) {
+        SetTimer(() => CheckGuiOutsideClick(guiObj, saveSettingsOnClose), 0)
+        return
+    }
+
+    ; Initialize tracking if needed
+    if (!destroyingMap.Has(guiHwnd))
+        destroyingMap[guiHwnd] := false
+    if (!dropdownActiveMap.Has(guiHwnd))
+        dropdownActiveMap[guiHwnd] := false
+    if (destroyingMap[guiHwnd])
+        return
+
+    if (saveSettingsOnClose) {
+        dropdownIsActive := WinExist("ahk_class ComboLBox") != 0
+        if (dropdownIsActive) {
+            dropdownActiveMap[guiHwnd] := true
+            return
+        } else if (dropdownActiveMap[guiHwnd]) {
+            dropdownActiveMap[guiHwnd] := false
+            Sleep(200)
+            return
         }
     }
 
-    CheckSettingsOutsideClick() {
-        static isDestroying := false
-        static isDropdownActive := false
-        if isDestroying || !IsObject(settingsGui)
-            return
+    ; Check for mouse position and clicks
+    MouseGetPos(, , &winUnderCursor)
+    if (winUnderCursor != guiHwnd && GetKeyState("LButton", "P")) {
+        destroyingMap[guiHwnd] := true
+        SetTimer(() => CheckGuiOutsideClick(guiObj, saveSettingsOnClose), 0)
 
         try {
-            if !settingsGui.HasProp("Hwnd") || !WinExist("ahk_id " . settingsGui.Hwnd) {
-                SetTimer(CheckSettingsOutsideClick, 0)
-                settingsGui := 0
-                return
-            }
-
-            dropdownIsActive := WinExist("ahk_class ComboLBox") != 0
-            if (dropdownIsActive) {
-                isDropdownActive := true
-                return
-            } else if (isDropdownActive) {
-                isDropdownActive := false
-                Sleep(200)
-                return
-            }
-
-            mouseIsOutside := false
-            MouseGetPos(, , &winUnderCursor)
-            if winUnderCursor != settingsGui.Hwnd {
-                mouseIsOutside := true
-            }
-            if mouseIsOutside && GetKeyState("LButton", "P") {
-                isDestroying := true
-                SetTimer(CheckSettingsOutsideClick, 0)
-                try {
-                    saveSettings(settingsGui.Submit())
-                    settingsGui.Destroy()
-                } catch {
-                }
-                settingsGui := 0
-                isDestroying := false
-            }
-        } catch {
-            SetTimer(CheckSettingsOutsideClick, 0)
-            settingsGui := 0
+            if (saveSettingsOnClose && guiObj.HasMethod("Submit"))
+                saveSettings(guiObj.Submit())
+            guiObj.Destroy()
         }
+
+        destroyingMap[guiHwnd] := false
     }
 }
 
@@ -173,34 +170,4 @@ showNotification(message, timeout := 1200) {
     notify.Add("Text", "w300 Center", message)
     notify.Show("NoActivate")
     SetTimer(() => notify.Destroy(), -timeout)
-}
-
-; Checks for clicks outside a GUI and closes it if detected
-CheckOutsideClick(shortcutsGui) {
-    static isDestroying := false
-
-    if isDestroying || !IsObject(shortcutsGui)
-        return
-
-    try {
-        if !shortcutsGui.HasProp("Hwnd") || !WinExist("ahk_id " . shortcutsGui.Hwnd) {
-            SetTimer(() => CheckOutsideClick(shortcutsGui), 0)
-            return
-        }
-
-        mouseIsOutside := false
-        MouseGetPos(, , &winUnderCursor)
-        if winUnderCursor != shortcutsGui.Hwnd {
-            mouseIsOutside := true
-        }
-
-        if mouseIsOutside && GetKeyState("LButton", "P") {
-            isDestroying := true
-            SetTimer(() => CheckOutsideClick(shortcutsGui), 0)
-            try shortcutsGui.Destroy()
-            isDestroying := false
-        }
-    } catch {
-        SetTimer(() => CheckOutsideClick(shortcutsGui), 0)
-    }
 }

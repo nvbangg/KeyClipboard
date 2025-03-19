@@ -20,7 +20,8 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - `CapsLock + V`: Paste latest clipboard item 
 - `CapsLock + B`: Paste **Before** Latest item
 - `CapsLock + A`: Paste **All** items 
-- `CapsLock + Shift + V/B/A`: Paste item(s) with formatting
+- `CapsLock + Shift + V/B/A`: Paste item(s) with Format
+- `CapsLock + Ctrl + V/B/A`: Paste items(s) as Original
 - `CapsLock + Space`: Show clipboard history
 - `CapsLock + C`: **Clear** clipboard history
 - `Alt + ↑/↓`: Move selected item up/down
@@ -64,8 +65,7 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 4. The application will now start automatically when you boot your computer
 
 ## Tính năng dự kiến
-- Xoá các nút paste all đi mà sửa thành nút chọn tất cả, thêm dùng ctrl A để chọn tất cả, delete để xoá các mục chọn
-- thêm hướng dẫn dùng clipboard
+
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
 - Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
@@ -73,3 +73,9 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ### Changelog: 
 - Thêm lựa chọn và phím tắt Paste as Original (có in đậm, nghiêng,...)
+- Xoá các nút paste all
+- Thêm dùng Ctrl A để chọn tất cả, delete để xoá các mục chọn
+- Thêm hướng dẫn dùng clipboard
+- Sửa phím tắt tách biệt chức năng khi chọn muc/ chọn nội dung
+- Sửa lỗi khi dùng chức năng Save format to Clipboard
+- Sửa một vài vấn đề khác
