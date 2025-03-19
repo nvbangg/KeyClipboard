@@ -79,7 +79,7 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - Xoá các nút paste all
 - Thêm dùng Ctrl A để chọn tất cả, delete để xoá các mục chọn
 - Thêm hướng dẫn dùng clipboard
-- Thêm phím tắt tách biệt chức năng khi chọn muc/ sửa nội dung
+- Thêm phím tắt tách biệt chức năng khi chọn mục/ sửa nội dung
 - Thêm đóng clipboard nếu clear bằng phím tắt
 - Sửa lỗi không paste được lần đầu sau khi khởi chạy
 - Sửa một vài lỗi và vấn đề khác
