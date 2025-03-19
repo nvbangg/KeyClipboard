@@ -66,7 +66,6 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ## Tính năng dự kiến
 
-- Sửa dán không hoạt động khi kích hoạt lần đầu
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
 - Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file

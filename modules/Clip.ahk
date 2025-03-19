@@ -127,8 +127,8 @@ showClipboardHelp(*) {
         "• Alt+Up/Down: Move selected item up/down in the list`n" .
         "• Right-click: Show context menu with more options`n`n"
 
-    helpGui.Add("Text", "w400", helpText)
-    helpGui.Add("Button", "w100 x150 y330 Default", "OK").OnEvent("Click", (*) => helpGui.Destroy())
+    helpGui.Add("Text", "w350", helpText)
+    helpGui.Add("Button", "w100 x120 y200 Default", "OK").OnEvent("Click", (*) => helpGui.Destroy())
 
     helpGui.OnEvent("Escape", (*) => helpGui.Destroy())
     helpGui.OnEvent("Close", (*) => helpGui.Destroy())
