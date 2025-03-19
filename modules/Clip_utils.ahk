@@ -99,6 +99,39 @@ getSelected(LV) {
     return selectedItems
 }
 
+selectAllItems(LV, contentViewer) {
+    if (!LV || LV.GetCount() == 0)
+        return
+
+    ; Count total items and selected items
+    totalItems := LV.GetCount()
+    selectedCount := 0
+    rowNum := 0
+
+    ; Count selected items
+    loop {
+        rowNum := LV.GetNext(rowNum)
+        if (!rowNum)
+            break
+        selectedCount++
+    }
+
+    ; Toggle selection based on current state
+    if (selectedCount == totalItems) {
+        ; If all items are selected, deselect all
+        LV.Modify(0, "-Select")
+        contentViewer.Value := ""  ; Clear the content viewer
+    } else {
+        ; If not all items are selected, select all
+        if (!isListViewFocused())
+            LV.Focus()
+        LV.Modify(0, "Select")
+
+        ; Update content viewer with all selected items
+        updateContent(LV, contentViewer)
+    }
+}
+
 ; Process clipboard items for pasting
 prepareClipItems(LV := 0) {
     global clipHistory
@@ -128,6 +161,16 @@ prepareClipItems(LV := 0) {
 initClipboard()
 initClipboard() {
     global clipHistory := []
+    global isFormatting := false
+    isFormatting := true
+    tempClip := ClipboardAll()
+
+    A_Clipboard := "Initializing..."
+    ClipWait(0.2)
+    A_Clipboard := tempClip
+    ClipWait(0.2)
+
+    isFormatting := false
     OnClipboardChange(updateClipboard, 1)
 }
 ; Handle clipboard content changes
@@ -148,7 +191,7 @@ updateClipboard(Type) {
 }
 
 ; Update ListView with clipboard history
-updateLV(LV, clipHistoryGui := 0) {
+updateLV(LV, clipHistoryGui := 0, searchText := "") {
     global clipHistory
     if (clipHistory.Length = 0) {
         if (clipHistoryGui) {
@@ -159,12 +202,49 @@ updateLV(LV, clipHistoryGui := 0) {
     }
 
     LV.Delete()
-    for index, content in clipHistory {
+    filteredItems := filterClipboardItems(searchText)
+
+    if (filteredItems.Length = 0 && searchText) {
+        LV.Add(, "", "No matching items found")
+        return
+    }
+
+    for index, content in filteredItems {
         displayContent := StrLen(content.text) > 100 ? SubStr(content.text, 1, 100) . "..." : content.text
-        LV.Add(, index, displayContent)
+        LV.Add(, content.originalIndex, displayContent)
     }
 
     LV.ModifyCol(1, "Integer")
+}
+
+; Filter clipboard items based on search text
+filterClipboardItems(searchText := "") {
+    global clipHistory
+    if (searchText = "") {
+        filteredItems := []
+        for index, item in clipHistory {
+            filteredItems.Push({
+                text: item.text,
+                original: item.original,
+                originalIndex: index
+            })
+        }
+        return filteredItems
+    }
+
+    filteredItems := []
+    searchTextLower := StrLower(searchText)
+    for index, item in clipHistory {
+        if (InStr(StrLower(item.text), searchTextLower)) {
+            filteredItems.Push({
+                text: item.text,
+                original: item.original,
+                originalIndex: index
+            })
+        }
+    }
+
+    return filteredItems
 }
 
 ; Update content viewer with selected item content
@@ -232,7 +312,6 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
                 original: item.original  ; Keep the original formatting
             })
         } else {
-            ; Just create a new object directly without clipboard manipulation
             clipHistory.Push({
                 text: item.text,
                 original: item.original

@@ -65,10 +65,19 @@ showClipboard() {
     clipHistoryGuiInstance := clipHistoryGui
     clipHistoryGui.SetFont("s10")
 
-    ; Create ListView for clipboard items
-    LV := clipHistoryGui.Add("ListView", "x10 y10 w700 h300 Grid Multi", ["#", "Content"])
+    ; Add Select All button and search box
+    selectAllBtn := clipHistoryGui.Add("Button", "x10 y5 w70", "Select All")
+    clipHistoryGui.Add("Text", "x90 y10", "Search:")
+    searchBox := clipHistoryGui.Add("Edit", "x150 y7 w560")
+    searchBox.OnEvent("Change", onSearchChange)
+
+    ; Create ListView for clipboard items (adjusted position due to search box)
+    LV := clipHistoryGui.Add("ListView", "x10 y40 w700 h270 Grid Multi", ["#", "Content"])
     LV.ModifyCol(1, 50, "Integer")
     LV.ModifyCol(2, 640)
+
+    ; Add event handler for Select All button
+    selectAllBtn.OnEvent("Click", (*) => selectAllItems(LV, contentViewer))
 
     LV.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
         showContextMenu(LV, clipHistoryGui, Item, X, Y))
@@ -86,7 +95,7 @@ showClipboard() {
     Hotkey "Enter", (*) => isListViewFocused() ? pasteSelected(LV, clipHistoryGui) : Send("{Enter}")
     Hotkey "!Up", (*) => moveSelectedItem(LV, contentViewer, -1)
     Hotkey "!Down", (*) => moveSelectedItem(LV, contentViewer, 1)
-    Hotkey "^a", (*) => isListViewFocused() ? LV.Modify(0, "Select") : Send("^a")
+    Hotkey "^a", (*) => selectAllItems(LV, contentViewer)
     Hotkey "Delete", (*) => deleteSelected(LV, clipHistoryGui)
     HotIf()
 
@@ -97,6 +106,7 @@ showClipboard() {
     if (lastRow > 0) {
         LV.Modify(lastRow, "Select Focus Vis")
         updateContent(LV, contentViewer)
+        LV.Focus()
     }
 
     ; Add action buttons - now with help button
@@ -110,6 +120,15 @@ showClipboard() {
         clipHistoryGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
 
     clipHistoryGui.Show("w720 h570")
+    SetTimer(() => LV.Focus(), -50)
+
+    ; Handle search functionality
+    onSearchChange(searchCtrl, *) {
+        searchText := searchCtrl.Value
+        selectedIndices := getSelected(LV)
+        updateLV(LV, clipHistoryGui, searchText)
+        updateContent(LV, contentViewer)
+    }
 }
 
 ; Show clipboard usage instructions
@@ -128,7 +147,7 @@ showClipboardHelp(*) {
         "• Right-click: Show context menu with more options`n`n"
 
     helpGui.Add("Text", "w350", helpText)
-    helpGui.Add("Button", "w100 x120 y200 Default", "OK").OnEvent("Click", (*) => helpGui.Destroy())
+    helpGui.Add("Button", "w100 x150 y180 Default", "OK").OnEvent("Click", (*) => helpGui.Destroy())
 
     helpGui.OnEvent("Escape", (*) => helpGui.Destroy())
     helpGui.OnEvent("Close", (*) => helpGui.Destroy())

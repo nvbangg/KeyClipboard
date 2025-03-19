@@ -6,18 +6,18 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 - **Always on Top**: Pin a window to stay on top with a shortcut
 - **Formatted Pasting**: Paste items with custom text formatting
-- **Multi-Item Paste**: Paste multiple clipboard items at once
+- **Multi-Item Paste**: Paste all clipboard items or selected items
 - **Edit Content**: Edit items directly in the clipboard history viewer
 - **Organize Items**: Adjust the position of items in the clipboard
+- **Quick Search**: Rapidly search through clipboard content.
 - **Quick Translation**: Translate Chrome pages instantly with a shortcut
 
 ![image](https://github.com/user-attachments/assets/c4861c92-1074-4baa-9a18-c241e50ee672)
 
-
 ## Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
-- `CapsLock + Space + T`: **Always on Top** for active Window
 - `CapsLock + T`: **Translate** Chrome page
+- `CapsLock + Space + T`: **Always on Top** for active Window
 - `CapsLock + C`: Show **Clipboard** History
 - `CapsLock + Space + C`: **Clear** clipboard history
 - `CapsLock + F`: Specific **Format** (Paste combining previous and current items) 
@@ -81,8 +81,10 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - Thêm hướng dẫn dùng clipboard
 - Thêm phím tắt tách biệt chức năng khi chọn muc/ sửa nội dung
 - Thêm đóng clipboard nếu clear bằng phím tắt
+- Sửa lỗi không paste được lần đầu sau khi khởi chạy
 - Sửa một vài lỗi và vấn đề khác
 - Có thể dùng Nút Save để Reload lại Cliphistory
+- Thêm thanh tìm kiếm nội dung và nút Select All
 - Sửa lại các phím tắt:
 - `CapsLock + Space + T`: **Toggle Always-on-Top** for active Window
 - `CapsLock + C`: Show **Clipboard** History

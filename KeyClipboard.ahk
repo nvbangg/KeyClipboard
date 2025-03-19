@@ -35,11 +35,20 @@ Space & a:: pasteSelected(, , 1) ; Paste all clipboard items with format
 +a:: pasteSelected(, , -1)      ; Paste all clipboard items as original
 #HotIf
 
-; CapsLock toggle handling
+initCapsLockMonitor()
+initCapsLockMonitor() {
+    SetCapsLockState "AlwaysOff"
+    ; Use a timer to monitor for the first 5 seconds
+    loop 10 {
+        SetTimer(() => SetCapsLockState("AlwaysOff"), -500 * A_Index)
+    }
+}
+
 *CapsLock::
 {
     KeyWait "CapsLock"
-    if (A_PriorKey = "CapsLock") {
+    if (A_PriorKey = "CapsLock" && A_ThisHotkey = "*CapsLock") {
+        Sleep(20)
         if GetKeyState("CapsLock", "T")
             SetCapsLockState "AlwaysOff"
         else
@@ -112,8 +121,8 @@ showAbout(*) {
     Sleep(50)
     result := MsgBox(
         "KeyClipboard`n" .
-        "Version: 1.5.4.2`n" .
-        "Date: 19/03/2025`n`n" .
+        "Version: 1.5.4.3`n" .
+        "Date: 20/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard",
