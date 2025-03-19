@@ -101,7 +101,7 @@ showClipboard() {
 
     ; Add action buttons - now with help button
     buttonOptions := [
-        ["x150 y530 w120", "Save Changes", (*) => saveContent(LV, contentViewer, clipHistoryGui)],
+        ["x150 y530 w120", "Save/Reload", (*) => saveContent(LV, contentViewer, clipHistoryGui)],
         ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipHistoryGui)],
         ["x410 y530 w120", "Help", (*) => showClipboardHelp()]
     ]
@@ -120,12 +120,10 @@ showClipboardHelp(*) {
     helpText :=
         "CLIPBOARD HISTORY USAGE GUIDE`n`n" .
         "• Double-click/ Enter: Paste selected items`n" .
-        "• Click: Select a single item`n" .
         "• Ctrl+Click: Select multiple non-consecutive items`n" .
         "• Shift+Click: Select a range of items`n" .
-        "• Ctrl+A: Select all items in the list`n`n" .
-        "MANAGEMENT:`n" .
-        "• Delete: Delete selected item(s) (when list is focused)`n" .
+        "• Ctrl+A: Select all items in the list`n" .
+        "• Delete: Delete selected item(s)`n" .
         "• Alt+Up/Down: Move selected item up/down in the list`n" .
         "• Right-click: Show context menu with more options`n`n"
 

@@ -15,17 +15,17 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ## Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
-- `CapsLock + W`: Toggle Always-on-Top for active **Window**
+- `CapsLock + Space + T`: **Always on Top** for active Window
 - `CapsLock + T`: **Translate** Chrome page
+- `CapsLock + C`: Show **Clipboard** History
+- `CapsLock + Space + C`: **Clear** clipboard history
+- `CapsLock + F`: Specific **Format** (Paste combining previous and current items) 
+
 - `CapsLock + V`: Paste latest clipboard item 
 - `CapsLock + B`: Paste **Before** Latest item
 - `CapsLock + A`: Paste **All** items 
-- `CapsLock + Shift + V/B/A`: Paste item(s) with Format
-- `CapsLock + Ctrl + V/B/A`: Paste items(s) as Original
-- `CapsLock + Space`: Show clipboard history
-- `CapsLock + C`: **Clear** clipboard history
-- `Alt + ↑/↓`: Move selected item up/down
-- `CapsLock + F`: Specific **Format** (Paste combined previous and current items)
+- `CapsLock+Space+V/B/A`: Paste item(s) with Format
+- `CapsLock + Shift + V/B/A`: Paste item(s) as Original
 
 ## Settings Options
 ![image](https://github.com/user-attachments/assets/99076f93-7f65-402c-8519-9ffae92476b6)
@@ -66,6 +66,7 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ## Tính năng dự kiến
 
+- Sửa dán không hoạt động khi kích hoạt lần đầu
 - Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
 - Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
@@ -76,6 +77,13 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - Xoá các nút paste all
 - Thêm dùng Ctrl A để chọn tất cả, delete để xoá các mục chọn
 - Thêm hướng dẫn dùng clipboard
-- Sửa phím tắt tách biệt chức năng khi chọn muc/ chọn nội dung
-- Sửa lỗi khi dùng chức năng Save format to Clipboard
-- Sửa một vài vấn đề khác
+- Thêm phím tắt tách biệt chức năng khi chọn muc/ sửa nội dung
+- Thêm đóng clipboard nếu clear bằng phím tắt
+- Sửa một vài lỗi và vấn đề khác
+- Có thể dùng Nút Save để Reload lại Cliphistory
+- Sửa lại các phím tắt:
+- `CapsLock + Space + T`: **Toggle Always-on-Top** for active Window
+- `CapsLock + C`: Show **Clipboard** History
+- `CapsLock + Space + C`: **Clear** clipboard history
+- `CapsLock+Space+V/B/A`: Paste item(s) with Format
+- `CapsLock + Shift + V/B/A`: Paste item(s) as Original

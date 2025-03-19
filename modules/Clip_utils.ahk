@@ -165,7 +165,6 @@ updateLV(LV, clipHistoryGui := 0) {
     }
 
     LV.ModifyCol(1, "Integer")
-    LV.Modify(clipHistory.Length, "Select Focus")
 }
 
 ; Update content viewer with selected item content
@@ -192,8 +191,10 @@ updateContent(LV, contentViewer) {
 saveContent(LV, contentViewer, clipHistoryGui) {
     global clipHistory
     selectedItems := getSelected(LV)
-    if (selectedItems.Length = 0)
+    if (selectedItems.Length = 0) {
+        updateLV(LV, clipHistoryGui)
         return
+    }
 
     if (selectedItems.Length = 1) {
         clipHistory[selectedItems[1]].text := contentViewer.Value
@@ -308,8 +309,23 @@ deleteSelected(LV, clipHistoryGui := 0) {
 }
 
 clearClipboard(clipHistoryGui := 0) {
+    global clipHistoryGuiInstance
+
+    ; Close clipboard history window if it's open
+    try {
+        if (IsObject(clipHistoryGuiInstance) && clipHistoryGuiInstance.HasProp("Hwnd") &&
+        WinExist("ahk_id " . clipHistoryGuiInstance.Hwnd)) {
+            clipHistoryGuiInstance.Destroy()
+            clipHistoryGuiInstance := 0
+        }
+    } catch {
+        ; Handle any errors silently
+    }
+
+    ; Also close the GUI passed as parameter if any
     if (clipHistoryGui)
         clipHistoryGui.Destroy()
+
     global clipHistory
     clipHistory := []
     showNotification("All items have been cleared")
