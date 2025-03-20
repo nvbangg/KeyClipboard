@@ -76,19 +76,4 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
 
 ### Changelog: 
-- Thêm lựa chọn và phím tắt Paste as Original (có in đậm, nghiêng,...)
-- Xoá các nút paste all
-- Thêm dùng Ctrl A để chọn tất cả, delete để xoá các mục chọn
-- Thêm hướng dẫn dùng clipboard
-- Thêm phím tắt tách biệt chức năng khi chọn mục/ sửa nội dung
-- Thêm đóng clipboard nếu clear bằng phím tắt
-- Sửa lỗi không paste được lần đầu sau khi khởi chạy
-- Sửa một vài lỗi và vấn đề khác
-- Có thể dùng Nút Save để Reload lại Cliphistory
-- Thêm thanh tìm kiếm nội dung và nút Select All
-- Sửa lại các phím tắt:
-- `CapsLock + Space + T`: **Toggle Always-on-Top** for active Window
-- `CapsLock + C`: Show **Clipboard** History
-- `CapsLock + Space + C`: **Clear** clipboard history
-- `CapsLock+Space+V/B/A`: Paste item(s) with Format
-- `CapsLock + Shift + V/B/A`: Paste item(s) as Original
+- Sửa đổi cấu trúc dự án
