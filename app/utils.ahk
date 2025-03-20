@@ -1,6 +1,4 @@
-; === COMMON MODULE ===
-
-global settingsFilePath := A_ScriptDir . "\data\settings.ini"
+; === UTILS MODULE ===
 
 ensureFilesExist() {
     dataDir := A_ScriptDir . "\data"
@@ -13,7 +11,6 @@ ensureFilesExist() {
 }
 
 ; Loads settings from INI file into global variables
-initSettings()
 initSettings() {
     global mouseEnabled, numLockEnabled
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
@@ -32,6 +29,14 @@ initSettings() {
     separatorOption := Integer(IniRead(settingsFilePath, "Settings", "separatorOption", "0"))
 
     updateNumLock()
+}
+
+initCapsLockMonitor() {
+    SetCapsLockState "AlwaysOff"
+    ; Use a timer to monitor for the first 5 seconds
+    loop 10 {
+        SetTimer(() => SetCapsLockState("AlwaysOff"), -500 * A_Index)
+    }
 }
 
 ; Saves settings to INI file and updates global variables
@@ -66,51 +71,6 @@ saveSettings(savedValues) {
     updateNumLock()
 }
 
-showSettings(*) {
-    static settingsGui := 0
-    static isCreating := false
-    if (isCreating)
-        return
-    isCreating := true
-
-    ; Clean up existing GUI - safer checking
-
-    if IsObject(settingsGui) {
-        SetTimer(() => CheckGuiOutsideClick(settingsGui, true), 0)
-        settingsGui.Destroy()
-        settingsGui := 0  ; Reset to prevent errors with destroyed GUI
-    }
-
-    ; Create new settings GUI
-    settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
-    settingsGui.SetFont("s10")
-    yPos := 10
-    yPos := addKeySettings(settingsGui, yPos)
-    yPos := addClipSettings(settingsGui, yPos)
-
-    settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
-    .OnEvent("Click", (*) => CloseAndSave())
-    settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts")
-    .OnEvent("Click", (*) => showShortcuts())
-    settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About")
-    .OnEvent("Click", (*) => showAbout())
-
-    settingsGui.Show("w375 h" . (yPos + 50))
-    settingsGui.OnEvent("Escape", (*) => CloseAndSave())
-    settingsGui.OnEvent("Close", (*) => CloseAndSave())
-    SetTimer(() => CheckGuiOutsideClick(settingsGui, true), 100)
-
-    isCreating := false
-
-    ; Helper function for saving and closing
-    CloseAndSave() {
-        SetTimer(() => CheckGuiOutsideClick(settingsGui, true), 0)
-        saveSettings(settingsGui.Submit())
-        settingsGui.Destroy()
-        settingsGui := 0  ; Reset after destroying
-
-    }
-}
 ; Checks for clicks outside a GUI and closes it
 CheckGuiOutsideClick(guiObj, saveSettingsOnClose := false) {
     static destroyingMap := Map()

@@ -1,4 +1,4 @@
-; === Clip_format Module ===
+; === CLIP_FORMAT MODULE ===
 
 formatText(text) {
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled

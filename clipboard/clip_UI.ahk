@@ -1,11 +1,4 @@
-; === CLIPBOARD MODULE ===
-
-global clipHistory := []             ; Stores clipboard history items
-global isFormatting := false         ; Flag for formatting in progress
-global originalClip := ""            ; Stores original clipboard content
-global clipHistoryGuiInstance := 0   ; Reference to clipboard history GUI
-#Include "Clip_utils.ahk"
-#Include "Clip_format.ahk"
+; === CLIP_UI MODULE ===
 
 addClipSettings(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h200", "Format Options")
@@ -166,7 +159,7 @@ showContextMenu(LV, clipHistoryGui, Item, X, Y) {
     contextMenu := Menu()
     contextMenu.Add("Paste", (*) => pasteSelected(LV, clipHistoryGui))
     contextMenu.Add("Paste with Format", (*) => pasteSelected(LV, clipHistoryGui, true))
-    contextMenu.Add("Paste as Original Format", (*) => pasteSelected(LV, clipHistoryGui, -1))
+    contextMenu.Add("Paste as Original", (*) => pasteSelected(LV, clipHistoryGui, -1))
     contextMenu.Add("Save Format to Clipboard", (*) => saveToClipboard(LV, true))
     contextMenu.Add()
     contextMenu.Add("Delete Item", (*) => deleteSelected(LV, clipHistoryGui))
