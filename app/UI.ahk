@@ -110,8 +110,8 @@ showAbout(*) {
     Sleep(50)
     result := MsgBox(
         "KeyClipboard`n" .
-        "Version: 1.6.0`n" .
-        "Date: 20/03/2025`n`n" .
+        "Version: 1.6.1`n" .
+        "Date: 24/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",
         "About KeyClipboard",

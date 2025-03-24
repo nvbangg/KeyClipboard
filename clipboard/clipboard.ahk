@@ -3,50 +3,21 @@
 #Include clip_utils.ahk
 #Include clip_format.ahk
 #Include clip_UI.ahk
-global clipHistory := []             ; Stores clipboard history items
-global isFormatting := false         ; Flag for formatting in progress
-global originalClip := ""            ; Stores original clipboard content
-global clipHistoryGuiInstance := 0   ; Reference to clipboard history GUI
-
-; Initialize clipboard history tracking
-initClipboard() {
-    global clipHistory := []
-    global isFormatting := false
-    isFormatting := true
-    tempClip := ClipboardAll()
-
-    A_Clipboard := "Initializing..."
-    ClipWait(0.2)
-    A_Clipboard := tempClip
-    ClipWait(0.2)
-    isFormatting := false
-
-    ; Handle clipboard content changes
-    updateClipboard(Type) {
-        global clipHistory, isFormatting
-        if (isFormatting)
-            return
-        if (Type = 1 && A_Clipboard != "") {
-            try {
-                clipHistory.Push({
-                    text: A_Clipboard,
-                    original: ClipboardAll()
-                })
-                if (clipHistory.Length > 100)
-                    clipHistory.RemoveAt(1)
-            }
-        }
-    }
-    OnClipboardChange(updateClipboard, 1)
-}
+#Include clip_storage.ahk
+global historyTab := []             ; Stores clipboard history items
+global savedTab := []               ; Stores clipboard saved items
+global isFormatting := false        ; Flag for formatting in progress
+global originalClip := ""           ; Stores original clipboard content
+global clipGuiInstance := 0  ; Reference to clipboard history GUI
+global savedFilePath := A_ScriptDir . "\data\saved.ini"
 
 ; Paste content
-paste(content, formatEnabled := false) {
+paste(content, useFormat := false) {
     global isFormatting
     isFormatting := true
     originalClip := ClipboardAll()
 
-    if (formatEnabled = true)
+    if (useFormat = true)
         content := formatText(content)
 
     A_Clipboard := content
@@ -63,38 +34,43 @@ paste(content, formatEnabled := false) {
 }
 
 ; formatMode: -1 = original, 0 = plain text, 1 = format text
-pasteSelected(LV := 0, clipHistoryGui := 0, formatMode := 0) {
-    contentItems := prepareClipItems(LV)
-    if (!IsObject(contentItems) || contentItems.Length < 1)
+pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSavedTab := false) {
+    selectedItems := getSelectedItems(LV, useSavedTab)
+    if (!IsObject(selectedItems) || selectedItems.Length < 1)
         return
-    if (clipHistoryGui)
-        clipHistoryGui.Destroy()
+
+    if (clipGui)
+        clipGui.Destroy()
 
     if (formatMode = -1) {
-        for index, item in contentItems {
+        for index, item in selectedItems {
             paste(item.original)
             Send("{Enter}")
         }
         return
     }
 
+    ; For normal text modes (plain or formatted)
     mergedItems := ""
-    for index, item in contentItems
-        mergedItems .= item.text . (index < contentItems.Length ? "`r`n" : "")
+    for index, item in selectedItems
+        mergedItems .= item.text . (index < selectedItems.Length ? "`r`n" : "")
 
-    paste(mergedItems, formatMode)
+    if (formatMode = 1)
+        paste(mergedItems, true)
+    else
+        paste(mergedItems, false)
 }
 
 ; Paste item from history
 pastePrev(offset := 0, formatMode := 0) {
-    global clipHistory
+    global historyTab
 
-    if (clipHistory.Length < offset + 1) {
+    if (historyTab.Length < offset + 1) {
         showNotification("Not enough items in clipboard history")
         return
     }
 
-    item := clipHistory[clipHistory.Length - offset]
+    item := historyTab[historyTab.Length - offset]
     if (formatMode == -1)
         paste(item.original)
     else
@@ -103,193 +79,227 @@ pastePrev(offset := 0, formatMode := 0) {
 
 ; Paste with specialized formatting options
 pasteSpecific() {
-    global clipHistory
+    global historyTab
 
-    if (clipHistory.Length < 2) {
+    if (historyTab.Length < 2) {
         showNotification("Not enough items in clipboard history")
         return
     }
-    latest := clipHistory[clipHistory.Length].text
-    beforeLatest := clipHistory[clipHistory.Length - 1].text
+    latest := historyTab[historyTab.Length].text
+    beforeLatest := historyTab[historyTab.Length - 1].text
     content := beforeLatest . "_" . latest
 
     content := removeAccents(content)
+    content := StrReplace(content, " ", "_")
 
     paste(content)
 }
 
-selectAllItems(LV, contentViewer) {
-    if (!LV || LV.GetCount() == 0)
-        return
-
-    ; Count total items and selected items
-    totalItems := LV.GetCount()
-    selectedCount := 0
-    rowNum := 0
-
-    ; Count selected items
-    loop {
-        rowNum := LV.GetNext(rowNum)
-        if (!rowNum)
-            break
-        selectedCount++
-    }
-
-    ; Toggle selection based on current state
-    if (selectedCount == totalItems) {
-        ; If all items are selected, deselect all
-        LV.Modify(0, "-Select")
-        contentViewer.Value := ""  ; Clear the content viewer
-    } else {
-        ; If not all items are selected, select all
-        if (!isListViewFocused())
-            LV.Focus()
-        LV.Modify(0, "Select")
-
-        ; Update content viewer with all selected items
-        updateContent(LV, contentViewer)
-    }
-}
-
-deleteSelected(LV, clipHistoryGui := 0) {
-    global clipHistory
+; Delete selected items (works for both clipboard and saved items)
+deleteSelected(LV, clipGui := 0, useSavedTab := false) {
+    global historyTab, savedTab
     if (!isListViewFocused()) {
         Send("{Delete}")
         return
     }
 
-    selectedItems := getSelected(LV)
-    if (selectedItems.Length = 0)
+    selectedIndex := getSelectedIndex(LV)
+    if (selectedIndex.Length = 0)
         return
 
     ; Sort selected items in descending order
-    n := selectedItems.Length
+    n := selectedIndex.Length
     loop n - 1 {
         i := A_Index
         loop n - i {
             j := A_Index
-            if (selectedItems[j] < selectedItems[j + 1]) {
-                temp := selectedItems[j]
-                selectedItems[j] := selectedItems[j + 1]
-                selectedItems[j + 1] := temp
+            if (selectedIndex[j] < selectedIndex[j + 1]) {
+                temp := selectedIndex[j]
+                selectedIndex[j] := selectedIndex[j + 1]
+                selectedIndex[j + 1] := temp
             }
         }
     }
 
-    for i, item in selectedItems
-        clipHistory.RemoveAt(item)
-
-    updateLV(LV, clipHistoryGui)
+    if (useSavedTab) {
+        for i, item in selectedIndex
+            savedTab.RemoveAt(item)
+        ; Save changes after deleting items
+        saveSavedItems()
+    }
+    else {
+        for i, item in selectedIndex
+            historyTab.RemoveAt(item)
+    }
+    updateLV(LV, "", useSavedTab)
 }
 
-clearClipboard(clipHistoryGui := 0) {
-    global clipHistoryGuiInstance
+clearClipboard(clipGui := 0, useSavedTab := false) {
+    global historyTab, savedTab, clipGuiInstance
 
-    ; Close clipboard history window if it's open
+    ; Clear the items from the appropriate source
+    if (useSavedTab) {
+        savedTab := []
+        ; Save changes after clearing all saved items
+        saveSavedItems()
+    }
+    else
+        historyTab := []
+
+    ; If the GUI was passed as a parameter, destroy it safely
     try {
-        if (IsObject(clipHistoryGuiInstance) && clipHistoryGuiInstance.HasProp("Hwnd") &&
-        WinExist("ahk_id " . clipHistoryGuiInstance.Hwnd)) {
-            clipHistoryGuiInstance.Destroy()
-            clipHistoryGuiInstance := 0
-        }
-    } catch {
-        ; Handle any errors silently
+        if (clipGui && clipGui.HasProp("Destroy"))
+            clipGui.Destroy()
+    } catch Error as err {
+        ; Silently handle errors when destroying GUI
     }
 
-    ; Also close the GUI passed as parameter if any
-    if (clipHistoryGui)
-        clipHistoryGui.Destroy()
+    ; Also close the clipboard history window if it exists
+    try {
+        if (IsObject(clipGuiInstance)) {
+            if (clipGuiInstance.HasProp("Hwnd")) {
+                hwnd := clipGuiInstance.Hwnd
+                if (WinExist("ahk_id " . hwnd)) {
+                    clipGuiInstance.Destroy()
+                }
+            } else {
+                clipGuiInstance.Destroy()
+            }
+            clipGuiInstance := 0
+        }
+    } catch Error as err {
+        clipGuiInstance := 0
+    }
 
-    global clipHistory
-    clipHistory := []
-    showNotification("All items have been cleared")
+    showNotification("All " . (useSavedTab ? "saved items" : "clipboard items") . " have been cleared")
 }
 
-; Save edited content back to clipboard history
-saveContent(LV, contentViewer, clipHistoryGui) {
-    global clipHistory
-    selectedItems := getSelected(LV)
-    if (selectedItems.Length = 0) {
-        updateLV(LV, clipHistoryGui)
+; Save edited content back (works for both clipboard and saved items)
+saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
+    global historyTab, savedTab
+    selectedItems := getSelectedIndex(LV)
+
+    clipTab := useSavedTab ? savedTab : historyTab
+
+    ; Check if we have valid items in both sources
+    if (selectedItems.Length = 0 || clipTab.Length = 0) {
+        updateLV(LV, "", useSavedTab)
         return
     }
 
+    ; Check if the selected index is valid
     if (selectedItems.Length = 1) {
-        clipHistory[selectedItems[1]].text := contentViewer.Value
-        ; Note: Original format is not updated when text is edited
-
-        rowNum := 1
-        loop LV.GetCount() {
-            if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
-                displayContent := StrLen(contentViewer.Value) > 100 ?
-                    SubStr(contentViewer.Value, 1, 100) . "..." : contentViewer.Value
-                LV.Modify(rowNum, , selectedItems[1], displayContent)
-                break
+        if (selectedItems[1] > 0 && selectedItems[1] <= clipTab.Length) {
+            ; Save new text content
+            newText := contentViewer.Value
+            clipTab[selectedItems[1]].text := newText
+            clipTab[selectedItems[1]].original := newText  ; Use text as original
+            rowNum := 1
+            loop LV.GetCount() {
+                if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
+                    displayContent := StrLen(newText) > 100 ?
+                        SubStr(newText, 1, 100) . "..." : newText
+                    LV.Modify(rowNum, , selectedItems[1], displayContent)
+                    break
+                }
+                rowNum++
             }
-            rowNum++
+
+            ; Save changes if on saved tab
+            if (useSavedTab)
+                saveSavedItems()
+
+            showNotification("Changes saved")
+        } else {
+            showNotification("Invalid item index")
         }
-        showNotification("Changes saved")
     } else {
         showNotification("Cannot save changes when multiple items are selected.")
         return
     }
 
-    updateLV(LV, clipHistoryGui)
+    ; Update the correct global variable
+    if (useSavedTab)
+        savedTab := clipTab
+    else
+        historyTab := clipTab
+
+    updateLV(LV, "", useSavedTab)
 }
 
-; Merge selected items into clipboard history
+; Save items from clipboard to saved items
+saveToSavedItems(LV := 0) {
+    global historyTab, savedTab
+    selectedItems := getSelectedItems(LV, false)
+
+    if (!IsObject(selectedItems) || selectedItems.Length < 1)
+        return
+
+    for _, item in selectedItems {
+        savedTab.Push({
+            text: item.text,
+            original: item.text  ; Use text as original
+        })
+    }
+
+    ; Save to file after adding new items
+    saveSavedItems()
+    showNotification("Item" . (selectedItems.Length > 1 ? "s" : "") . " added to Saved Items")
+}
+
+; Save selected items to clipboard with optional formatting
 saveToClipboard(LV := 0, formatTextEnable := false) {
-    global clipHistory
-    contentItems := prepareClipItems(LV)
+    global historyTab
+    selectedItems := getSelectedItems(LV, false)
 
-    for _, item in contentItems {
-        if (formatTextEnable) {
-            formattedText := formatText(item.text)
-            clipHistory.Push({
-                text: formattedText,
-                original: item.original  ; Keep the original formatting
-            })
-        } else {
-            clipHistory.Push({
-                text: item.text,
-                original: item.original
-            })
+    if (!IsObject(selectedItems) || selectedItems.Length < 1)
+        return
+    ; Number of items added
+    addedCount := 0
+    ; Process each item separately instead of merging them
+    for _, item in selectedItems {
+        ; New content after formatting (if needed)
+        newText := formatTextEnable ? formatText(item.text) : item.text
+
+        ; Add new item to history with formatted content
+        ; but keep original data
+        historyTab.Push({
+            text: newText,
+            original: item.original  ; Keep original data
+        })
+
+        addedCount++
+    }
+
+    if (LV) {
+        contentViewer := 0
+        try {
+            parentGui := GuiCtrlFromHwnd(LV.Hwnd).Gui
+            if (parentGui)
+                contentViewer := parentGui.FindControl("Edit1")
+        }
+        updateLV(LV, "", false)
+
+        rowCount := LV.GetCount()
+        if (rowCount > 0) {
+            startRow := rowCount - addedCount + 1
+            if (startRow < 1)
+                startRow := 1
+
+            LV.Modify(0, "-Select")
+
+            loop addedCount {
+                currentRow := startRow + A_Index - 1
+                if (currentRow <= rowCount)
+                    LV.Modify(currentRow, "Select")
+            }
+
+            LV.Modify(rowCount, "Focus Vis")
+
+            if (contentViewer)
+                updateContent(LV, contentViewer, false)
         }
     }
 
-    updateLV(LV)
-}
-
-moveSelectedItem(LV, contentViewer, direction) {
-    global clipHistory
-    if (!isListViewFocused())
-        return
-    selectedRow := LV.GetNext(0)
-    if (!selectedRow)
-        return
-
-    currentIndex := Integer(LV.GetText(selectedRow, 1))
-    targetIndex := currentIndex + direction
-
-    if (targetIndex < 1 || targetIndex > clipHistory.Length)
-        return
-
-    ; Swap items
-    temp := clipHistory[currentIndex]
-    clipHistory[currentIndex] := clipHistory[targetIndex]
-    clipHistory[targetIndex] := temp
-
-    updateLV(LV)
-    LV.Modify(0, "-Select")
-
-    ; Find and select moved item
-    loop LV.GetCount() {
-        rowNum := A_Index
-        itemIndex := Integer(LV.GetText(rowNum, 1))
-        if (itemIndex = targetIndex) {
-            LV.Modify(rowNum, "Select Focus Vis")
-            break
-        }
-    }
-    updateContent(LV, contentViewer)
+    showNotification(addedCount . " item(s) added to clipboard history")
 }

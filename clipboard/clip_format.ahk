@@ -71,52 +71,13 @@ removeAccents(str) {
 normSpace(str) {
     str := StrReplace(str, "`r`n", "`n")
     str := StrReplace(str, "`r", "`n")
-    lines := StrSplit(str, "`n")
 
-    for i, line in lines {
-        line := RegExReplace(line, "^\s+", "")
+    str := RegExReplace(str, "[ \t]+", " ")
+    str := RegExReplace(str, "(^|\n)[ \t]+", "$1")
+    str := RegExReplace(str, " ([.,;:])", "$1")
+    str := RegExReplace(str, "([.,;:])([^ \n.,;:])", "$1 $2")
 
-        ; Collapse multiple spaces to single space
-        loop {
-            oldLine := line
-            line := StrReplace(line, "  ", " ")
-            if (line = oldLine)
-                break
-        }
-
-        punctuation := [".", ",", ";", ":"]
-        for punct in punctuation {
-            line := StrReplace(line, " " . punct, punct)
-        }
-
-        ; Ensure one space after punctuation (except at end of text)
-        for punct in punctuation {
-            pos := 1
-            while (pos := InStr(line, punct, false, pos)) {
-                if (pos = 0)
-                    break
-
-                if (pos < StrLen(line)) {
-                    nextChar := SubStr(line, pos + 1, 1)
-                    if (nextChar != " " && !InStr(".,;:", nextChar)) {
-                        line := SubStr(line, 1, pos) . " " . SubStr(line, pos + 1)
-                    }
-                }
-                pos += 1
-            }
-        }
-        lines[i] := line
-    }
-
-    ; Rejoin lines
-    result := ""
-    for i, line in lines {
-        if (i > 1)
-            result .= "`r`n"
-        result .= line
-    }
-
-    return result
+    return str
 }
 
 ; Removes specified special characters (# and *)
@@ -128,112 +89,40 @@ removeSpecial(str) {
 
 ; Removes empty lines but preserves paragraph breaks
 trimLines(str) {
-    str := StrReplace(str, "`r`n", "`n")
-    str := StrReplace(str, "`r", "`n")
-    lines := StrSplit(str, "`n")
-    output := ""
-
-    for i, line in lines {
-        if (Trim(line) != "") {
-            if (output != "")
-                output .= "`n"
-            output .= line
-        }
-    }
-
-    return StrReplace(output, "`n", "`r`n")
+    str := RegExReplace(str, "\R+", "`r`n")
+    str := RegExReplace(str, "^\R+|\R+$", "")
+    return str
 }
 
 removeLineBreaks(str) {
-    str := StrReplace(str, "`r`n", " ")
-    str := StrReplace(str, "`n", " ")
-    str := StrReplace(str, "`r", " ")
-
-    ; Replace multiple spaces with a single space
-    loop {
-        oldStr := str
-        str := StrReplace(str, "  ", " ")
-        if (str = oldStr)
-            break
-    }
-
+    str := RegExReplace(str, "\R", " ")
+    str := RegExReplace(str, "[ \t]+", " ")
     return str
 }
 
 TitleCase(str) {
+    words := StrSplit(str, [" ", "-", "_"], " `t")
     result := ""
-    nextIsTitle := true
 
-    loop parse, str {
-        if (A_LoopField = " " || A_LoopField = "_" || A_LoopField = "-") {
-            result .= A_LoopField
-            nextIsTitle := true
-        } else if (nextIsTitle) {
-            result .= StrUpper(A_LoopField)
-            nextIsTitle := false
-        } else {
-            result .= StrLower(A_LoopField)
-        }
+    for i, word in words {
+        if (word = "")
+            continue
+
+        firstChar := SubStr(word, 1, 1)
+        restChars := SubStr(word, 2)
+
+        if (i > 1)
+            result .= A_Space
+
+        result .= StrUpper(firstChar) . StrLower(restChars)
     }
+
     return result
 }
 
 SentenceCase(str) {
     str := StrLower(str)
-    str := StrReplace(str, "`r`n", "`n")
-    str := StrReplace(str, "`r", "`n")
-    paragraphs := StrSplit(str, "`n")
-
-    for i, paragraph in paragraphs {
-        if (paragraph = "")
-            continue
-
-        ; Capitalize first letter in paragraph
-        firstLetterPos := 0
-        loop parse, paragraph {
-            firstLetterPos++
-            if RegExMatch(A_LoopField, "[a-z]") {
-                paragraph := SubStr(paragraph, 1, firstLetterPos - 1) .
-                StrUpper(A_LoopField) .
-                SubStr(paragraph, firstLetterPos + 1)
-                break
-            }
-        }
-
-        ; Find and capitalize letters after sentence endings
-        sentenceEndings := [".", "!", "?"]
-
-        for _, ending in sentenceEndings {
-            pos := 1
-            while (pos := InStr(paragraph, ending, false, pos)) {
-                if (pos = 0 || pos = StrLen(paragraph))
-                    break
-
-                nextPos := pos + 1
-                if (SubStr(paragraph, nextPos, 1) = " ") {
-                    charPos := nextPos + 1
-                    if (charPos <= StrLen(paragraph)) {
-                        nextChar := SubStr(paragraph, charPos, 1)
-                        if (RegExMatch(nextChar, "[a-z]")) {
-                            paragraph := SubStr(paragraph, 1, charPos - 1) .
-                            StrUpper(nextChar) .
-                            SubStr(paragraph, charPos + 1)
-                        }
-                    }
-                }
-                pos += 1
-            }
-        }
-
-        paragraphs[i] := paragraph
-    }
-
-    result := ""
-    for i, paragraph in paragraphs {
-        if (i > 1)
-            result .= "`r`n"
-        result .= paragraph
-    }
-
-    return result
+    str := RegExReplace(str, "(^|[\.\!\?\r\n]+)(\s*)([a-z])", "$1$2$U3")
+    str := RegExReplace(str, "(\" "|\')(\s*)([a-z])", "$1$2$U3")
+    return str
 }
