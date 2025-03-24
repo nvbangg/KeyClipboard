@@ -129,29 +129,6 @@ updateLV(LV, searchText := "", useSavedTab := false) {
     LV.ModifyCol(1, "Integer")
 }
 
-; Update ListView with clipboard or saved items history
-updateLVold(LV, searchText := "", useSavedTab := false) {
-    global historyTab, savedTab
-    clipTab := useSavedTab ? savedTab : historyTab
-    if (clipTab.Length = 0) {
-        if (IsObject(LV) && LV.HasProp("Delete"))
-            LV.Delete()
-        return
-    }
-
-    ; Only proceed with updating if the ListView is still valid
-    LV.Delete()
-    filteredItems := filterItems(searchText, useSavedTab)
-    if (filteredItems.Length = 0 && searchText) {
-        return
-    }
-    for index, content in filteredItems {
-        displayContent := StrLen(content.text) > 100 ? SubStr(content.text, 1, 100) . "..." : content.text
-        LV.Add(, content.originalIndex, displayContent)
-    }
-    LV.ModifyCol(1, "Integer")
-}
-
 ; Update content viewer with selected item content
 updateContent(LV, contentViewer, useSavedTab := false) {
     global historyTab, savedTab

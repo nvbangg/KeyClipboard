@@ -77,6 +77,38 @@ pastePrev(offset := 0, formatMode := 0) {
         paste(item.text, formatMode)
 }
 
+; Paste item from saved tab by position (position starts from 1)
+pasteByPosition(position := 1, formatMode := 0) {
+    global savedTab
+
+    if (position < 1 || position > savedTab.Length) {
+        showNotification("Position " . position . " does not exist in saved items")
+        return
+    }
+
+    item := savedTab[position]
+    if (formatMode == -1)
+        paste(item.original)
+    else
+        paste(item.text, formatMode)
+}
+
+; Paste item from saved tab
+pastePrevFromSaved(offset := 0, formatMode := 0) {
+    global savedTab
+
+    if (savedTab.Length < offset + 1) {
+        showNotification("Not enough items in saved items list")
+        return
+    }
+
+    item := savedTab[savedTab.Length - offset]
+    if (formatMode == -1)
+        paste(item.original)
+    else
+        paste(item.text, formatMode)
+}
+
 ; Paste with specialized formatting options
 pasteSpecific() {
     global historyTab
@@ -193,7 +225,6 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
             ; Save new text content
             newText := contentViewer.Value
             clipTab[selectedItems[1]].text := newText
-            clipTab[selectedItems[1]].original := newText  ; Use text as original
             rowNum := 1
             loop LV.GetCount() {
                 if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
@@ -238,7 +269,7 @@ saveToSavedItems(LV := 0) {
     for _, item in selectedItems {
         savedTab.Push({
             text: item.text,
-            original: item.text  ; Use text as original
+            original: item.original
         })
     }
 
@@ -261,11 +292,9 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
         ; New content after formatting (if needed)
         newText := formatTextEnable ? formatText(item.text) : item.text
 
-        ; Add new item to history with formatted content
-        ; but keep original data
         historyTab.Push({
             text: newText,
-            original: item.original  ; Keep original data
+            original: item.original
         })
 
         addedCount++

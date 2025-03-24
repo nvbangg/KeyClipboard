@@ -13,11 +13,10 @@ showSettings(*) {
     isCreating := true
 
     ; Clean up existing GUI - safer checking
-
     if IsObject(settingsGui) {
         SetTimer(() => CheckGuiOutsideClick(settingsGui, true), 0)
         settingsGui.Destroy()
-        settingsGui := 0  ; Reset to prevent errors with destroyed GUI
+        settingsGui := 0
     }
 
     ; Create new settings GUI
@@ -75,7 +74,9 @@ showShortcuts(*) {
         "• CapsLock+B: Paste the item before the latest`n" .
         "• CapsLock+A: Paste all clipboard items`n" .
         "• CapsLock+Space+V/B/A: Paste item(s) with Format`n" .
-        "• CapsLock+Shift+V/B/A: Paste item(s) as Original`n`n"
+        "• CapsLock+Shift+V/B/A: Paste item(s) as Original`n`n" .
+        "• CapsLock+Ctrl+V/B/A: Paste item(s) from Saved tab`n" .
+        "• CapsLock+1-9: Paste item by position from saved tab`n"
     )
 
     ; Show GUI and setup event handlers (button removed)
@@ -110,7 +111,7 @@ showAbout(*) {
     Sleep(50)
     result := MsgBox(
         "KeyClipboard`n" .
-        "Version: 1.6.1`n" .
+        "Version: 1.6.1.1`n" .
         "Date: 24/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open",

@@ -42,13 +42,29 @@ Space & t:: alwaysOnTop() ; Toggle Always-on-Top for active Window
 c:: showClipboard()
 Space & c:: clearClipboard()
 
+; Hotkeys to paste items by position from saved tab (1-9)
+1:: pasteByPosition(1)
+2:: pasteByPosition(2)
+3:: pasteByPosition(3)
+4:: pasteByPosition(4)
+5:: pasteByPosition(5)
+6:: pasteByPosition(6)
+7:: pasteByPosition(7)
+8:: pasteByPosition(8)
+9:: pasteByPosition(9)
+
+; Hotkeys for clipboard history paste
 v:: pastePrev(0)                ; Paste latest item from clipboard history
 Space & v:: pastePrev(0, 1)     ; Paste latest item with format
 +v:: pastePrev(0, -1)           ; Paste latest item as original
+^v:: pastePrevFromSaved(0)      ; Paste latest item from saved tab
 b:: pastePrev(1)                ; Paste the item before the latest
 Space & b:: pastePrev(1, 1)     ; Paste the item before the latest with format
 +b:: pastePrev(1, -1)           ; Paste the item before the latest as original
+^b:: pastePrevFromSaved(1)      ; Paste the item before the latest from saved tab
 a:: pasteSelected()             ; Paste all clipboard items
 Space & a:: pasteSelected(, , 1) ; Paste all clipboard items with format
 +a:: pasteSelected(, , -1)      ; Paste all clipboard items as original
+^a:: pasteSelected(, , 0, true) ; Paste all saved items
+
 #HotIf

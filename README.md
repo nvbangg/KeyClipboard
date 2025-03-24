@@ -10,7 +10,8 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - **Edit Content**: Edit items directly in the clipboard history viewer
 - **Organize Items**: Adjust the position of items in the clipboard
 - **Quick Search**: Rapidly search through clipboard content.
-- **Quick Translation**: Translate Chrome pages instantly with a shortcut
+- **Quick Translation**: Translate Chrome pages  instantly with a shortcut
+- **Saved Items Access**: Quickly access saved items with dedicated shortcuts
 
 ![image](https://github.com/user-attachments/assets/09264c1a-a0ea-460e-adea-750caefd8fe6)
 
@@ -26,8 +27,10 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - `CapsLock + V`: Paste latest clipboard item 
 - `CapsLock + B`: Paste **Before** Latest item
 - `CapsLock + A`: Paste **All** items 
-- `CapsLock+ Space + V/B/A`: Paste item(s) with Format
-- `CapsLock+ Shift + V/B/A`: Paste item(s) as Original
+- `CapsLock + Space + V/B/A`: Paste item(s) with Format
+- `CapsLock + Shift + V/B/A`: Paste item(s) as Original
+- `CapsLock + Ctrl + V/B/A`: Paste item(s) from Saved tab
+- `CapsLock + 1-9`: Paste item by position from saved tab
 
 ## Settings Options
 ![image](https://github.com/user-attachments/assets/31e67eeb-3424-45af-b28d-768b80af151d)
@@ -70,15 +73,13 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ## Tính năng dự kiến
 
-- Có thể ghim các nội dung Clipboard và không bị mất dù khởi động lại
-- Có thể dùng các phím tắt để dán nhanh các nội dung được lưu sẵn
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
-
-- sửa để không thu gọn được độ rộng cột
-- sửa lỗi không dán được lần đầu, sửa lưu vào saved tab vẫn giữ định dạng, còn khi reload từ file thì original = text
+    
 ### Changelog: 
 - Sửa đổi cấu trúc dự án
 - Thêm tab Saved để lưu nội dung được lưu và hoạt động độc lập
 - Nội dung được saved tab được lưu vào file mà không bị mất
+- Thêm phím tắt CapsLock + 1-9 để dán nhanh mục theo vị trí trong saved tab
+- Thêm phím tắt CapsLock + Ctrl + V/B/A để dán nội dung từ saved tab
 
