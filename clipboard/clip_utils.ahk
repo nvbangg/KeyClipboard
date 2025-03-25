@@ -1,22 +1,18 @@
-; === CLIP_UTILS MODULE ===
-
-; Initialize clipboard history tracking
 initClipboard() {
     global historyTab := []
-    global isFormatting := true
+    global isProcessing := true
     tempClip := ClipboardAll()
 
     A_Clipboard := "Initializing..."
     ClipWait(0.2)
     A_Clipboard := tempClip
     ClipWait(0.2)
-    isFormatting := false
+    isProcessing := false
 
     loadSavedItems()
-
-    ; Handle clipboard content changes
+    ; Register callback for clipboard content changes
     updateClipboard(Type) {
-        if (isFormatting)
+        if (isProcessing)
             return
         if (Type = 1 && A_Clipboard != "") {
             try {
@@ -32,14 +28,12 @@ initClipboard() {
     OnClipboardChange(updateClipboard, 1)
 }
 
-; Check if ListView has focus
 isListViewFocused() {
     focusedHwnd := ControlGetFocus("A")
     focusedControl := ControlGetClassNN(focusedHwnd)
     return InStr(focusedControl, "SysListView32")
 }
 
-; Get selected items from ListView
 getSelectedIndex(LV) {
     selectedIndex := []
     rowNum := 0
@@ -51,13 +45,12 @@ getSelectedIndex(LV) {
             break
 
         index := LV.GetText(rowNum, 1)
-        if (index != "") ; Check for empty string before conversion
+        if (index != "")
             selectedIndex.Push(Integer(index))
     }
     return selectedIndex
 }
 
-; Process clipboard items for pasting
 getSelectedItems(LV := 0, useSavedTab := false) {
     global historyTab, savedTab
     clipTab := useSavedTab ? savedTab : historyTab
@@ -95,7 +88,6 @@ selectAllItems(LV, contentViewer) {
             break
         selectedCount++
     }
-
     ; Toggle selection based on current state
     if (selectedCount == totalItems) {
         LV.Modify(0, "-Select")
@@ -129,7 +121,6 @@ updateLV(LV, searchText := "", useSavedTab := false) {
     LV.ModifyCol(1, "Integer")
 }
 
-; Update content viewer with selected item content
 updateContent(LV, contentViewer, useSavedTab := false) {
     global historyTab, savedTab
 
@@ -162,7 +153,6 @@ updateContent(LV, contentViewer, useSavedTab := false) {
     }
 }
 
-; Move selected item up or down (works for both clipboard and saved items)
 moveSelectedItem(LV, contentViewer, direction, useSavedTab := false) {
     global historyTab, savedTab
     if (!isListViewFocused())
@@ -178,7 +168,7 @@ moveSelectedItem(LV, contentViewer, direction, useSavedTab := false) {
 
     if (targetIndex < 1 || targetIndex > clipTab.Length)
         return
-
+    ; Swap items in array
     temp := clipTab[currentIndex]
     clipTab[currentIndex] := clipTab[targetIndex]
     clipTab[targetIndex] := temp
@@ -192,7 +182,6 @@ moveSelectedItem(LV, contentViewer, direction, useSavedTab := false) {
 
     updateLV(LV, "", useSavedTab)
     LV.Modify(0, "-Select")
-
     ; Find and select moved item
     loop LV.GetCount() {
         rowNum := A_Index
@@ -223,27 +212,26 @@ filterItems(searchText := "", useSavedTab := false) {
 
     return filteredItems
 }
-; Unified search handler
-handleSearch(searchCtrl, isHistoryTab := true) {
-    if (isHistoryTab) {
-        updateLV(historyLV, searchCtrl.Value, false)
-        updateContent(historyLV, historyViewer, false)
-    } else {
+
+handleSearch(searchCtrl, useSavedTab := false) {
+    if (useSavedTab) {
         updateLV(savedLV, searchCtrl.Value, true)
         updateContent(savedLV, savedViewer, true)
+    } else {
+        updateLV(historyLV, searchCtrl.Value, false)
+        updateContent(historyLV, historyViewer, false)
     }
 }
-; Check clipboard state and destroy existing instance
-checkClipboardInstance() {
+
+checkClipInstance() {
     global historyTab, savedTab, clipGuiInstance
 
-    ; Check if both clipHistory and savedItems are empty before creating GUI
     if (historyTab.Length < 1 && savedTab.Length < 1) {
         showNotification("No items in clipboard history")
         return false
     }
 
-    safeDestroyGui(clipGuiInstance)
+    destroyGui(clipGuiInstance)
     clipGuiInstance := 0
 
     return true
@@ -275,11 +263,11 @@ updateTabContent(tabIndex, clipGuiHwnd) {
     }
 }
 
-; Tab change event handler - with safer control access
 onTabChange(ctrl, *) {
     global clipGuiInstance
     updateTabContent(ctrl.Value, IsObject(clipGuiInstance) ? clipGuiInstance.Hwnd : 0)
 }
+
 getActiveTabElements(tabsObj) {
     global historyLV, savedLV, historyViewer, savedViewer
 
@@ -288,4 +276,36 @@ getActiveTabElements(tabsObj) {
     } else {
         return { listView: savedLV, contentViewer: savedViewer, isSaved: true }
     }
+}
+
+createContextMenu(menuItems) {
+    contextMenu := Menu()
+
+    for item in menuItems {
+        if (item.Length = 0)
+            contextMenu.Add() ; Add separator
+        else
+            contextMenu.Add(item[1], item[2]) ; Add label and callback
+    }
+
+    return contextMenu
+}
+
+execAction(action, clipGui) {
+    elements := getActiveTabElements(tabs)
+
+    if (action = "enter") {
+        if (isListViewFocused())
+            pasteSelected(elements.listView, clipGui, 0, elements.isSaved)
+        else
+            Send("{Enter}")
+    }
+    else if (action = "altUp")
+        moveSelectedItem(elements.listView, elements.contentViewer, -1, elements.isSaved)
+    else if (action = "altDown")
+        moveSelectedItem(elements.listView, elements.contentViewer, 1, elements.isSaved)
+    else if (action = "ctrlA")
+        selectAllItems(elements.listView, elements.contentViewer)
+    else if (action = "delete")
+        deleteSelected(elements.listView, clipGui, elements.isSaved)
 }

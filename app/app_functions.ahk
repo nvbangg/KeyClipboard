@@ -1,6 +1,5 @@
 ; === APP_FUNCTIONS MODULE ===
 
-; Loads settings from INI file into global variables
 initSettings() {
     global mouseEnabled, numLockEnabled
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
@@ -24,7 +23,7 @@ initSettings() {
 
 initCapsLockMonitor() {
     SetCapsLockState "AlwaysOff"
-    ; Use a timer to monitor for the first 5 seconds
+    ; Ensure CapsLock is off during startup
     loop 10 {
         SetTimer(() => SetCapsLockState("AlwaysOff"), -500 * A_Index)
     }

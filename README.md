@@ -15,6 +15,23 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ![image](https://github.com/user-attachments/assets/09264c1a-a0ea-460e-adea-750caefd8fe6)
 
+## Settings Options
+![image](https://github.com/user-attachments/assets/31e67eeb-3424-45af-b28d-768b80af151d)
+
+### Keyboard Options
+- Mouse Clicks Mode
+  - `Right Alt`: Left mouse click
+  - `Right Ctrl`: Right mouse click
+- Always Enable NumLock
+
+### Format Options
+
+- **Remove accents**
+- **Normalize Punctuation Space**
+- **Remove Special Characters**
+- **Line Break Options**: Trim excess line breaks, Remove all line breaks
+- **Text Case Options**: UPPERCASE, lowercase, Title Case, Sentence case
+- **Word Separator Options**: Underscore (_), Hyphen (-), Remove all spaces
 
 ## Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
@@ -31,25 +48,6 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - `CapsLock + Shift + V/B/A`: Paste item(s) as Original
 - `CapsLock + Ctrl + V/B/A`: Paste item(s) from Saved tab
 - `CapsLock + 1-9`: Paste item by position from saved tab
-
-## Settings Options
-![image](https://github.com/user-attachments/assets/31e67eeb-3424-45af-b28d-768b80af151d)
-
-
-### Keyboard Options
-- Mouse Clicks Mode
-  - `Right Alt`: Left mouse click
-  - `Right Ctrl`: Right mouse click
-- Always Enable NumLock
-
-### Format Options
-
-- **Remove accents**
-- **Normalize Punctuation Space**
-- **Remove Special Characters**
-- **Line Break Options**: Trim excess line breaks, Remove all line breaks
-- **Text Case Options**: UPPERCASE, lowercase, Title Case, Sentence case
-- **Word Separator Options**: Underscore (_), Hyphen (-), Remove all spaces
 
 ## Installation
 
@@ -82,4 +80,4 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - Nội dung được saved tab được lưu vào file mà không bị mất
 - Thêm phím tắt CapsLock + 1-9 để dán nhanh mục theo vị trí trong saved tab
 - Thêm phím tắt CapsLock + Ctrl + V/B/A để dán nội dung từ saved tab
-
+- Tối ưu code để hoạt động tốt hơn

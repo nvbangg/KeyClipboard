@@ -1,5 +1,3 @@
-; === KEY_FUNCTIONS MODULE ===
-
 translateInChrome() {
     BlockInput("On")
     MouseClick("Right")

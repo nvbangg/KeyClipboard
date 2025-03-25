@@ -56,11 +56,11 @@ Space & c:: clearClipboard()
 v:: pastePrev(0)                ; Paste latest item from clipboard history
 Space & v:: pastePrev(0, 1)     ; Paste latest item with format
 +v:: pastePrev(0, -1)           ; Paste latest item as original
-^v:: pastePrevFromSaved(0)      ; Paste latest item from saved tab
+^v:: pastePrev(0, 0, true)      ; Paste latest item from saved tab
 b:: pastePrev(1)                ; Paste the item before the latest
 Space & b:: pastePrev(1, 1)     ; Paste the item before the latest with format
 +b:: pastePrev(1, -1)           ; Paste the item before the latest as original
-^b:: pastePrevFromSaved(1)      ; Paste the item before the latest from saved tab
+^b:: pastePrev(1, 0, true)      ; Paste the item before the latest from saved tab
 a:: pasteSelected()             ; Paste all clipboard items
 Space & a:: pasteSelected(, , 1) ; Paste all clipboard items with format
 +a:: pasteSelected(, , -1)      ; Paste all clipboard items as original
@@ -87,7 +87,7 @@ showSettings(*) {
     settingsGui.SetFont("s10")
     yPos := 10
     yPos := addKeySettings(settingsGui, yPos)
-    yPos := addClipSettings(settingsGui, yPos)
+    yPos := addFormatOptions(settingsGui, yPos)
 
     ; Helper function for saving and closing
     CloseAndSave() {
@@ -125,14 +125,14 @@ showShortcuts(*) {
         "• CapsLock+Ctrl+V/B/A: Paste item(s) from Saved tab`n" .
         "• CapsLock+1-9: Paste item by position from saved tab`n"
 
-    createInfoDialog("Shortcuts - KeyClipboard", shortcutsText, 375)
+    showInfo("Shortcuts - KeyClipboard", shortcutsText, 375)
 }
 
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.1.2`n" .
-        "Date: 25/03/2025`n`n" .
+        "Version: 1.6.1.3`n" .
+        "Date: 26/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
 

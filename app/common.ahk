@@ -1,5 +1,3 @@
-; === COMMON MODULE ===
-
 existFile(filePath) {
     if !DirExist(dataDir) {
         DirCreate(dataDir)
@@ -10,8 +8,8 @@ existFile(filePath) {
 }
 
 readSetting(section, key, defaultValue) {
-    static settings := Map() ; Use a static map to cache settings
-    fullKey := section . "_" . key ; Create a unique key
+    static settings := Map() ; Cache settings for performance
+    fullKey := section . "_" . key
 
     if (!settings.Has(fullKey)) {
         settings[fullKey] := IniRead(settingsFilePath, section, key, defaultValue)
@@ -32,7 +30,6 @@ showNotification(message, timeout := 1200) {
     SetTimer(() => notify.Destroy(), -timeout)
 }
 
-; Common GUI cleanup function
 cleanupGui(guiObj) {
     if IsObject(guiObj) {
         guiObj.Destroy()
@@ -41,36 +38,19 @@ cleanupGui(guiObj) {
     return guiObj
 }
 
-; Common function to setup GUI events
 closeEvents(guiObj, closeCallback) {
     guiObj.OnEvent("Escape", closeCallback)
     guiObj.OnEvent("Close", closeCallback)
 }
-; Activate an existing GUI if it exists, or return false
-activateGuiIfExists(guiObj) {
-    try {
-        if (IsObject(guiObj) && guiObj.HasProp("Hwnd")) {
-            hwnd := guiObj.Hwnd
-            if (WinExist("ahk_id " . hwnd)) {
-                WinActivate("ahk_id " . hwnd)
-                return true
-            }
-        }
-    } catch {
-    }
-    return false
-}
-; Creates a standard information dialog with OK button
-createInfoDialog(title, content, width := 350, btnOpts := "") {
+
+showInfo(title, content, width := 350, btnOpts := "") {
     static activeDialog := 0
 
-    ; If dialog exists and is valid, activate it
-    if (activateGuiIfExists(activeDialog))
+    if (activateExistingGui(activeDialog))
         return activeDialog
 
-    ; Create a new dialog
     infoGui := Gui("+AlwaysOnTop +ToolWindow", title)
-    activeDialog := infoGui  ; Store reference to the new dialog
+    activeDialog := infoGui
 
     infoGui.SetFont("s10")
     textControl := infoGui.Add("Text", "w" . width, content)
@@ -79,14 +59,14 @@ createInfoDialog(title, content, width := 350, btnOpts := "") {
     buttonY := textHeight + 20
 
     if (btnOpts = "") {
-        buttonX := width / 2 - 50  ; Button width is 100, center it
+        buttonX := width / 2 - 50
         btnOpts := "w100 x" . buttonX . " y" . buttonY
     }
 
-    ; A helper function that will be called to clean up
+    ; Helper to properly clean up dialog references
     CleanupDialog(gui, *) {
         static dialogRef := &activeDialog
-        %dialogRef% := 0  ; Access and modify the static variable reference
+        %dialogRef% := 0
         gui.Destroy()
     }
 
@@ -94,19 +74,32 @@ createInfoDialog(title, content, width := 350, btnOpts := "") {
     infoGui.OnEvent("Escape", CleanupDialog.Bind(infoGui))
     infoGui.OnEvent("Close", CleanupDialog.Bind(infoGui))
 
-    windowHeight := buttonY + 40  ; Add padding for button and borders
+    windowHeight := buttonY + 40
     infoGui.Show("w" . (width + 20) . " h" . windowHeight)
     return infoGui
 }
-; Create a unified safeDestroyGui function to replace multiple destroy patterns
-safeDestroyGui(guiObj) {
+
+isGuiValid(guiObj) {
     try {
-        if (IsObject(guiObj) && guiObj.HasProp("Hwnd") && WinExist("ahk_id " . guiObj.Hwnd)) {
-            guiObj.Destroy()
-            return true
-        }
+        return IsObject(guiObj) && guiObj.HasProp("Hwnd") && WinExist("ahk_id " . guiObj.Hwnd)
     } catch {
-        ; Silently handle errors
+        return false
+    }
+}
+
+activateExistingGui(guiObj) {
+    if (isGuiValid(guiObj)) {
+        hwnd := guiObj.Hwnd
+        WinActivate("ahk_id " . hwnd)
+        return true
+    }
+    return false
+}
+
+destroyGui(guiObj) {
+    if (isGuiValid(guiObj)) {
+        guiObj.Destroy()
+        return true
     }
     return false
 }

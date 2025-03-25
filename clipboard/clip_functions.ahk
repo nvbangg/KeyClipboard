@@ -1,9 +1,6 @@
-; === CLIPBOARD MODULE ===
-
-; Paste content
 paste(content, useFormat := false) {
-    global isFormatting
-    isFormatting := true
+    global isProcessing
+    isProcessing := true
     originalClip := ClipboardAll()
 
     if (useFormat = true)
@@ -14,15 +11,13 @@ paste(content, useFormat := false) {
     Send("^v")
     Sleep(50)
 
-    ; Restore original clipboard
     A_Clipboard := originalClip
     ClipWait(0.3)
     Sleep(50)
 
-    isFormatting := false
+    isProcessing := false
 }
 
-; formatMode: -1 = original, 0 = plain text, 1 = format text
 pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSavedTab := false) {
     selectedItems := getSelectedItems(LV, useSavedTab)
     if (!IsObject(selectedItems) || selectedItems.Length < 1)
@@ -39,7 +34,6 @@ pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSavedTab := false) {
         return
     }
 
-    ; For normal text modes (plain or formatted)
     mergedItems := ""
     for index, item in selectedItems
         mergedItems .= item.text . (index < selectedItems.Length ? "`r`n" : "")
@@ -50,23 +44,24 @@ pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSavedTab := false) {
         paste(mergedItems, false)
 }
 
-; Paste item from history
-pastePrev(offset := 0, formatMode := 0) {
-    global historyTab
+pastePrev(offset := 0, formatMode := 0, useSavedTab := false) {
+    global historyTab, savedTab
 
-    if (historyTab.Length < offset + 1) {
-        showNotification("Not enough items in clipboard history")
+    clipTab := useSavedTab ? savedTab : historyTab
+    tabName := useSavedTab ? "saved items list" : "clipboard history"
+
+    if (clipTab.Length < offset + 1) {
+        showNotification("Not enough items in " . tabName)
         return
     }
 
-    item := historyTab[historyTab.Length - offset]
+    item := clipTab[clipTab.Length - offset]
     if (formatMode == -1)
         paste(item.original)
     else
         paste(item.text, formatMode)
 }
 
-; Paste item from saved tab by position (position starts from 1)
 pasteByPosition(position := 1, formatMode := 0) {
     global savedTab
 
@@ -82,23 +77,6 @@ pasteByPosition(position := 1, formatMode := 0) {
         paste(item.text, formatMode)
 }
 
-; Paste item from saved tab
-pastePrevFromSaved(offset := 0, formatMode := 0) {
-    global savedTab
-
-    if (savedTab.Length < offset + 1) {
-        showNotification("Not enough items in saved items list")
-        return
-    }
-
-    item := savedTab[savedTab.Length - offset]
-    if (formatMode == -1)
-        paste(item.original)
-    else
-        paste(item.text, formatMode)
-}
-
-; Paste with specialized formatting options
 pasteSpecific() {
     global historyTab
 
@@ -116,7 +94,6 @@ pasteSpecific() {
     paste(content)
 }
 
-; Delete selected items (works for both clipboard and saved items)
 deleteSelected(LV, clipGui := 0, useSavedTab := false) {
     global historyTab, savedTab
     if (!isListViewFocused()) {
@@ -128,7 +105,6 @@ deleteSelected(LV, clipGui := 0, useSavedTab := false) {
     if (selectedIndex.Length = 0)
         return
 
-    ; Sort selected items in descending order
     n := selectedIndex.Length
     loop n - 1 {
         i := A_Index
@@ -145,7 +121,6 @@ deleteSelected(LV, clipGui := 0, useSavedTab := false) {
     if (useSavedTab) {
         for i, item in selectedIndex
             savedTab.RemoveAt(item)
-        ; Save changes after deleting items
         saveSavedItems()
     }
     else {
@@ -158,7 +133,6 @@ deleteSelected(LV, clipGui := 0, useSavedTab := false) {
 clearClipboard(clipGui := 0, useSavedTab := false) {
     global historyTab, savedTab, clipGuiInstance
 
-    ; Clear the items from the appropriate source
     if (useSavedTab) {
         savedTab := []
         saveSavedItems()
@@ -166,33 +140,26 @@ clearClipboard(clipGui := 0, useSavedTab := false) {
     else
         historyTab := []
 
-    ; Safely destroy passed GUI
-    safeDestroyGui(clipGui)
-
-    ; Also close the clipboard history window if it exists
-    safeDestroyGui(clipGuiInstance)
+    destroyGui(clipGui)
+    destroyGui(clipGuiInstance)
     clipGuiInstance := 0
 
     showNotification("All " . (useSavedTab ? "saved items" : "clipboard items") . " have been cleared")
 }
 
-; Save edited content back (works for both clipboard and saved items)
 saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
     global historyTab, savedTab
     selectedItems := getSelectedIndex(LV)
 
     clipTab := useSavedTab ? savedTab : historyTab
 
-    ; Check if we have valid items in both sources
     if (selectedItems.Length = 0 || clipTab.Length = 0) {
         updateLV(LV, "", useSavedTab)
         return
     }
 
-    ; Check if the selected index is valid
     if (selectedItems.Length = 1) {
         if (selectedItems[1] > 0 && selectedItems[1] <= clipTab.Length) {
-            ; Save new text content
             newText := contentViewer.Value
             clipTab[selectedItems[1]].text := newText
             rowNum := 1
@@ -206,7 +173,6 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
                 rowNum++
             }
 
-            ; Save changes if on saved tab
             if (useSavedTab)
                 saveSavedItems()
 
@@ -219,7 +185,6 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
         return
     }
 
-    ; Update the correct global variable
     if (useSavedTab)
         savedTab := clipTab
     else
@@ -228,7 +193,6 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
     updateLV(LV, "", useSavedTab)
 }
 
-; Save items from clipboard to saved items
 saveToSavedItems(LV := 0) {
     global historyTab, savedTab
     selectedItems := getSelectedItems(LV, false)
@@ -243,23 +207,19 @@ saveToSavedItems(LV := 0) {
         })
     }
 
-    ; Save to file after adding new items
     saveSavedItems()
     showNotification("Item" . (selectedItems.Length > 1 ? "s" : "") . " added to Saved Items")
 }
 
-; Save selected items to clipboard with optional formatting
 saveToClipboard(LV := 0, formatTextEnable := false) {
     global historyTab
     selectedItems := getSelectedItems(LV, false)
 
     if (!IsObject(selectedItems) || selectedItems.Length < 1)
         return
-    ; Number of items added
+
     addedCount := 0
-    ; Process each item separately instead of merging them
     for _, item in selectedItems {
-        ; New content after formatting (if needed)
         newText := formatTextEnable ? formatText(item.text) : item.text
 
         historyTab.Push({
@@ -301,18 +261,4 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
     }
 
     showNotification(addedCount . " item(s) added to clipboard history")
-}
-
-; Creates a context menu from an array of menu items
-createContextMenu(menuItems) {
-    contextMenu := Menu()
-
-    for item in menuItems {
-        if (item.Length = 0)
-            contextMenu.Add()  ; Add separator
-        else
-            contextMenu.Add(item[1], item[2])  ; Add label and callback
-    }
-
-    return contextMenu
 }

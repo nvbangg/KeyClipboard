@@ -1,5 +1,3 @@
-; === CLIP_FORMAT MODULE ===
-
 formatText(text) {
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
@@ -32,7 +30,6 @@ formatText(text) {
     return text
 }
 
-; Mapping of accented characters to their non-accented equivalents
 global accentMap := Map(
     "à", "a", "á", "a", "ả", "a", "ã", "a", "ạ", "a",
     "ă", "a", "ằ", "a", "ắ", "a", "ẳ", "a", "ẵ", "a", "ặ", "a",
@@ -67,7 +64,6 @@ removeAccents(str) {
     return result
 }
 
-; Removes redundant spaces and fixes punctuation spacing
 normSpace(str) {
     str := StrReplace(str, "`r`n", "`n")
     str := StrReplace(str, "`r", "`n")
@@ -80,14 +76,12 @@ normSpace(str) {
     return str
 }
 
-; Removes specified special characters (# and *)
 removeSpecial(str) {
     str := StrReplace(str, "#", "")
     str := StrReplace(str, "*", "")
     return str
 }
 
-; Removes empty lines but preserves paragraph breaks
 trimLines(str) {
     str := RegExReplace(str, "\R+", "`r`n")
     str := RegExReplace(str, "^\R+|\R+$", "")

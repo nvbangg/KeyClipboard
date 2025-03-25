@@ -1,5 +1,3 @@
-; === KEY MODULE ===
-
 #Include key_functions.ahk
 
 addKeySettings(settingsGui, y) {

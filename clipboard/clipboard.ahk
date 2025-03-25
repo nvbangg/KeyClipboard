@@ -2,17 +2,17 @@
 #Include clip_format.ahk
 #Include clip_storage.ahk
 #Include clip_functions.ahk
-global historyTab := []             ; Stores clipboard history items
-global savedTab := []               ; Stores clipboard saved items
-global isFormatting := false        ; Flag for formatting in progress
-global originalClip := ""           ; Stores original clipboard content
-global clipGuiInstance := 0  ; Reference to clipboard history GUI
+
+global historyTab := []
+global savedTab := []
+global isProcessing := false
+global originalClip := ""
+global clipGuiInstance := 0
 global savedFilePath := A_ScriptDir . "\data\saved.ini"
 
-addClipSettings(settingsGui, yPos) {
+addFormatOptions(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h200", "Format Options")
 
-    ; Add checkboxes
     checkboxOptions := [
         ["removeAccentsEnabled", removeAccentsEnabled, "Remove Accents"],
         ["normSpaceEnabled", normSpaceEnabled, "Normalize Spaces"],
@@ -26,7 +26,6 @@ addClipSettings(settingsGui, yPos) {
     }
     yPos += 10
 
-    ; Add dropdown controls
     dropdownOptions := [
         ["Line Break:", "lineOption", ["None", "Trim Lines", "Remove All Line Breaks"], lineOption],
         ["Text Case:", "caseOption", ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"], caseOption],
@@ -44,117 +43,37 @@ addClipSettings(settingsGui, yPos) {
     return yPos + 15
 }
 
-; Create tab content for either History or Saved tab
-createTabContent(clipGui, tabs, tabNumber, isHistoryTab) {
-    global historyLV, savedLV, historyViewer, savedViewer
-
-    tabs.UseTab(tabNumber)
-
-    ; Add Select All button and search box
-    selectAllBtn := clipGui.Add("Button", "x10 y35 w70", "Select All")
-    clipGui.Add("Text", "x90 y40", "Search:")
-    searchBox := clipGui.Add("Edit", "x150 y37 w560")
-
-    ; Create ListView for items
-    listView := clipGui.Add("ListView", "x10 y70 w700 h270 Grid Multi", ["#", "Content"])
-    listView.ModifyCol(1, 50, "Integer")
-    listView.ModifyCol(2, 640)
-
-    ; Store references to controls based on tab
-    contentViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll HScroll", "")
-
-    ; Store appropriate references and set event handlers based on tab type
-    if (isHistoryTab) {
-        historyLV := listView
-        historyViewer := contentViewer
-    } else {
-        savedLV := listView
-        savedViewer := contentViewer
-    }
-
-    ; Set tabType value TRƯỚC khi sử dụng nó trong các event handler
-    tabType := !isHistoryTab
-
-    ; Common event handler setup with proper parameters - sử dụng handleSearch
-    searchBox.OnEvent("Change", (*) => handleSearch(searchBox, isHistoryTab))
-    selectAllBtn.OnEvent("Click", (*) => selectAllItems(listView, contentViewer))
-
-    ; Fix context menu handler
-    listView.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
-        showContextMenu(LV, clipGui, Item, X, Y, tabType))
-
-    ; Stronger event handlers for selection
-    listView.OnEvent("Click", (*) => updateContent(listView, contentViewer, tabType))
-    listView.OnEvent("ItemSelect", (*) => updateContent(listView, contentViewer, tabType))
-    listView.OnEvent("ItemFocus", (*) => updateContent(listView, contentViewer, tabType))
-    listView.OnEvent("DoubleClick", (*) => pasteSelected(listView, clipGui, 0, tabType))
-
-    actionBtns := [
-        ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, tabType)],
-        ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, tabType)],
-        ["x410 y530 w120", "Help", (*) => showClipboardHelp()]
-    ]
-
-    for option in actionBtns
-        clipGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
-}
-handleTabAction(action, clipGui) {
-    elements := getActiveTabElements(tabs)
-
-    if (action = "enter") {
-        if (isListViewFocused())
-            pasteSelected(elements.listView, clipGui, 0, elements.isSaved)
-        else
-            Send("{Enter}")
-    }
-    else if (action = "altUp")
-        moveSelectedItem(elements.listView, elements.contentViewer, -1, elements.isSaved)
-    else if (action = "altDown")
-        moveSelectedItem(elements.listView, elements.contentViewer, 1, elements.isSaved)
-    else if (action = "ctrlA")
-        selectAllItems(elements.listView, elements.contentViewer)
-    else if (action = "delete")
-        deleteSelected(elements.listView, clipGui, elements.isSaved)
-}
 showClipboard() {
     global historyTab, savedTab, clipGuiInstance, historyLV, savedLV, historyViewer, savedViewer, tabs
 
-    ; Check if clipboard is empty or close existing instance
-    if (!checkClipboardInstance())
+    if (!checkClipInstance())
         return
 
-    ; Always create GUI since we've verified there's at least one item
     clipGui := Gui("+E0x08000000 +AlwaysOnTop", "Clipboard Manager")
     clipGuiInstance := clipGui
     clipGui.SetFont("s10")
 
-    ; Add tabs for History and Saved with equal width
     tabs := clipGui.Add("Tab3", "x5 y5 w710 h560", ["History", "Saved"])
-    SendMessage(0x1329, 2, 0, tabs.hwnd)  ; TCM_SETMINTABWIDTH = 0x1329
+    SendMessage(0x1329, 2, 0, tabs.hwnd)
 
-    ; Add tab change event handler to reload data
     tabs.OnEvent("Change", onTabChange)
 
-    ; Create the tab content using the shared function
-    createTabContent(clipGui, tabs, 1, true)   ; History tab
-    createTabContent(clipGui, tabs, 2, false)  ; Saved tab
+    buildTabUI(clipGui, tabs, false)
+    buildTabUI(clipGui, tabs, true)
 
-    ; Reset to first tab
-    tabs.UseTab()
+    ; tabs.UseTab() ; no need to call UseTab here
 
     clipGui.OnEvent("Close", (*) => clipGui.Destroy())
     clipGui.OnEvent("Escape", (*) => clipGui.Destroy())
 
-    ; Special hotkeys when clipboard history is active
     HotIfWinActive("ahk_id " . clipGui.Hwnd)
 
-    enterHotkey(*) => handleTabAction("enter", clipGui)
-    altUpHotkey(*) => handleTabAction("altUp", clipGui)
-    altDownHotkey(*) => handleTabAction("altDown", clipGui)
-    ctrlAHotkey(*) => handleTabAction("ctrlA", clipGui)
-    deleteHotkey(*) => handleTabAction("delete", clipGui)
+    enterHotkey(*) => execAction("enter", clipGui)
+    altUpHotkey(*) => execAction("altUp", clipGui)
+    altDownHotkey(*) => execAction("altDown", clipGui)
+    ctrlAHotkey(*) => execAction("ctrlA", clipGui)
+    deleteHotkey(*) => execAction("delete", clipGui)
 
-    ; Assign the hotkeys to their functions
     Hotkey "Enter", enterHotkey
     Hotkey "!Up", altUpHotkey
     Hotkey "!Down", altDownHotkey
@@ -162,24 +81,19 @@ showClipboard() {
     Hotkey "Delete", deleteHotkey
     HotIf()
 
-    ; Update both ListViews
-    updateLV(historyLV, "", false) ; false = clipboard tab
-    updateLV(savedLV, "", true)    ; true = saved items tab
+    updateLV(historyLV, "", false)
+    updateLV(savedLV, "", true)
 
-    ; Set initial tab based on content availability
     if (historyTab.Length > 0) {
-        ; Update history tab content and focus
         updateTabContent(1, clipGui.Hwnd)
     } else if (savedTab.Length > 0) {
-        tabs.Value := 2  ; Switch to Saved tab
-        ; Update saved tab content and focus
+        tabs.Value := 2
         updateTabContent(2, clipGui.Hwnd)
     }
 
     clipGui.Show("w720 h570")
 }
 
-; Show clipboard usage instructions
 showClipboardHelp(*) {
     helpText :=
         "CLIPBOARD HISTORY USAGE GUIDE`n`n" .
@@ -191,11 +105,9 @@ showClipboardHelp(*) {
         "• Alt+Up/Down: Move selected item up/down in the list`n" .
         "• Right-click: Show context menu with more options`n`n"
 
-    ; Let the createInfoDialog function calculate proper button position
-    createInfoDialog("Clipboard Help", helpText, 350)
+    showInfo("Clipboard Help", helpText, 350)
 }
 
-; Context menu for clipboard and saved items
 showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     if (Item = 0)
         return
@@ -203,24 +115,64 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     global historyViewer, savedViewer
     contentViewer := useSavedTab ? savedViewer : historyViewer
 
-    ; Create menu items array
     menuItems := [
         ["Paste", (*) => (pasteSelected(LV, clipGui, 0, useSavedTab))],
         ["Paste with Format", (*) => (pasteSelected(LV, clipGui, 1, useSavedTab))],
         ["Paste as Original", (*) => (pasteSelected(LV, clipGui, -1, useSavedTab))]
     ]
 
-    ; Only add these items for clipboard tab (not saved tab)
     if (!useSavedTab) {
-        menuItems.Push([]) ; Add separator
+        menuItems.Push([])
         menuItems.Push(["Save to Saved Tab", (*) => (saveToSavedItems(LV))])
         menuItems.Push(["Save Format to Clipboard", (*) => (saveToClipboard(LV, true))])
     }
 
-    menuItems.Push([]) ; Add separator
+    menuItems.Push([])
     menuItems.Push(["Delete Item", (*) => deleteSelected(LV, clipGui, useSavedTab)])
 
-    ; Create and show the menu
     contextMenu := createContextMenu(menuItems)
     contextMenu.Show(X, Y)
+}
+
+buildTabUI(clipGui, tabs, useSavedTab) {
+    global historyLV, savedLV, historyViewer, savedViewer
+
+    tabs.UseTab(useSavedTab ? 2 : 1)
+    selectAllBtn := clipGui.Add("Button", "x10 y35 w70", "Select All")
+    clipGui.Add("Text", "x90 y40", "Search:")
+    searchBox := clipGui.Add("Edit", "x150 y37 w560")
+
+    listView := clipGui.Add("ListView", "x10 y70 w700 h270 Grid Multi", ["#", "Content"])
+    listView.ModifyCol(1, 50, "Integer")
+    listView.ModifyCol(2, 640)
+
+    contentViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll HScroll", "")
+
+    if (!useSavedTab) {
+        historyLV := listView
+        historyViewer := contentViewer
+    } else {
+        savedLV := listView
+        savedViewer := contentViewer
+    }
+
+    searchBox.OnEvent("Change", (*) => handleSearch(searchBox, useSavedTab))
+    selectAllBtn.OnEvent("Click", (*) => selectAllItems(listView, contentViewer))
+
+    listView.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
+        showContextMenu(LV, clipGui, Item, X, Y, useSavedTab))
+
+    listView.OnEvent("Click", (*) => updateContent(listView, contentViewer, useSavedTab))
+    listView.OnEvent("ItemSelect", (*) => updateContent(listView, contentViewer, useSavedTab))
+    listView.OnEvent("ItemFocus", (*) => updateContent(listView, contentViewer, useSavedTab))
+    listView.OnEvent("DoubleClick", (*) => pasteSelected(listView, clipGui, 0, useSavedTab))
+
+    actionBtns := [
+        ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, useSavedTab)],
+        ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, useSavedTab)],
+        ["x410 y530 w120", "Help", (*) => showClipboardHelp()]
+    ]
+
+    for option in actionBtns
+        clipGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
 }

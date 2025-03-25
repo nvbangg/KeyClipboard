@@ -1,6 +1,3 @@
-; === CLIP_STORAGE MODULE ===
-
-; Load saved data from file
 loadSavedItems() {
     global savedTab
     existFile(savedFilePath)
@@ -30,7 +27,6 @@ loadSavedItems() {
     }
 }
 
-; Save items list to file
 saveSavedItems() {
     global savedTab
 
@@ -54,8 +50,7 @@ saveSavedItems() {
         showNotification("Error saving data: " . err.Message)
     }
 }
-
-; Encode a line of text to save to file
+; Encode text as hex values to safely store in file
 encodeLine(text) {
     if (text = "")
         return ""
@@ -67,8 +62,7 @@ encodeLine(text) {
 
     return encoded
 }
-
-; Decode a line from file
+; Decode hex values back to original text
 decodeLine(encodedLine) {
     if (encodedLine = "")
         return ""
