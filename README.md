@@ -82,4 +82,4 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - Nội dung được saved tab được lưu vào file mà không bị mất
 - Thêm phím tắt CapsLock + 1-9 để dán nhanh mục theo vị trí trong saved tab
 - Thêm phím tắt CapsLock + Ctrl + V/B/A để dán nội dung từ saved tab
-
+- Sửa hoàn toàn lỗi không dán được lần đầu, sửa khi đặt tên file trong vscode mà mở clipboard thì bị mất đặt tên

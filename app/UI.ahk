@@ -74,7 +74,7 @@ showShortcuts(*) {
         "• CapsLock+B: Paste the item before the latest`n" .
         "• CapsLock+A: Paste all clipboard items`n" .
         "• CapsLock+Space+V/B/A: Paste item(s) with Format`n" .
-        "• CapsLock+Shift+V/B/A: Paste item(s) as Original`n`n" .
+        "• CapsLock+Shift+V/B/A: Paste item(s) as Original`n" .
         "• CapsLock+Ctrl+V/B/A: Paste item(s) from Saved tab`n" .
         "• CapsLock+1-9: Paste item by position from saved tab`n"
     )

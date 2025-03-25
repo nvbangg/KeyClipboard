@@ -38,107 +38,86 @@ addClipSettings(settingsGui, yPos) {
     return yPos + 15
 }
 
-showClipboard() {
-    global historyTab, savedTab, clipGuiInstance
+; Create tab content for either History or Saved tab
+createTabContent(clipGui, tabs, tabNumber, isHistoryTab) {
+    global historyLV, savedLV, historyViewer, savedViewer
 
-    ; Check if both clipHistory and savedItems are empty before creating GUI
-    if (historyTab.Length < 1 && savedTab.Length < 1) {
-        showNotification("No items in clipboard history")
-        return
-    }
-
-    try {
-        if (IsObject(clipGuiInstance) && clipGuiInstance.HasProp("Hwnd") && WinExist("ahk_id " .
-            clipGuiInstance.Hwnd)) {
-            clipGuiInstance.Destroy()
-        }
-    } catch {
-        clipGuiInstance := 0
-    }
-
-    ; Always create GUI since we've verified there's at least one item
-    clipGui := Gui(, "Clipboard Manager")
-    clipGuiInstance := clipGui
-    clipGui.SetFont("s10")
-
-    ; Add tabs for History and Saved with equal width
-    tabs := clipGui.Add("Tab3", "x5 y5 w710 h560", ["History", "Saved"])
-
-    ; Set equal width for both tabs
-    SendMessage(0x1329, 2, 0, tabs.hwnd)  ; TCM_SETMINTABWIDTH = 0x1329
-
-    ; Add tab change event handler to reload data
-    tabs.OnEvent("Change", onTabChange)
-
-    ; --- History Tab ---
-    tabs.UseTab(1)
+    tabs.UseTab(tabNumber)
 
     ; Add Select All button and search box
     selectAllBtn := clipGui.Add("Button", "x10 y35 w70", "Select All")
     clipGui.Add("Text", "x90 y40", "Search:")
     searchBox := clipGui.Add("Edit", "x150 y37 w560")
-    searchBox.OnEvent("Change", onSearchChange)
 
-    ; Create ListView for clipboard items
-    historyLV := clipGui.Add("ListView", "x10 y70 w700 h270 Grid Multi", ["#", "Content"])
-    historyLV.ModifyCol(1, 50, "Integer")
-    historyLV.ModifyCol(2, 640)
+    ; Create ListView for items
+    listView := clipGui.Add("ListView", "x10 y70 w700 h270 Grid Multi", ["#", "Content"])
+    listView.ModifyCol(1, 50, "Integer")
+    listView.ModifyCol(2, 640)
 
-    ; Add event handler for Select All button
-    selectAllBtn.OnEvent("Click", (*) => selectAllItems(historyLV, historyViewer))
+    ; Store references to controls based on tab
+    contentViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll HScroll", "")
 
-    historyLV.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
-        showContextMenu(LV, clipGui, Item, X, Y, false)) ; false = clipboard tab
+    ; Store appropriate references and set event handlers based on tab type
+    if (isHistoryTab) {
+        historyLV := listView
+        historyViewer := contentViewer
+        tabType := false  ; false = clipboard tab
+    } else {
+        savedLV := listView
+        savedViewer := contentViewer
+        tabType := true   ; true = saved items tab
+    }
 
-    historyViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll HScroll", "")
-    historyLV.OnEvent("ItemSelect", (LV, *) => updateContent(LV, historyViewer, false))
-    historyLV.OnEvent("ItemFocus", (LV, *) => updateContent(LV, historyViewer, false))
-    historyLV.OnEvent("DoubleClick", (*) => pasteSelected(historyLV, clipGui, 0, false))
+    ; Common event handler setup with proper parameters
+    searchBox.OnEvent("Change", isHistoryTab ? onSearchChange : onSavedSearchChange)
+    selectAllBtn.OnEvent("Click", (*) => selectAllItems(listView, contentViewer))
+    listView.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
+        showContextMenu(LV, clipGui, Item, X, Y, tabType))
+    listView.OnEvent("ItemSelect", (LV, *) => updateContent(LV, contentViewer, tabType))
+    listView.OnEvent("ItemFocus", (LV, *) => updateContent(LV, contentViewer, tabType))
+    listView.OnEvent("DoubleClick", (*) => pasteSelected(listView, clipGui, 0, tabType))
 
-    ; Add history tab action buttons
-    historyBtns := [
-        ["x150 y530 w120", "Save/Reload", (*) => saveContent(historyLV, historyViewer, clipGui, false)],
-        ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, false)],
+    ; Add action buttons
+    actionBtns := [
+        ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, tabType)],
+        ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, tabType)],
         ["x410 y530 w120", "Help", (*) => showClipboardHelp()]
     ]
 
-    for option in historyBtns
+    for option in actionBtns
         clipGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
+}
+getActiveTabElements(tabsObj) {
+    global historyLV, savedLV, historyViewer, savedViewer
 
-    ; --- Saved Items Tab ---
-    tabs.UseTab(2)
+    if (tabsObj.Value = 1) {
+        return { listView: historyLV, contentViewer: historyViewer, isSaved: false }
+    } else {
+        return { listView: savedLV, contentViewer: savedViewer, isSaved: true }
+    }
+}
+showClipboard() {
+    global historyTab, savedTab, clipGuiInstance, historyLV, savedLV, historyViewer, savedViewer, tabs
 
-    ; Add Select All button and search box for saved items
-    savedSelectAllBtn := clipGui.Add("Button", "x10 y35 w70", "Select All")
-    clipGui.Add("Text", "x90 y40", "Search:")
-    savedSearchBox := clipGui.Add("Edit", "x150 y37 w560")
-    savedSearchBox.OnEvent("Change", onSavedSearchChange)
+    ; Check if clipboard is empty or close existing instance
+    if (!checkClipboardInstance())
+        return
 
-    ; Create ListView for saved items
-    savedLV := clipGui.Add("ListView", "x10 y70 w700 h270 Grid Multi", ["#", "Content"])
-    savedLV.ModifyCol(1, 50, "Integer")
-    savedLV.ModifyCol(2, 640)
+    ; Always create GUI since we've verified there's at least one item
+    clipGui := Gui("+E0x08000000 +AlwaysOnTop", "Clipboard Manager")
+    clipGuiInstance := clipGui
+    clipGui.SetFont("s10")
 
-    ; Add event handler for Select All button
-    savedSelectAllBtn.OnEvent("Click", (*) => selectAllItems(savedLV, savedViewer))
+    ; Add tabs for History and Saved with equal width
+    tabs := clipGui.Add("Tab3", "x5 y5 w710 h560", ["History", "Saved"])
+    SendMessage(0x1329, 2, 0, tabs.hwnd)  ; TCM_SETMINTABWIDTH = 0x1329
 
-    savedLV.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
-        showContextMenu(LV, clipGui, Item, X, Y, true)) ; true = saved items tab
+    ; Add tab change event handler to reload data
+    tabs.OnEvent("Change", onTabChange)
 
-    savedViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll HScroll", "")
-    savedLV.OnEvent("ItemSelect", (LV, *) => updateContent(LV, savedViewer, true))
-    savedLV.OnEvent("ItemFocus", (LV, *) => updateContent(LV, savedViewer, true))
-    savedLV.OnEvent("DoubleClick", (*) => pasteSelected(savedLV, clipGui, 0, true))
-
-    ; Add saved items tab action buttons
-    savedBtns := [
-        ["x150 y530 w120", "Save/Reload", (*) => saveContent(savedLV, savedViewer, clipGui, true)],
-        ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, true)],
-        ["x410 y530 w120", "Help", (*) => showClipboardHelp()]
-    ]
-
-    for option in savedBtns
-        clipGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
+    ; Create the tab content using the shared function
+    createTabContent(clipGui, tabs, 1, true)   ; History tab
+    createTabContent(clipGui, tabs, 2, false)  ; Saved tab
 
     ; Reset to first tab
     tabs.UseTab()
@@ -206,95 +185,15 @@ showClipboard() {
 
     ; Set initial tab based on content availability
     if (historyTab.Length > 0) {
-        ; Safely check if historyLV still exists and has items
-        try {
-            if (IsObject(historyLV) && historyLV.HasProp("GetCount")) {
-                lastHistoryRow := historyLV.GetCount()
-                if (lastHistoryRow > 0) {
-                    historyLV.Modify(lastHistoryRow, "Select Focus Vis")
-                    updateContent(historyLV, historyViewer, false)
-                }
-            }
-        } catch {
-            ; Handle any errors accessing historyLV
-        }
-
-        ; Focus on clipboard history
-        SetTimer(() => (IsObject(historyLV) ? historyLV.Focus() : 0), -50)
+        ; Update history tab content and focus
+        updateTabContent(1, clipGui.Hwnd)
     } else if (savedTab.Length > 0) {
         tabs.Value := 2  ; Switch to Saved tab
-
-        ; Focus on saved items
-        try {
-            if (IsObject(savedLV) && savedLV.HasProp("GetCount")) {
-                lastSavedRow := savedLV.GetCount()
-                if (lastSavedRow > 0) {
-                    savedLV.Modify(lastSavedRow, "Select Focus Vis")
-                    updateContent(savedLV, savedViewer, true)
-                }
-            }
-        } catch {
-            ; Handle any errors accessing savedLV
-        }
-
-        SetTimer(() => (IsObject(savedLV) ? savedLV.Focus() : 0), -50)
+        ; Update saved tab content and focus
+        updateTabContent(2, clipGui.Hwnd)
     }
 
     clipGui.Show("w720 h570")
-
-    ; Tab change event handler - with safer control access
-    onTabChange(ctrl, *) {
-        tabValue := ctrl.Value
-
-        ; Make sure the GUI still exists
-        if (!WinExist("ahk_id " . clipGui.Hwnd))
-            return
-
-        try {
-            if (tabValue = 1) {
-                ; History tab selected - safely check controls exist first
-                if (IsObject(historyLV) && historyLV.HasProp("GetCount")) {
-                    updateLV(historyLV, "", false) ; false = clipboard tab
-                    lastHistoryRow := historyLV.GetCount()
-                    if (lastHistoryRow > 0) {
-                        ; Always select and focus the last item
-                        historyLV.Modify(lastHistoryRow, "Select Focus Vis")
-                        if (IsObject(historyViewer))
-                            updateContent(historyLV, historyViewer, false)
-                    }
-                    SetTimer(() => historyLV.Focus(), -50)
-                }
-            } else {
-                ; Saved items tab selected - safely check controls exist first
-                if (IsObject(savedLV) && savedLV.HasProp("GetCount")) {
-                    updateLV(savedLV, "", true) ; true = saved items tab
-                    lastSavedRow := savedLV.GetCount()
-                    if (lastSavedRow > 0) {
-                        ; Always select and focus the last item (not just the first)
-                        savedLV.Modify(lastSavedRow, "Select Focus Vis")
-                        if (IsObject(savedViewer))
-                            updateContent(savedLV, savedViewer, true)
-                    }
-                    SetTimer(() => savedLV.Focus(), -50)
-                }
-            }
-        } catch {
-            ; Handle any errors accessing destroyed controls
-        }
-    }
-
-    ; Handle search functionality
-    onSearchChange(searchCtrl, *) {
-        searchText := searchCtrl.Value
-        updateLV(historyLV, searchText, false) ; false = clipboard tab
-        updateContent(historyLV, historyViewer, false)
-    }
-
-    onSavedSearchChange(searchCtrl, *) {
-        searchText := searchCtrl.Value
-        updateLV(savedLV, searchText, true) ; true = saved items tab
-        updateContent(savedLV, savedViewer, true)
-    }
 }
 
 ; Show clipboard usage instructions
@@ -340,7 +239,7 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
 
     if (!useSavedTab) { ; Only show these options for clipboard tab (not saved tab)
         contextMenu.Add()
-        contextMenu.Add("Save to Saved Items", (*) => (saveToSavedItems(LV)))
+        contextMenu.Add("Save to Saved Tab", (*) => (saveToSavedItems(LV)))
         contextMenu.Add("Save Format to Clipboard", (*) => (saveToClipboard(LV, true)))
     }
 
