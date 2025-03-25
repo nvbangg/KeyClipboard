@@ -205,28 +205,14 @@ moveSelectedItem(LV, contentViewer, direction, useSavedTab := false) {
     updateContent(LV, contentViewer, useSavedTab)
 }
 
-; Filter items based on search text
 filterItems(searchText := "", useSavedTab := false) {
     global historyTab, savedTab
-
     clipTab := useSavedTab ? savedTab : historyTab
-
-    if (searchText = "") {
-        filteredItems := []
-        for index, item in clipTab {
-            filteredItems.Push({
-                text: item.text,
-                original: item.original,
-                originalIndex: index
-            })
-        }
-        return filteredItems
-    }
-
     filteredItems := []
-    searchTextLower := StrLower(searchText)
+    searchTextLower := searchText ? StrLower(searchText) : ""
+
     for index, item in clipTab {
-        if (InStr(StrLower(item.text), searchTextLower)) {
+        if (searchText = "" || InStr(StrLower(item.text), searchTextLower)) {
             filteredItems.Push({
                 text: item.text,
                 original: item.original,
@@ -237,20 +223,15 @@ filterItems(searchText := "", useSavedTab := false) {
 
     return filteredItems
 }
-; Handle search functionality for history tab
-onSearchChange(searchCtrl, *) {
-    global historyLV, historyViewer
-    searchText := searchCtrl.Value
-    updateLV(historyLV, searchText, false) ; false = clipboard tab
-    updateContent(historyLV, historyViewer, false)
-}
-
-; Handle search functionality for saved tab
-onSavedSearchChange(searchCtrl, *) {
-    global savedLV, savedViewer
-    searchText := searchCtrl.Value
-    updateLV(savedLV, searchText, true) ; true = saved items tab
-    updateContent(savedLV, savedViewer, true)
+; Unified search handler
+handleSearch(searchCtrl, isHistoryTab := true) {
+    if (isHistoryTab) {
+        updateLV(historyLV, searchCtrl.Value, false)
+        updateContent(historyLV, historyViewer, false)
+    } else {
+        updateLV(savedLV, searchCtrl.Value, true)
+        updateContent(savedLV, savedViewer, true)
+    }
 }
 ; Check clipboard state and destroy existing instance
 checkClipboardInstance() {
@@ -262,52 +243,32 @@ checkClipboardInstance() {
         return false
     }
 
-    try {
-        if (IsObject(clipGuiInstance) && clipGuiInstance.HasProp("Hwnd") && WinExist("ahk_id " .
-            clipGuiInstance.Hwnd)) {
-            clipGuiInstance.Destroy()
-        }
-    } catch {
-        clipGuiInstance := 0
-    }
+    safeDestroyGui(clipGuiInstance)
+    clipGuiInstance := 0
 
     return true
 }
-; Update the content of a specific tab (history or saved)
+
 updateTabContent(tabIndex, clipGuiHwnd) {
     global historyLV, savedLV, historyViewer, savedViewer
 
-    ; Make sure the GUI still exists
     if (!WinExist("ahk_id " . clipGuiHwnd))
         return
 
     try {
-        if (tabIndex = 1) {
-            ; History tab selected - safely check controls exist first
-            if (IsObject(historyLV) && historyLV.HasProp("GetCount")) {
-                updateLV(historyLV, "", false) ; false = clipboard tab
-                lastRow := historyLV.GetCount()
-                if (lastRow > 0) {
-                    ; Always select and focus the last item
-                    historyLV.Modify(lastRow, "Select Focus Vis")
-                    if (IsObject(historyViewer))
-                        updateContent(historyLV, historyViewer, false)
-                }
-                SetTimer(() => historyLV.Focus(), -50)
+        elements := getActiveTabElements({ Value: tabIndex })
+
+        if (IsObject(elements.listView) && elements.listView.HasProp("GetCount")) {
+            updateLV(elements.listView, "", elements.isSaved)
+            lastRow := elements.listView.GetCount()
+
+            if (lastRow > 0) {
+                elements.listView.Modify(lastRow, "Select Focus Vis")
+                if (IsObject(elements.contentViewer))
+                    updateContent(elements.listView, elements.contentViewer, elements.isSaved)
             }
-        } else {
-            ; Saved items tab selected - safely check controls exist first
-            if (IsObject(savedLV) && savedLV.HasProp("GetCount")) {
-                updateLV(savedLV, "", true) ; true = saved items tab
-                lastRow := savedLV.GetCount()
-                if (lastRow > 0) {
-                    ; Always select and focus the last item
-                    savedLV.Modify(lastRow, "Select Focus Vis")
-                    if (IsObject(savedViewer))
-                        updateContent(savedLV, savedViewer, true)
-                }
-                SetTimer(() => savedLV.Focus(), -50)
-            }
+
+            SetTimer(() => elements.listView.Focus(), -50)
         }
     } catch {
         ; Handle any errors accessing destroyed controls
@@ -317,12 +278,14 @@ updateTabContent(tabIndex, clipGuiHwnd) {
 ; Tab change event handler - with safer control access
 onTabChange(ctrl, *) {
     global clipGuiInstance
+    updateTabContent(ctrl.Value, IsObject(clipGuiInstance) ? clipGuiInstance.Hwnd : 0)
+}
+getActiveTabElements(tabsObj) {
+    global historyLV, savedLV, historyViewer, savedViewer
 
-    tabValue := ctrl.Value
-
-    ; Get GUI hwnd from global instance
-    clipGuiHwnd := IsObject(clipGuiInstance) && clipGuiInstance.HasProp("Hwnd") ?
-        clipGuiInstance.Hwnd : 0
-
-    updateTabContent(tabValue, clipGuiHwnd)
+    if (tabsObj.Value = 1) {
+        return { listView: historyLV, contentViewer: historyViewer, isSaved: false }
+    } else {
+        return { listView: savedLV, contentViewer: savedViewer, isSaved: true }
+    }
 }

@@ -67,23 +67,28 @@ createTabContent(clipGui, tabs, tabNumber, isHistoryTab) {
     if (isHistoryTab) {
         historyLV := listView
         historyViewer := contentViewer
-        tabType := false  ; false = clipboard tab
     } else {
         savedLV := listView
         savedViewer := contentViewer
-        tabType := true   ; true = saved items tab
     }
 
-    ; Common event handler setup with proper parameters
-    searchBox.OnEvent("Change", isHistoryTab ? onSearchChange : onSavedSearchChange)
+    ; Set tabType value TRƯỚC khi sử dụng nó trong các event handler
+    tabType := !isHistoryTab
+
+    ; Common event handler setup with proper parameters - sử dụng handleSearch
+    searchBox.OnEvent("Change", (*) => handleSearch(searchBox, isHistoryTab))
     selectAllBtn.OnEvent("Click", (*) => selectAllItems(listView, contentViewer))
+
+    ; Fix context menu handler
     listView.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
         showContextMenu(LV, clipGui, Item, X, Y, tabType))
-    listView.OnEvent("ItemSelect", (LV, *) => updateContent(LV, contentViewer, tabType))
-    listView.OnEvent("ItemFocus", (LV, *) => updateContent(LV, contentViewer, tabType))
+
+    ; Stronger event handlers for selection
+    listView.OnEvent("Click", (*) => updateContent(listView, contentViewer, tabType))
+    listView.OnEvent("ItemSelect", (*) => updateContent(listView, contentViewer, tabType))
+    listView.OnEvent("ItemFocus", (*) => updateContent(listView, contentViewer, tabType))
     listView.OnEvent("DoubleClick", (*) => pasteSelected(listView, clipGui, 0, tabType))
 
-    ; Add action buttons
     actionBtns := [
         ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, tabType)],
         ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, tabType)],
@@ -93,14 +98,23 @@ createTabContent(clipGui, tabs, tabNumber, isHistoryTab) {
     for option in actionBtns
         clipGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
 }
-getActiveTabElements(tabsObj) {
-    global historyLV, savedLV, historyViewer, savedViewer
+handleTabAction(action, clipGui) {
+    elements := getActiveTabElements(tabs)
 
-    if (tabsObj.Value = 1) {
-        return { listView: historyLV, contentViewer: historyViewer, isSaved: false }
-    } else {
-        return { listView: savedLV, contentViewer: savedViewer, isSaved: true }
+    if (action = "enter") {
+        if (isListViewFocused())
+            pasteSelected(elements.listView, clipGui, 0, elements.isSaved)
+        else
+            Send("{Enter}")
     }
+    else if (action = "altUp")
+        moveSelectedItem(elements.listView, elements.contentViewer, -1, elements.isSaved)
+    else if (action = "altDown")
+        moveSelectedItem(elements.listView, elements.contentViewer, 1, elements.isSaved)
+    else if (action = "ctrlA")
+        selectAllItems(elements.listView, elements.contentViewer)
+    else if (action = "delete")
+        deleteSelected(elements.listView, clipGui, elements.isSaved)
 }
 showClipboard() {
     global historyTab, savedTab, clipGuiInstance, historyLV, savedLV, historyViewer, savedViewer, tabs
@@ -134,48 +148,11 @@ showClipboard() {
     ; Special hotkeys when clipboard history is active
     HotIfWinActive("ahk_id " . clipGui.Hwnd)
 
-    ; Define the hotkey handler functions
-    enterHotkey(*) {
-        if (tabs.Value = 1) {
-            if (isListViewFocused())
-                pasteSelected(historyLV, clipGui, 0, false) ; false = clipboard tab
-            else
-                Send("{Enter}")
-        } else {
-            if (isListViewFocused())
-                pasteSelected(savedLV, clipGui, 0, true) ; true = saved items tab
-            else
-                Send("{Enter}")
-        }
-    }
-
-    altUpHotkey(*) {
-        if (tabs.Value = 1)
-            moveSelectedItem(historyLV, historyViewer, -1, false) ; false = clipboard tab
-        else
-            moveSelectedItem(savedLV, savedViewer, -1, true) ; true = saved items tab
-    }
-
-    altDownHotkey(*) {
-        if (tabs.Value = 1)
-            moveSelectedItem(historyLV, historyViewer, 1, false) ; false = clipboard tab
-        else
-            moveSelectedItem(savedLV, savedViewer, 1, true) ; true = saved items tab
-    }
-
-    ctrlAHotkey(*) {
-        if (tabs.Value = 1)
-            selectAllItems(historyLV, historyViewer)
-        else
-            selectAllItems(savedLV, savedViewer)
-    }
-
-    deleteHotkey(*) {
-        if (tabs.Value = 1)
-            deleteSelected(historyLV, clipGui, false) ; false = clipboard tab
-        else
-            deleteSelected(savedLV, clipGui, true) ; true = saved items tab
-    }
+    enterHotkey(*) => handleTabAction("enter", clipGui)
+    altUpHotkey(*) => handleTabAction("altUp", clipGui)
+    altDownHotkey(*) => handleTabAction("altDown", clipGui)
+    ctrlAHotkey(*) => handleTabAction("ctrlA", clipGui)
+    deleteHotkey(*) => handleTabAction("delete", clipGui)
 
     ; Assign the hotkeys to their functions
     Hotkey "Enter", enterHotkey
@@ -223,7 +200,8 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     if (Item = 0)
         return
 
-    contentViewer := useSavedTab ? clipGui.FindControl("Edit2") : clipGui.FindControl("Edit1")
+    global historyViewer, savedViewer
+    contentViewer := useSavedTab ? savedViewer : historyViewer
 
     ; Create menu items array
     menuItems := [

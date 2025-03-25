@@ -161,36 +161,17 @@ clearClipboard(clipGui := 0, useSavedTab := false) {
     ; Clear the items from the appropriate source
     if (useSavedTab) {
         savedTab := []
-        ; Save changes after clearing all saved items
         saveSavedItems()
     }
     else
         historyTab := []
 
-    ; If the GUI was passed as a parameter, destroy it safely
-    try {
-        if (clipGui && clipGui.HasProp("Destroy"))
-            clipGui.Destroy()
-    } catch Error as err {
-        ; Silently handle errors when destroying GUI
-    }
+    ; Safely destroy passed GUI
+    safeDestroyGui(clipGui)
 
     ; Also close the clipboard history window if it exists
-    try {
-        if (IsObject(clipGuiInstance)) {
-            if (clipGuiInstance.HasProp("Hwnd")) {
-                hwnd := clipGuiInstance.Hwnd
-                if (WinExist("ahk_id " . hwnd)) {
-                    clipGuiInstance.Destroy()
-                }
-            } else {
-                clipGuiInstance.Destroy()
-            }
-            clipGuiInstance := 0
-        }
-    } catch Error as err {
-        clipGuiInstance := 0
-    }
+    safeDestroyGui(clipGuiInstance)
+    clipGuiInstance := 0
 
     showNotification("All " . (useSavedTab ? "saved items" : "clipboard items") . " have been cleared")
 }
@@ -320,4 +301,18 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
     }
 
     showNotification(addedCount . " item(s) added to clipboard history")
+}
+
+; Creates a context menu from an array of menu items
+createContextMenu(menuItems) {
+    contextMenu := Menu()
+
+    for item in menuItems {
+        if (item.Length = 0)
+            contextMenu.Add()  ; Add separator
+        else
+            contextMenu.Add(item[1], item[2])  ; Add label and callback
+    }
+
+    return contextMenu
 }

@@ -46,24 +46,27 @@ closeEvents(guiObj, closeCallback) {
     guiObj.OnEvent("Escape", closeCallback)
     guiObj.OnEvent("Close", closeCallback)
 }
-
+; Activate an existing GUI if it exists, or return false
+activateGuiIfExists(guiObj) {
+    try {
+        if (IsObject(guiObj) && guiObj.HasProp("Hwnd")) {
+            hwnd := guiObj.Hwnd
+            if (WinExist("ahk_id " . hwnd)) {
+                WinActivate("ahk_id " . hwnd)
+                return true
+            }
+        }
+    } catch {
+    }
+    return false
+}
 ; Creates a standard information dialog with OK button
 createInfoDialog(title, content, width := 350, btnOpts := "") {
     static activeDialog := 0
 
-    ; If we already have an active dialog
-    if (IsObject(activeDialog)) {
-        ; Check if the dialog still exists
-        try {
-            hwnd := activeDialog.Hwnd
-            ; If it exists, bring it to the front
-            WinActivate("ahk_id " hwnd)
-            return activeDialog
-        } catch {
-            ; Dialog was destroyed externally, create a new one
-            activeDialog := 0
-        }
-    }
+    ; If dialog exists and is valid, activate it
+    if (activateGuiIfExists(activeDialog))
+        return activeDialog
 
     ; Create a new dialog
     infoGui := Gui("+AlwaysOnTop +ToolWindow", title)
@@ -95,17 +98,15 @@ createInfoDialog(title, content, width := 350, btnOpts := "") {
     infoGui.Show("w" . (width + 20) . " h" . windowHeight)
     return infoGui
 }
-
-; Creates a context menu from an array of menu items
-createContextMenu(menuItems) {
-    contextMenu := Menu()
-
-    for item in menuItems {
-        if (item.Length = 0)
-            contextMenu.Add()  ; Add separator
-        else
-            contextMenu.Add(item[1], item[2])  ; Add label and callback
+; Create a unified safeDestroyGui function to replace multiple destroy patterns
+safeDestroyGui(guiObj) {
+    try {
+        if (IsObject(guiObj) && guiObj.HasProp("Hwnd") && WinExist("ahk_id " . guiObj.Hwnd)) {
+            guiObj.Destroy()
+            return true
+        }
+    } catch {
+        ; Silently handle errors
     }
-
-    return contextMenu
+    return false
 }
