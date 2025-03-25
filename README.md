@@ -13,7 +13,8 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - **Quick Translation**: Translate Chrome pages  instantly with a shortcut
 - **Saved Items Access**: Quickly access saved items with dedicated shortcuts
 
-![image](https://github.com/user-attachments/assets/09264c1a-a0ea-460e-adea-750caefd8fe6)
+![image](https://github.com/user-attachments/assets/f0d8d2c3-d32f-4bf8-a7ef-a18967ec33d9)
+
 
 ## Settings Options
 ![image](https://github.com/user-attachments/assets/31e67eeb-3424-45af-b28d-768b80af151d)
