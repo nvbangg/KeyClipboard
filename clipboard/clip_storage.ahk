@@ -1,23 +1,9 @@
 ; === CLIP_STORAGE MODULE ===
 
-; Ensure directory and file exist
-ensureStoragePath() {
-    global savedFilePath
-    dataDir := A_ScriptDir . "\data"
-    if !DirExist(dataDir) {
-        DirCreate(dataDir)
-    }
-    if !FileExist(savedFilePath) {
-        FileAppend("", savedFilePath)
-    }
-    return true
-}
-
 ; Load saved data from file
 loadSavedItems() {
-    global savedTab, savedFilePath
-
-    ensureStoragePath()
+    global savedTab
+    existFile(savedFilePath)
 
     try {
         fileContent := FileRead(savedFilePath)
@@ -46,9 +32,9 @@ loadSavedItems() {
 
 ; Save items list to file
 saveSavedItems() {
-    global savedTab, savedFilePath
+    global savedTab
 
-    ensureStoragePath()
+    existFile(savedFilePath)
 
     try {
         fileContent := ""

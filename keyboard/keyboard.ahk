@@ -1,26 +1,15 @@
 ; === KEY MODULE ===
 
-#Include key_utils.ahk
-#Include key_UI.ahk
+#Include key_functions.ahk
 
-translateInChrome() {
-    BlockInput("On")
-    MouseClick("Right")
-    Sleep(50)
-    Send("t")
-    Sleep(50)
-    Send("{Enter}")
-    Sleep(50)
-    MouseClick("Left")
-    BlockInput("Off")
-}
+addKeySettings(settingsGui, y) {
+    global mouseEnabled, numLockEnabled
 
-updateNumLock() {
-    SetNumLockState(numLockEnabled ? "AlwaysOn" : "Default")
-}
+    settingsGui.Add("GroupBox", "x10 y" . y . " w350 h95", "Keyboard Settings")
+    settingsGui.Add("CheckBox", "x20 y" . (y + 20) . " vmouseEnabled Checked" . mouseEnabled, "Enable Mouse Clicks")
+    settingsGui.Add("Text", "x40 y" . (y + 40) . " w350", "(RAlt: left click, RCtrl: right click)")
+    settingsGui.Add("CheckBox", "x20 y" . (y + 65) . " vnumLockEnabled Checked" . numLockEnabled,
+    "Always Enable Numlock")
 
-alwaysOnTop() {
-    WinSetAlwaysOnTop(-1, "A")
-    isAlwaysOnTop := WinGetExStyle("A") & 0x8
-    showNotification("Always On Top: " . (isAlwaysOnTop ? "Enabled" : "Disabled"))
+    return y + 110
 }

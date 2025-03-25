@@ -1,17 +1,17 @@
 ; KeyClipboard - Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
-#SingleInstance Force
-#Include app\utils.ahk
-#Include app\UI.ahk
+; === INIT ===
+#Include app\common.ahk
+#Include app\app_functions.ahk
 #Include clipboard\clipboard.ahk
 #Include keyboard\keyboard.ahk
-
-; === INIT ===
+global dataDir := A_ScriptDir . "\data"
 global settingsFilePath := A_ScriptDir . "\data\settings.ini"
 initSettings()
 initCapsLockMonitor()
 initClipboard()
 
+; === HOTKEYS ===
 *CapsLock::
 {
     KeyWait "CapsLock"
@@ -24,7 +24,6 @@ initClipboard()
     }
 }
 
-; === HOTKEYS ===
 #HotIf mouseEnabled
 RAlt:: Click()           ; Right Alt to left click
 RCtrl:: Click("Right")   ; Right Ctrl to right click
@@ -68,3 +67,86 @@ Space & a:: pasteSelected(, , 1) ; Paste all clipboard items with format
 ^a:: pasteSelected(, , 0, true) ; Paste all saved items
 
 #HotIf
+
+;=== UI ===
+
+A_TrayMenu.Add("Settings (Caps+S)", showSettings)
+A_TrayMenu.Add("Shortcuts", showShortcuts)
+A_TrayMenu.Add("About", showAbout)
+A_IconTip := "KeyClipboard - Right click to see more"
+
+showSettings(*) {
+    static settingsGui := 0
+    static isCreating := false
+    if (isCreating)
+        return
+    isCreating := true
+    settingsGui := cleanupGui(settingsGui)
+
+    settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
+    settingsGui.SetFont("s10")
+    yPos := 10
+    yPos := addKeySettings(settingsGui, yPos)
+    yPos := addClipSettings(settingsGui, yPos)
+
+    ; Helper function for saving and closing
+    CloseAndSave() {
+        formData := settingsGui.Submit()
+        settingsGui := cleanupGui(settingsGui)
+        saveSettings(formData)
+    }
+
+    settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
+    .OnEvent("Click", (*) => CloseAndSave())
+    settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts")
+    .OnEvent("Click", (*) => showShortcuts())
+    settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About")
+    .OnEvent("Click", (*) => showAbout())
+
+    settingsGui.Show("w375 h" . (yPos + 50))
+    closeEvents(settingsGui, (*) => CloseAndSave())
+    isCreating := false
+
+}
+
+showShortcuts(*) {
+    shortcutsText :=
+        "• CapsLock+S: Show Settings Popup`n" .
+        "• CapsLock+T: Translate page in Chrome`n" .
+        "• CapsLock+Space+T: Always-on-Top for active Window`n" .
+        "• CapsLock+C: Show Clipboard History`n" .
+        "• CapsLock+Space+C: Clear Clipboard History`n" .
+        "• CapsLock+F: Paste combining previous and current item`n`n" .
+        "• CapsLock+V: Paste latest item from clipboard history`n" .
+        "• CapsLock+B: Paste the item before the latest`n" .
+        "• CapsLock+A: Paste all clipboard items`n" .
+        "• CapsLock+Space+V/B/A: Paste item(s) with Format`n" .
+        "• CapsLock+Shift+V/B/A: Paste item(s) as Original`n" .
+        "• CapsLock+Ctrl+V/B/A: Paste item(s) from Saved tab`n" .
+        "• CapsLock+1-9: Paste item by position from saved tab`n"
+
+    createInfoDialog("Shortcuts - KeyClipboard", shortcutsText, 375)
+}
+
+showAbout(*) {
+    aboutText :=
+        "KeyClipboard`n" .
+        "Version: 1.6.1.2`n" .
+        "Date: 25/03/2025`n`n" .
+        "Source: github.com/nvbangg/KeyClipboard`n" .
+        "Click Yes to open"
+
+    result := MsgBox(aboutText, "About KeyClipboard", "YesNo 262144")  ; YesNo with AlwaysOnTop flag
+
+    if (result == "Yes") {
+        try {
+            Run("https://github.com/nvbangg/KeyClipboard")
+        } catch Error as e {
+        }
+    } else if (result == "No") {
+        try {
+            Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ") ; =)))))
+        } catch Error as e {
+        }
+    }
+}
