@@ -1,4 +1,4 @@
-S# KeyClipboard
+# KeyClipboard
 
 Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
