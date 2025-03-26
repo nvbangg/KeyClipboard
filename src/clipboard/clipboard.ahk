@@ -1,3 +1,7 @@
+#Include clip_utils.ahk
+#Include clip_format.ahk
+#Include clip_storage.ahk
+
 paste(content, useFormat := false) {
     global isProcessing
     isProcessing := true

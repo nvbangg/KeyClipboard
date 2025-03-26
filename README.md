@@ -1,6 +1,6 @@
 # KeyClipboard
 
-Powerful Clipboard to replace Windows Clipboard with convenient shortcut tools!
+A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard shortcut!
 
 ## Highlighted Features
 
@@ -27,8 +27,7 @@ Powerful Clipboard to replace Windows Clipboard with convenient shortcut tools!
 
 ### Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
-- `CapsLock + T`: **Translate** Chrome page
-- `CapsLock + Space + T`: **Always on Top** for active Window
+- `CapsLock + T`: **Always on Top** for active Window
 - `CapsLock + C`: Show **Clipboard** History
 - `CapsLock + Space + C`: **Clear** clipboard history
 - `CapsLock + F`: Specific **Format** (Paste combining previous and current items) 
@@ -54,14 +53,9 @@ Powerful Clipboard to replace Windows Clipboard with convenient shortcut tools!
 2. Install environment from [AutoHotkey v2](https://www.autohotkey.com)
 3. Run `KeyClipboard.ahk`
 4. Look for the app icon in the system tray
-
-## Tính năng dự kiến
-
-- Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
-- Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
-    
+  
 ### Changelog: 
-- Thêm tuỳ chọn Khởi động cùng Windows
-- Thêm Tuỳ chọn thay thế Windows Clipboard (dùng Win+V để mở app)
-- Thêm hướng dẫn và cài shortcut lúc cài app lần đầu
-- Thêm Double Click vào icon hoặc shortcut để mở settings
+- Xoá chức năng translate in chrome, always enable numlock, mouse click mode
+- Các chức năng trên chuyển sang dự án khác
+- Sửa đổi cấu trúc dự án và tối ưu code
+- `CapsLock + T`: **Always on Top** for active Window
