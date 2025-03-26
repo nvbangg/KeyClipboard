@@ -69,7 +69,7 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.3`n" .
+        "Version: 1.6.3.1`n" .
         "Date: 26/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
@@ -91,13 +91,10 @@ showAbout(*) {
 
 showWelcomeMessage() {
     welcomeText :=
-        "KeyClipboard has been successfully installed!`n`n" .
-        "Quick Start Guide:`n`n" .
+        "KeyClipboard has been successfully installed!`n" .
+        "A shortcut has been created on your desktop to open settings.`n`n" .
         "• CapsLock+C: Open Clipboard History`n" .
         "• CapsLock+S: Open Settings`n" .
-        "• Double click on the tray icon to open settings`n`n" .
-        "A shortcut has been created on your desktop to open settings.`n" .
-        "Right-click the tray icon for more options."
-
-    showInfo("Welcome to KeyClipboard", welcomeText, 450)
+        "• Double-click the tray icon in the system tray to open settings`n`n"
+    showInfo("Welcome to KeyClipboard", welcomeText, 400)
 }
