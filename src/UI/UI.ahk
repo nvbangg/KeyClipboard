@@ -4,7 +4,7 @@
 A_TrayMenu.Add("Settings (Caps+S)", showSettings)
 A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
-A_IconTip := "KeyClipboard - Left click for settings, right click for menu"
+A_IconTip := "KeyClipboard - Double click to open settings"
 
 ; Configure tray icon to show settings on left click
 A_TrayMenu.Click := 1  ; 1 means single click
