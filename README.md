@@ -1,4 +1,4 @@
-# KeyClipboard
+S# KeyClipboard
 
 Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
@@ -24,7 +24,8 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ![image](https://github.com/user-attachments/assets/09264c1a-a0ea-460e-adea-750caefd8fe6)
 
-![image](https://github.com/user-attachments/assets/31e67eeb-3424-45af-b28d-768b80af151d)
+![image](https://github.com/user-attachments/assets/bc9b512b-83c9-41b5-8e01-69373b0fbfe8)
+
 
 ### Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
@@ -58,7 +59,6 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
 ## Tính năng dự kiến
 
-- Thêm hiển thị cài đặt thành công kèm hướng dẫn dùng cơ bản và nút showshorcuts và about lần đầu tiên cài app
 - Có thể tự cấu hình phím tắt để mở nhanh app, thư mục, file
 - Có thể ghi lại macro (các thao tác chuột, bàn phím) và phát lại tự động hoá
     
