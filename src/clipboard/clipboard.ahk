@@ -138,6 +138,13 @@ clearClipboard(clipGui := 0, useSavedTab := false) {
     global historyTab, savedTab, clipGuiInstance
 
     if (useSavedTab) {
+        ; Add confirmation dialog when clearing Saved tab
+        result := MsgBox("Are you sure you want to clear all saved items?",
+            "Confirm Clear Saved Items", "YesNo 262144") ; YesNo with AlwaysOnTop flag
+
+        if (result != "Yes")
+            return
+
         savedTab := []
         saveSavedItems()
     }

@@ -29,17 +29,18 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 
 ### Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
-- `CapsLock + T`: **Always on Top** for active Window
+- `CapsLock + Shift + S`: **Always on Top** for active Window
 - `CapsLock + C`: Show **Clipboard** History
-- `CapsLock + Space + C`: **Clear** clipboard history
+- `CapsLock + Tab + C`: Show **Clipboard** Saved
+- `CapsLock + Shift + C`: **Clear** clipboard history
 - `CapsLock + F`: Specific **Format** (Paste combining previous and current items) 
 
 - `CapsLock + V`: Paste latest clipboard item 
 - `CapsLock + B`: Paste **Before** Latest item
 - `CapsLock + A`: Paste **All** items 
-- `CapsLock + Space + V/B/A`: Paste item(s) with Format
-- `CapsLock + Shift + V/B/A`: Paste item(s) as Original
-- `CapsLock + Ctrl + V/B/A`: Paste item(s) from Saved tab
+- `CapsLock + Shift + V/B/A`: Paste item(s) with Format
+- `CapsLock + Ctrl + V/B/A`: Paste item(s) as Original
+- `CapsLock + Tab + V/B/A`: Paste item(s) from Saved tab
 - `CapsLock + 1-9`: Paste item by position from saved tab
 
 ## Installation
@@ -60,5 +61,13 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - Xoá chức năng translate in chrome, always enable numlock, mouse click mode
 - Các chức năng trên chuyển sang dự án khác
 - Sửa đổi cấu trúc dự án và tối ưu code
-- `CapsLock + T`: **Always on Top** for active Window
 - Hướng dẫn sử dụng cho lần đầu cài app
+- Sửa lỗi không focus vào mục cuối cùng khi mở clipboard
+- Thêm thông báo xác nhận trước khi Clear All trong Saved tab
+- Sửa lại phím tắt:
+- `CapsLock + Shift + S`: **Always on Top** for active Window
+- `CapsLock + Tab + C`: Show **Clipboard** Saved
+- `CapsLock + Shift + C`: **Clear** clipboard history
+- `CapsLock + Shift + V/B/A`: Paste item(s) with Format
+- `CapsLock + Ctrl + V/B/A`: Paste item(s) as Original
+- `CapsLock + Tab + V/B/A`: Paste item(s) from Saved tab

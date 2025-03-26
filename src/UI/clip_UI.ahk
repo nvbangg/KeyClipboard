@@ -1,4 +1,4 @@
-showClipboard() {
+showClipboard(useSavedTab := false) {
     global historyTab, savedTab, clipGuiInstance, historyLV, savedLV, historyViewer, savedViewer, tabs
 
     if (!checkClipInstance())
@@ -39,11 +39,39 @@ showClipboard() {
     updateLV(historyLV, "", false)
     updateLV(savedLV, "", true)
 
-    if (historyTab.Length > 0) {
-        updateTabContent(1, clipGui.Hwnd)
+    ; Set active tab based on parameter
+    if (useSavedTab) {
+        tabs.Value := 2
+        if (savedTab.Length > 0) {
+            lastRow := savedLV.GetCount()
+            if (lastRow > 0) {
+                savedLV.Modify(lastRow, "Select Focus Vis")
+                savedLV.Focus()
+                updateContent(savedLV, savedViewer, true)
+            }
+        } else if (historyTab.Length > 0) {
+            lastRow := historyLV.GetCount()
+            if (lastRow > 0) {
+                historyLV.Modify(lastRow, "Select Focus Vis")
+                historyLV.Focus()
+                updateContent(historyLV, historyViewer, false)
+            }
+        }
+    } else if (historyTab.Length > 0) {
+        lastRow := historyLV.GetCount()
+        if (lastRow > 0) {
+            historyLV.Modify(lastRow, "Select Focus Vis")
+            historyLV.Focus()
+            updateContent(historyLV, historyViewer, false)
+        }
     } else if (savedTab.Length > 0) {
         tabs.Value := 2
-        updateTabContent(2, clipGui.Hwnd)
+        lastRow := savedLV.GetCount()
+        if (lastRow > 0) {
+            savedLV.Modify(lastRow, "Select Focus Vis")
+            savedLV.Focus()
+            updateContent(savedLV, savedViewer, true)
+        }
     }
 
     clipGui.Show("w720 h570")
@@ -123,10 +151,17 @@ buildTabUI(clipGui, tabs, useSavedTab) {
     listView.OnEvent("DoubleClick", (*) => pasteSelected(listView, clipGui, 0, useSavedTab))
 
     actionBtns := [
-        ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, useSavedTab)],
-        ["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, useSavedTab)],
-        ["x410 y530 w120", "Help", (*) => showClipboardHelp()]
+        ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, useSavedTab)]
     ]
+
+    ; Clear All button with different behavior for History vs Saved tab
+    if (useSavedTab) {
+        actionBtns.Push(["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, true)])
+    } else {
+        actionBtns.Push(["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, false)])
+    }
+
+    actionBtns.Push(["x410 y530 w120", "Help", (*) => showClipboardHelp()])
 
     for option in actionBtns
         clipGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])

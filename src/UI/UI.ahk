@@ -51,16 +51,17 @@ showSettings(*) {
 showShortcuts(*) {
     shortcutsText :=
         "• CapsLock+S: Show Settings Popup`n" .
-        "• CapsLock+T: Always-on-Top for active Window`n" .
+        "• CapsLock+Shift+S: Always-on-Top for active Window`n" .
         "• CapsLock+C: Show Clipboard History`n" .
-        "• CapsLock+Space+C: Clear Clipboard History`n" .
+        "• CapsLock+Tab+C: Show Clipboard Saved tab`n" .
+        "• CapsLock+Shift+C: Clear Clipboard History`n" .
         "• CapsLock+F: Paste combining previous and current item`n`n" .
         "• CapsLock+V: Paste latest item from clipboard history`n" .
         "• CapsLock+B: Paste the item before the latest`n" .
         "• CapsLock+A: Paste all clipboard items`n" .
-        "• CapsLock+Space+V/B/A: Paste item(s) with Format`n" .
-        "• CapsLock+Shift+V/B/A: Paste item(s) as Original`n" .
-        "• CapsLock+Ctrl+V/B/A: Paste item(s) from Saved tab`n" .
+        "• CapsLock+Shift+V/B/A: Paste item(s) with Format`n" .
+        "• CapsLock+Ctrl+V/B/A: Paste item(s) as Original`n" .
+        "• CapsLock+Tab+V/B/A: Paste item(s) from Saved tab`n" .
         "• CapsLock+1-9: Paste item by position from saved tab`n"
 
     showInfo("Shortcuts - KeyClipboard", shortcutsText, 375)
@@ -69,7 +70,7 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.3.1`n" .
+        "Version: 1.6.3.2`n" .
         "Date: 26/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
@@ -94,6 +95,7 @@ showWelcomeMessage() {
         "KeyClipboard has been successfully installed!`n" .
         "A shortcut has been created on your desktop to open settings.`n`n" .
         "• CapsLock+C: Open Clipboard History`n" .
+        "• CapsLock+Tab+C: Open Clipboard Saved tab`n" .
         "• CapsLock+S: Open Settings`n" .
         "• Double-click the tray icon in the system tray to open settings`n`n"
     showInfo("Welcome to KeyClipboard", welcomeText, 400)
