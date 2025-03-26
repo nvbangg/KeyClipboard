@@ -86,6 +86,10 @@ showSettings(*) {
     settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
     settingsGui.SetFont("s10")
     yPos := 10
+
+    ; Use the new function for App Settings
+    yPos := addAppSettings(settingsGui, yPos)
+
     yPos := addKeySettings(settingsGui, yPos)
     yPos := addFormatOptions(settingsGui, yPos)
 
@@ -106,7 +110,6 @@ showSettings(*) {
     settingsGui.Show("w375 h" . (yPos + 50))
     closeEvents(settingsGui, (*) => CloseAndSave())
     isCreating := false
-
 }
 
 showShortcuts(*) {
@@ -131,7 +134,7 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.1.3`n" .
+        "Version: 1.6.2`n" .
         "Date: 26/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
