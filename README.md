@@ -13,21 +13,6 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 - **Quick Translation**: Translate Chrome pages  instantly with a shortcut
 - **Saved Items Access**: Quickly access saved items with dedicated shortcuts
 
-<<<<<<< HEAD
-=======
-![image](https://github.com/user-attachments/assets/f0d8d2c3-d32f-4bf8-a7ef-a18967ec33d9)
-
-
-## Settings Options
-![image](https://github.com/user-attachments/assets/31e67eeb-3424-45af-b28d-768b80af151d)
-
-### Keyboard Options
-- Mouse Clicks Mode
-  - `Right Alt`: Left mouse click
-  - `Right Ctrl`: Right mouse click
-- Always Enable NumLock
-
->>>>>>> 0fd5d34f5da9eef524c95c1378e17517f7b5a3e6
 ### Format Options
 
 - **Remove accents**
