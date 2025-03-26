@@ -1,5 +1,8 @@
 ; KeyClipboard - Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 
+; Ensure only one instance runs without prompting
+#SingleInstance Force
+
 ; === INIT ===
 #Include app\common.ahk
 #Include app\app_functions.ahk
@@ -10,6 +13,11 @@ global settingsFilePath := A_ScriptDir . "\data\settings.ini"
 initSettings()
 initCapsLockMonitor()
 initClipboard()
+
+; Check for command-line parameter to open settings
+if (A_Args.Length > 0 && A_Args[1] = "settings") {
+    SetTimer(showSettings, -200)
+}
 
 ; === HOTKEYS ===
 *CapsLock::
@@ -70,10 +78,15 @@ Space & a:: pasteSelected(, , 1) ; Paste all clipboard items with format
 
 ;=== UI ===
 
+; Set up tray menu and icon click behavior
 A_TrayMenu.Add("Settings (Caps+S)", showSettings)
 A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
-A_IconTip := "KeyClipboard - Right click to see more"
+A_IconTip := "KeyClipboard - Left click for settings, right click for menu"
+
+; Configure tray icon to show settings on left click
+A_TrayMenu.Click := 1  ; 1 means single click
+A_TrayMenu.Default := "Settings (Caps+S)"
 
 showSettings(*) {
     static settingsGui := 0
@@ -134,7 +147,7 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.2`n" .
+        "Version: 1.6.2.1`n" .
         "Date: 26/03/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"

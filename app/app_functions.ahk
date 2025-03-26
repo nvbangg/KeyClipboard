@@ -5,6 +5,7 @@ initSettings() {
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
     global replaceWinClipboard, startWithWindows
+    global firstRun
 
     existFile(settingsFilePath)
 
@@ -21,10 +22,21 @@ initSettings() {
 
     replaceWinClipboard := readSetting("AppSettings", "replaceWinClipboard", "1") = "1"
     startWithWindows := readSetting("AppSettings", "startWithWindows", "1") = "1"
+    firstRun := readSetting("AppSettings", "firstRun", "1") = "1"
 
     updateNumLock()
     updateWinClipboardHotkey()
     updateStartupSetting()
+
+    ; Show welcome message on first run
+    if (firstRun) {
+        showWelcomeMessage()
+        createDesktopShortcut()
+        writeSetting("AppSettings", "firstRun", "0")
+    }
+    if (replaceWinClipboard) {
+        SetTimer(() => updateWinClipboardHotkey(), -1000)
+    }
 }
 
 initCapsLockMonitor() {
@@ -76,20 +88,55 @@ saveSettings(savedValues) {
 
 updateWinClipboardHotkey() {
     global replaceWinClipboard
+    static hotkeyRegistered := false
 
     try {
-        Hotkey "#v", "Off"
+        if (hotkeyRegistered) {
+            Hotkey "#v", "Off"
+            hotkeyRegistered := false
+        }
     } catch {
         ; Ignore if hotkey wasn't previously registered
     }
 
     if (replaceWinClipboard) {
         try {
-            Hotkey "#v", (*) => showClipboard()
-            ; showNotification("Windows Clipboard replaced with KeyClipboard")
+            ; Register with higher priority and make it persistent
+            Hotkey "#v", WinVHandler, "On T3"
+            hotkeyRegistered := true
+            monitorWinClipboard()
         } catch Error as e {
             showInfo("Hotkey Error", "Failed to register Win+V hotkey:`n" . e.Message)
         }
+    }
+}
+
+; Handler function for Win+V
+WinVHandler(*) {
+    BlockInput "On"
+    Sleep 50
+    BlockInput "Off"
+    showClipboard()
+}
+
+; Monitor for Windows Clipboard and override it
+monitorWinClipboard() {
+    static timer := 0
+
+    if (timer) {
+        SetTimer timer, 0
+        timer := 0
+    }
+
+    if (replaceWinClipboard) {
+        checkForWindowsClipboard() {
+            if WinExist("ahk_class Windows.UI.Core.CoreWindow ahk_exe ShellExperienceHost.exe") {
+                WinClose
+                Sleep 50
+                showClipboard()
+            }
+        }
+        timer := SetTimer(checkForWindowsClipboard, 100)
     }
 }
 
@@ -126,5 +173,34 @@ updateStartupSetting() {
         }
     } catch Error as e {
         showInfo("Startup Settings Error", "Failed to update startup settings:`n" . e.Message)
+    }
+}
+
+showWelcomeMessage() {
+    welcomeText :=
+        "KeyClipboard has been successfully installed!`n`n" .
+        "Quick Start Guide:`n`n" .
+        "• CapsLock+C: Open Clipboard History`n" .
+        "• CapsLock+S: Open Settings`n" .
+        "• Double click on the tray icon to open settings`n`n" .
+        "A shortcut has been created on your desktop to open settings.`n" .
+        "Right-click the tray icon for more options."
+
+    showInfo("Welcome to KeyClipboard", welcomeText, 450)
+}
+
+createDesktopShortcut() {
+    try {
+        desktopPath := A_Desktop
+        shortcutPath := desktopPath . "\KeyClipboard.lnk"
+
+        targetPath := A_ScriptFullPath
+        workingDir := A_ScriptDir
+        args := "settings"
+
+        FileCreateShortcut(targetPath, shortcutPath, workingDir, args,
+            "KeyClipboard - Clipboard Manager", A_ScriptDir . "app\app_icon.ico")
+    } catch Error as e {
+        OutputDebug("Failed to create desktop shortcut: " . e.Message)
     }
 }

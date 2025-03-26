@@ -65,4 +65,5 @@ Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
 ### Changelog: 
 - Thêm tuỳ chọn Khởi động cùng Windows
 - Thêm Tuỳ chọn thay thế Windows Clipboard (dùng Win+V để mở app)
-
+- Thêm hướng dẫn và cài shortcut lúc cài app lần đầu
+- Thêm Double Click vào icon hoặc shortcut để mở settings
