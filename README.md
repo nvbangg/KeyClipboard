@@ -71,4 +71,3 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - `CapsLock + Shift + V/B/A`: Paste item(s) with Format
 - `CapsLock + Ctrl + V/B/A`: Paste item(s) as Original
 - `CapsLock + Tab + V/B/A`: Paste item(s) from Saved tab
-  
