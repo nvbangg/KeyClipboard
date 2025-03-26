@@ -20,7 +20,7 @@ Powerful Clipboard to replace Windows Clipboard with convenient shortcut tools!
 - **Text Case Options**: UPPERCASE, lowercase, Title Case, Sentence case
 - **Word Separator Options**: Underscore (_), Hyphen (-), Remove all spaces
 
-![image](https://github.com/user-attachments/assets/09264c1a-a0ea-460e-adea-750caefd8fe6)
+![image](https://github.com/user-attachments/assets/e3d9a1d2-de72-4a5c-8f0b-2009b3553cd6)
 
 ![image](https://github.com/user-attachments/assets/bc9b512b-83c9-41b5-8e01-69373b0fbfe8)
 
