@@ -61,3 +61,4 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - Các chức năng trên chuyển sang dự án khác
 - Sửa đổi cấu trúc dự án và tối ưu code
 - `CapsLock + T`: **Always on Top** for active Window
+- Hướng dẫn lúc cài đặt lần đầu cho dễ dùng
