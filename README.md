@@ -1,17 +1,15 @@
 # KeyClipboard
 
-Powerful Clipboard manager and Keyboard automation tool with flexible Shortcuts
+Powerful Clipboard to replace Windows Clipboard with convenient shortcut tools!
 
 ## Highlighted Features
 
 - **Always on Top**: Pin a window to stay on top with a shortcut
-- **Formatted Pasting**: Paste items with custom text formatting
-- **Multi-Item Paste**: Paste all clipboard items or selected items
-- **Edit Content**: Edit items directly in the clipboard history viewer
-- **Organize Items**: Adjust the position of items in the clipboard
-- **Quick Search**: Rapidly search through clipboard content.
-- **Quick Translation**: Translate Chrome pages  instantly with a shortcut
-- **Saved Items Access**: Quickly access saved items with dedicated shortcuts
+- **Formatted Paste**: Paste text with your custom format
+- **Multi-Item Paste**: Paste all or selected items from your clipboard
+- **Edit & Rearrange**: Easily edit content and move items in the clipboard.
+- **Quick Search**: Fast search clipboard content.
+- **Saved Items**: Access saved items fast with shortcuts
 
 ### Format Options
 
