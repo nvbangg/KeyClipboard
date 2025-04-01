@@ -93,7 +93,8 @@ pasteSpecific() {
     content := beforeLatest . "_" . latest
 
     content := removeAccents(content)
-    content := StrReplace(content, " ", "_")
+    content := TitleCase(content)
+    content := StrReplace(content, " ", "")
 
     paste(content)
 }

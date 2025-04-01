@@ -95,22 +95,30 @@ removeLineBreaks(str) {
 }
 
 TitleCase(str) {
-    words := StrSplit(str, [" ", "-", "_"], " `t")
+    lines := StrSplit(str, "`n", "`r")
     result := ""
 
-    for i, word in words {
-        if (word = "")
-            continue
+    for lineIdx, line in lines {
+        if (lineIdx > 1)
+            result .= "`n"
+        lineResult := ""
+        wordStart := true
 
-        firstChar := SubStr(word, 1, 1)
-        restChars := SubStr(word, 2)
-
-        if (i > 1)
-            result .= A_Space
-
-        result .= StrUpper(firstChar) . StrLower(restChars)
+        loop parse, line {
+            if (A_LoopField = " " || A_LoopField = "-" || A_LoopField = "_") {
+                lineResult .= A_LoopField
+                wordStart := true
+            } else {
+                if (wordStart) {
+                    lineResult .= StrUpper(A_LoopField)
+                    wordStart := false
+                } else {
+                    lineResult .= StrLower(A_LoopField)
+                }
+            }
+        }
+        result .= lineResult
     }
-
     return result
 }
 
