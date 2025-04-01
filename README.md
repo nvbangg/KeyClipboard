@@ -58,22 +58,7 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 4. Look for the app icon in the system tray
   
 ### Changelog: 
-- Xoá chức năng translate in chrome, always enable numlock, mouse click mode
-- Các chức năng trên chuyển sang dự án khác
-- Sửa đổi cấu trúc dự án và tối ưu code
-- Hướng dẫn sử dụng cho lần đầu cài app
-- Sửa lỗi không focus vào mục cuối cùng khi mở clipboard
-- Thêm thông báo xác nhận trước khi Clear All trong Saved tab
-- Sửa lại phím tắt:
-- `CapsLock + Shift + S`: **Always on Top** for active Window
-- `CapsLock + Tab + C`: Show **Clipboard** Saved
-- `CapsLock + Shift + C`: **Clear** clipboard history
-- `CapsLock + Shift + V/B/A`: Paste item(s) with Format
-- `CapsLock + Ctrl + V/B/A`: Paste item(s) as Original
-- `CapsLock + Tab + V/B/A`: Paste item(s) from Saved tab
-- sửa lỗi Title Case chưa chính xác ở nhiều dòng lẫn bị xóa dấu - và _
-- Sửa lại pasteSpecific mặc định là xóa dấu + TitleCase + Remove Spaces
+- Thêm tùy chọn sửa được format specific
 
 // Chuẩn bị sửa
-- sửa để tùy chọn được format specific
 - thêm lưu một số tùy chọn cấu hình để chỉnh nhanh
