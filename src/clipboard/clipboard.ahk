@@ -90,12 +90,14 @@ pasteSpecific() {
     }
     latest := historyTab[historyTab.Length].text
     beforeLatest := historyTab[historyTab.Length - 1].text
+
+    ; Format only the latest part
+    latest := removeAccents(latest)
+    latest := TitleCase(latest)
+    latest := StrReplace(latest, " ", "")
+
+    ; Combine with beforeLatest
     content := beforeLatest . "_" . latest
-
-    content := removeAccents(content)
-    content := TitleCase(content)
-    content := StrReplace(content, " ", "")
-
     paste(content)
 }
 
