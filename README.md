@@ -22,10 +22,7 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 
 ![image](https://github.com/user-attachments/assets/fa99ecbc-4470-43d0-83a2-3c3e1140990b)
 
-
-![image](https://github.com/user-attachments/assets/bdf16447-be3b-4a04-a751-eb5c5654ea3a)
-
-
+![image](https://github.com/user-attachments/assets/c1bf7c8b-d856-4a8c-94c3-027646c6e12d)
 
 ### Core Shortcuts
 - `CapsLock + S`: Show **Settings** popup
