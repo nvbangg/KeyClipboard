@@ -103,3 +103,121 @@ destroyGui(guiObj) {
     }
     return false
 }
+
+CreateNewPreset(settingsGui := 0) {
+    InputBox := Gui("+AlwaysOnTop +ToolWindow", "Create New Preset")
+    InputBox.SetFont("s10")
+    InputBox.Add("Text", "x10 y10 w280", "Enter a name for this preset:")
+    nameEdit := InputBox.Add("Edit", "x10 y35 w280 vPresetName")
+
+    InputBox.Add("Button", "x100 y70 w100 Default", "Create")
+    .OnEvent("Click", (*) => CreatePresetAndClose(InputBox))
+    InputBox.Add("Button", "x210 y70 w80", "Cancel")
+    .OnEvent("Click", (*) => InputBox.Destroy())
+    closeEvents(InputBox, (*) => InputBox.Destroy())
+    InputBox.Show("w300 h110")
+
+    CreatePresetAndClose(inputGui) {
+        presetName := inputGui["PresetName"].Value
+        if (presetName != "") {
+            saveAsPreset(presetName)
+            inputGui.Destroy()
+            if (isGuiValid(settingsGui))
+                destroyGui(settingsGui)
+            showSettings()
+        } else {
+            showNotification("Please enter a preset name")
+        }
+    }
+}
+
+DeleteCurrentPreset(dropdown, settingsGui := 0) {
+    presetToDelete := dropdown.Text
+
+    if (presetToDelete = "Default") {
+        showNotification("Cannot delete the Default preset")
+        return
+    }
+    result := MsgBox("Are you sure you want to delete preset '" . presetToDelete . "'?",
+        "Confirm Delete", "YesNo 262144") ; YesNo with AlwaysOnTop flag
+
+    if (result = "Yes") {
+        deletePreset(presetToDelete)
+        if (isGuiValid(settingsGui))
+            destroyGui(settingsGui)
+        showSettings()
+    }
+}
+
+; Add preset management functions
+loadPresetList() {
+    global presetList := []
+    presetString := readSetting("Presets", "PresetList", "")
+    if (presetString != "") {
+        presetNames := StrSplit(presetString, ",")
+        for _, name in presetNames {
+            if (name != "")
+                presetList.Push(name)
+        }
+    }
+}
+
+saveToCurrentPreset() {
+    global currentPreset
+    if (currentPreset != "") {
+        savePresetSettings("Preset_" . currentPreset)
+        writeSetting("Presets", "CurrentPreset", currentPreset)
+    }
+}
+
+; Helper function to check if an array contains a value
+HasValue(arr, val) {
+    for i, v in arr {
+        if (v = val)
+            return true
+    }
+    return false
+}
+
+; Helper function to join array elements with a delimiter
+Join(arr, delimiter) {
+    result := ""
+    for i, v in arr {
+        if (i > 1)
+            result .= delimiter
+        result .= v
+    }
+    return result
+}
+
+deletePreset(presetName) {
+    global presetList, currentPreset
+
+    ; Check if the preset exists
+    if (!HasValue(presetList, presetName)) {
+        showNotification("Preset '" . presetName . "' not found")
+        return
+    }
+    if (presetName = "Default") {
+        showNotification("Cannot delete the Default preset")
+        return
+    }
+    sectionName := "Preset_" . presetName
+    IniDelete(settingsFilePath, sectionName)
+
+    ; Remove from preset list
+    newPresetList := []
+    for _, name in presetList {
+        if (name != presetName)
+            newPresetList.Push(name)
+    }
+    presetList := newPresetList
+    writeSetting("Presets", "PresetList", Join(presetList, ","))
+    if (currentPreset = presetName) {
+        currentPreset := "Default"
+        writeSetting("Presets", "CurrentPreset", "Default")
+        loadPreset("Default")
+    }
+
+    showNotification("Preset '" . presetName . "' deleted")
+}

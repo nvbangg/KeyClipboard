@@ -59,6 +59,4 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
   
 ### Changelog: 
 - Thêm tùy chọn sửa được format specific
-
-// Chuẩn bị sửa
-- thêm lưu một số tùy chọn cấu hình để chỉnh nhanh
+- Thêm tính năng tùy chọn cấu hình để chỉnh nhanh settings

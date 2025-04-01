@@ -36,23 +36,22 @@ if (A_Args.Length > 0 && A_Args[1] = "settings") {
 
 #HotIf GetKeyState("CapsLock", "P")
 s:: showSettings()
-+s:: alwaysOnTop() ; Toggle Always-on-Top for active Window
++s:: alwaysOnTop()
 c:: showClipboard()
-Tab & c:: showClipboard(true)  ; Open clipboard Saved tab
+Tab & c:: showClipboard(true)   ; Open clipboard Saved tab
 +c:: clearClipboard()
-f:: pasteSpecific() ; Paste combining previous and current item
+f:: pasteSpecific()
 
-; Hotkeys for clipboard history paste
-v:: pastePrev(0)                ; Paste latest item from clipboard history
-+v:: pastePrev(0, 1)     ; Paste latest item with format
+v:: pastePrev(0)                ; Paste latest item
++v:: pastePrev(0, 1)            ; Paste latest item with format
 ^v:: pastePrev(0, -1)           ; Paste latest item as original
-Tab & v:: pastePrev(0, 0, true)      ; Paste latest item from saved tab
+Tab & v:: pastePrev(0, 0, true) ; Paste latest item from saved tab
 b:: pastePrev(1)                ; Paste the item before the latest
-+b:: pastePrev(1, 1)     ; Paste the item before the latest with format
++b:: pastePrev(1, 1)            ; Paste the item before the latest with format
 ^b:: pastePrev(1, -1)           ; Paste the item before the latest as original
-Tab & b:: pastePrev(1, 0, true)      ; Paste the item before the latest from saved tab
+Tab & b:: pastePrev(1, 0, true) ; Paste the item before the latest from saved tab
 a:: pasteSelected()             ; Paste all clipboard items
-+a:: pasteSelected(, , 1) ; Paste all clipboard items with format
++a:: pasteSelected(, , 1)       ; Paste all clipboard items with format
 ^a:: pasteSelected(, , -1)      ; Paste all clipboard items as original
 Tab & a:: pasteSelected(, , 0, true) ; Paste all saved items
 

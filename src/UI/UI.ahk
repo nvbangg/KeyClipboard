@@ -19,16 +19,31 @@ showSettings(*) {
     settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
     settingsGui.SetFont("s10")
     yPos := 10
-
     yPos := addAppSettings(settingsGui, yPos)
+
+    OnPresetChanged(ctrl, *) {
+        selectedPreset := ctrl.Text
+        initialPreset := currentPreset
+        if (selectedPreset != initialPreset) {
+            loadPreset(selectedPreset)
+            destroyGui(settingsGui)
+            showSettings()
+        }
+    }
+    yPos := addPresetManagementSection(settingsGui, yPos,
+        OnPresetChanged,
+        DeleteCurrentPreset,
+        (*) => CreateNewPreset())
+
     yPos := addFormatOptions(settingsGui, yPos)
     yPos := addFormatSpecificSection(settingsGui, yPos)
 
-    ; Helper function for saving and closing
     CloseAndSave() {
         formData := settingsGui.Submit()
-        settingsGui := cleanupGui(settingsGui)
         saveSettings(formData)
+        saveToCurrentPreset()
+        settingsGui := cleanupGui(settingsGui)
+        isCreating := false
     }
 
     settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
@@ -43,7 +58,6 @@ showSettings(*) {
     isCreating := false
 }
 
-; Add new function to show Format Specific Settings popup
 showFormatSpecificSettings(*) {
     static formatSpecificGui := 0
     static isCreating := false
@@ -57,14 +71,11 @@ showFormatSpecificSettings(*) {
     yPos := 10
 
     formatSpecificGui.Add("GroupBox", "x10 y" . yPos . " w350 h240", "Format Specific Options")
-
-    ; Add the new beforeLatest option at the top
     yPos += 25
     formatSpecificGui.Add("CheckBox", "x20 y" . yPos . " vspecificUseBeforeLatest Checked" . specificUseBeforeLatest,
-        "Include previous clipboard item (beforeLatest_latest)")
+        "Include beforeLatest item (beforeLatest_latest)")
     yPos += 30
 
-    ; Add all formatting options just like in regular Format Options
     checkboxOptions := [
         ["specificRemoveAccentsEnabled", specificRemoveAccentsEnabled, "Remove Accents"],
         ["specificNormSpaceEnabled", specificNormSpaceEnabled, "Normalize Spaces"],
@@ -92,7 +103,6 @@ showFormatSpecificSettings(*) {
         yPos += 30
     }
 
-    ; Helper function for saving and closing
     SaveFormatSpecific() {
         formData := formatSpecificGui.Submit()
         formatSpecificGui := cleanupGui(formatSpecificGui)
@@ -102,7 +112,6 @@ showFormatSpecificSettings(*) {
 
     formatSpecificGui.Add("Button", "x130 y" . (yPos + 20) . " w100 Default", "Save")
     .OnEvent("Click", (*) => SaveFormatSpecific())
-
     formatSpecificGui.Show("w375 h" . (yPos + 70))
     closeEvents(formatSpecificGui, (*) => SaveFormatSpecific())
     isCreating := false
@@ -130,8 +139,8 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.4`n" .
-        "Date: 01/04/2025`n`n" .
+        "Version: 1.6.4.1`n" .
+        "Date: 02/04/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
 
@@ -158,5 +167,6 @@ showWelcomeMessage() {
         "• CapsLock+Tab+C: Open Clipboard Saved tab`n" .
         "• CapsLock+S: Open Settings`n" .
         "• Double-click the tray icon in the system tray to open settings`n`n"
-    showInfo("Welcome to KeyClipboard", welcomeText, 400)
+
+    welcomeGui := showInfo("Welcome to KeyClipboard", welcomeText, 400)
 }

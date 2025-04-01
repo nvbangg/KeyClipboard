@@ -4,11 +4,10 @@ initSettings() {
     global firstRun, replaceWinClipboard, startWithWindows
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
-
-    ; Add all Format Specific options
     global specificRemoveAccentsEnabled, specificNormSpaceEnabled, specificRemoveSpecialEnabled
     global specificLineOption, specificCaseOption, specificSeparatorOption
-    global specificUseBeforeLatest  ; Add new option for beforeLatest
+    global specificUseBeforeLatest
+    global currentPreset := "Default"
 
     existFile(settingsFilePath)
 
@@ -16,23 +15,39 @@ initSettings() {
     replaceWinClipboard := readSetting("AppSettings", "replaceWinClipboard", "1") = "1"
     startWithWindows := readSetting("AppSettings", "startWithWindows", "1") = "1"
 
-    removeAccentsEnabled := readSetting("FormatOptions", "removeAccentsEnabled", "0") = "1"
-    normSpaceEnabled := readSetting("FormatOptions", "normSpaceEnabled", "1") = "1"
-    removeSpecialEnabled := readSetting("FormatOptions", "removeSpecialEnabled", "0") = "1"
+    loadPresetList()
+    currentPreset := readSetting("Presets", "CurrentPreset", "Default")
 
-    lineOption := Integer(readSetting("FormatOptions", "lineOption", "1"))
-    caseOption := Integer(readSetting("FormatOptions", "caseOption", "0"))
-    separatorOption := Integer(readSetting("FormatOptions", "separatorOption", "0"))
+    ; Ensure Default preset exists
+    if (!HasValue(presetList, "Default")) {
+        defaultPresetSection := "Preset_Default"
 
-    ; Initialize Format Specific options with defaults matching current behavior
-    specificRemoveAccentsEnabled := readSetting("FormatSpecific", "specificRemoveAccentsEnabled", "1") = "1"
-    specificNormSpaceEnabled := readSetting("FormatSpecific", "specificNormSpaceEnabled", "0") = "1"
-    specificRemoveSpecialEnabled := readSetting("FormatSpecific", "specificRemoveSpecialEnabled", "0") = "1"
-    specificLineOption := Integer(readSetting("FormatSpecific", "specificLineOption", "0"))
-    specificCaseOption := Integer(readSetting("FormatSpecific", "specificCaseOption", "3")) ; Title Case
-    specificSeparatorOption := Integer(readSetting("FormatSpecific", "specificSeparatorOption", "3")) ; Remove Spaces
-    specificUseBeforeLatest := readSetting("FormatSpecific", "specificUseBeforeLatest", "1") = "1" ; Default is enabled
+        writeSetting(defaultPresetSection, "removeAccentsEnabled", "0")
+        writeSetting(defaultPresetSection, "normSpaceEnabled", "1")
+        writeSetting(defaultPresetSection, "removeSpecialEnabled", "0")
+        writeSetting(defaultPresetSection, "lineOption", "1")
+        writeSetting(defaultPresetSection, "caseOption", "0")
+        writeSetting(defaultPresetSection, "separatorOption", "0")
 
+        writeSetting(defaultPresetSection, "specificUseBeforeLatest", "1")
+        writeSetting(defaultPresetSection, "specificRemoveAccentsEnabled", "1")
+        writeSetting(defaultPresetSection, "specificNormSpaceEnabled", "0")
+        writeSetting(defaultPresetSection, "specificRemoveSpecialEnabled", "0")
+        writeSetting(defaultPresetSection, "specificLineOption", "0")
+        writeSetting(defaultPresetSection, "specificCaseOption", "3")
+        writeSetting(defaultPresetSection, "specificSeparatorOption", "3")
+
+        ; Add Default to preset list
+        presetList.Push("Default")
+        writeSetting("Presets", "PresetList", Join(presetList, ","))
+        currentPreset := "Default"
+    }
+
+    if (!HasValue(presetList, currentPreset)) {
+        currentPreset := "Default"
+    }
+
+    loadPreset(currentPreset, false)
     updateWinClipboardHotkey()
     updateStartupSetting()
 
@@ -41,7 +56,10 @@ initSettings() {
         showWelcomeMessage()
         createDesktopShortcut()
         writeSetting("AppSettings", "firstRun", "0")
+        writeSetting("AppSettings", "replaceWinClipboard", "1")
+        writeSetting("AppSettings", "startWithWindows", "1")
     }
+
     if (replaceWinClipboard) {
         SetTimer(() => updateWinClipboardHotkey(), -1000)
     }
@@ -51,6 +69,7 @@ saveSettings(savedValues) {
     global firstRun, replaceWinClipboard, startWithWindows
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
+    global currentPreset
 
     existFile(settingsFilePath)
 
@@ -68,22 +87,22 @@ saveSettings(savedValues) {
     writeSetting("AppSettings", "replaceWinClipboard", replaceWinClipboard ? "1" : "0")
     writeSetting("AppSettings", "startWithWindows", startWithWindows ? "1" : "0")
 
-    writeSetting("FormatOptions", "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-    writeSetting("FormatOptions", "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
-    writeSetting("FormatOptions", "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
-
-    writeSetting("FormatOptions", "lineOption", lineOption)
-    writeSetting("FormatOptions", "caseOption", caseOption)
-    writeSetting("FormatOptions", "separatorOption", separatorOption)
+    sectionName := "Preset_" . currentPreset
+    writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
+    writeSetting(sectionName, "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
+    writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
+    writeSetting(sectionName, "lineOption", lineOption)
+    writeSetting(sectionName, "caseOption", caseOption)
+    writeSetting(sectionName, "separatorOption", separatorOption)
 
     updateWinClipboardHotkey()
     updateStartupSetting()
 }
 
-; Add new function to save Format Specific settings
 saveFormatSpecificSettings(formData) {
     global specificRemoveAccentsEnabled, specificNormSpaceEnabled, specificRemoveSpecialEnabled
     global specificLineOption, specificCaseOption, specificSeparatorOption, specificUseBeforeLatest
+    global currentPreset
 
     specificUseBeforeLatest := !!formData.specificUseBeforeLatest
     specificRemoveAccentsEnabled := !!formData.specificRemoveAccentsEnabled
@@ -94,19 +113,18 @@ saveFormatSpecificSettings(formData) {
     specificCaseOption := formData.specificCaseOption - 1
     specificSeparatorOption := formData.specificSeparatorOption - 1
 
-    writeSetting("FormatSpecific", "specificUseBeforeLatest", specificUseBeforeLatest ? "1" : "0")
-    writeSetting("FormatSpecific", "specificRemoveAccentsEnabled", specificRemoveAccentsEnabled ? "1" : "0")
-    writeSetting("FormatSpecific", "specificNormSpaceEnabled", specificNormSpaceEnabled ? "1" : "0")
-    writeSetting("FormatSpecific", "specificRemoveSpecialEnabled", specificRemoveSpecialEnabled ? "1" : "0")
-    writeSetting("FormatSpecific", "specificLineOption", specificLineOption)
-    writeSetting("FormatSpecific", "specificCaseOption", specificCaseOption)
-    writeSetting("FormatSpecific", "specificSeparatorOption", specificSeparatorOption)
-
-    showNotification("Format Specific settings saved")
+    sectionName := "Preset_" . currentPreset
+    writeSetting(sectionName, "specificUseBeforeLatest", specificUseBeforeLatest ? "1" : "0")
+    writeSetting(sectionName, "specificRemoveAccentsEnabled", specificRemoveAccentsEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificNormSpaceEnabled", specificNormSpaceEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificRemoveSpecialEnabled", specificRemoveSpecialEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificLineOption", specificLineOption)
+    writeSetting(sectionName, "specificCaseOption", specificCaseOption)
+    writeSetting(sectionName, "specificSeparatorOption", specificSeparatorOption)
 }
 
 addAppSettings(guiObj, yPos) {
-    guiObj.Add("GroupBox", "x10 y" . yPos . " w350 h80", "App Settings")
+    guiObj.Add("GroupBox", "x10 y" . yPos . " w350 h70", "App Settings")
 
     guiObj.Add("Checkbox", "x20 y" . (yPos + 20) . " w330 vReplaceWinClipboard",
     "Replace Windows Clipboard")
@@ -116,11 +134,11 @@ addAppSettings(guiObj, yPos) {
     "Start with Windows")
     .Value := startWithWindows
 
-    return yPos + 90
+    return yPos + 80
 }
 
 addFormatOptions(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h200", "Format Options")
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h190", "Format Options")
 
     checkboxOptions := [
         ["removeAccentsEnabled", removeAccentsEnabled, "Remove Accents"],
@@ -133,7 +151,7 @@ addFormatOptions(settingsGui, yPos) {
         settingsGui.Add("CheckBox", "x20 y" . yPos . " v" . option[1] . " Checked" . option[2], option[3])
         yPos += 25
     }
-    yPos += 10
+    yPos += 5
 
     dropdownOptions := [
         ["Line Break:", "lineOption", ["None", "Trim Lines", "Remove All Line Breaks"], lineOption],
@@ -149,15 +167,134 @@ addFormatOptions(settingsGui, yPos) {
         yPos += 30
     }
 
-    return yPos + 15
+    return yPos + 10
 }
 
-; Add new function for Format Specific section in the main settings
 addFormatSpecificSection(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h60", "Format Specific Options (CapsLock + F)")
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h55", "Format Specific Options (CapsLock + F)")
     settingsGui.Add("Text", "x20 y" . (yPos + 25) . " w230", "Click Edit to modify: ")
-    settingsGui.Add("Button", "x150 y" . (yPos + 18) . " w50", "Edit")
+    settingsGui.Add("Button", "x150 y" . (yPos + 21) . " w50 h25", "Edit")
     .OnEvent("Click", (*) => showFormatSpecificSettings())
 
-    return yPos + 70
+    return yPos + 60
+}
+
+addPresetManagementSection(settingsGui, yPos, presetChangedCallback, deletePresetCallback, createPresetCallback) {
+    global presetList, currentPreset
+
+    settingsGui.Add("Text", "x20 y" . (yPos + 3) . " w80", "Presets:")
+
+    presetArray := []
+    for _, name in presetList
+        presetArray.Push(name)
+    presetDropdown := settingsGui.Add("DropDownList", "x80 y" . (yPos) . " w180 vSelectedPreset", presetArray)
+    currentIndex := 1
+    if (currentPreset != "") {
+        for i, name in presetList {
+            if (name = currentPreset) {
+                currentIndex := i
+                break
+            }
+        }
+    }
+    presetDropdown.Choose(currentIndex)
+    initialPreset := presetDropdown.Text
+    presetDropdown.OnEvent("Change", presetChangedCallback)
+    settingsGui.Add("Button", "x265 y" . (yPos - 1) . " w35 h25", "Del")
+    .OnEvent("Click", (*) => deletePresetCallback(presetDropdown))
+    settingsGui.Add("Button", "x305 y" . (yPos - 1) . " w45 h25", "New")
+    .OnEvent("Click", createPresetCallback)
+
+    return yPos + 40
+}
+
+savePresetSettings(sectionName) {
+    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global lineOption, caseOption, separatorOption
+    global specificUseBeforeLatest, specificRemoveAccentsEnabled, specificNormSpaceEnabled
+    global specificRemoveSpecialEnabled, specificLineOption, specificCaseOption, specificSeparatorOption
+
+    ; Save all Format Options and Format Specific Options
+    writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
+    writeSetting(sectionName, "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
+    writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
+    writeSetting(sectionName, "lineOption", lineOption)
+    writeSetting(sectionName, "caseOption", caseOption)
+    writeSetting(sectionName, "separatorOption", separatorOption)
+
+    writeSetting(sectionName, "specificUseBeforeLatest", specificUseBeforeLatest ? "1" : "0")
+    writeSetting(sectionName, "specificRemoveAccentsEnabled", specificRemoveAccentsEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificNormSpaceEnabled", specificNormSpaceEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificRemoveSpecialEnabled", specificRemoveSpecialEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificLineOption", specificLineOption)
+    writeSetting(sectionName, "specificCaseOption", specificCaseOption)
+    writeSetting(sectionName, "specificSeparatorOption", specificSeparatorOption)
+}
+
+saveAsPreset(presetName) {
+    global presetList, removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global lineOption, caseOption, separatorOption
+    global specificUseBeforeLatest, specificRemoveAccentsEnabled, specificNormSpaceEnabled
+    global specificRemoveSpecialEnabled, specificLineOption, specificCaseOption, specificSeparatorOption
+    global currentPreset
+
+    ; Create preset section name
+    sectionName := "Preset_" . presetName
+
+    writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
+    writeSetting(sectionName, "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
+    writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
+    writeSetting(sectionName, "lineOption", lineOption)
+    writeSetting(sectionName, "caseOption", caseOption)
+    writeSetting(sectionName, "separatorOption", separatorOption)
+
+    writeSetting(sectionName, "specificUseBeforeLatest", specificUseBeforeLatest ? "1" : "0")
+    writeSetting(sectionName, "specificRemoveAccentsEnabled", specificRemoveAccentsEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificNormSpaceEnabled", specificNormSpaceEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificRemoveSpecialEnabled", specificRemoveSpecialEnabled ? "1" : "0")
+    writeSetting(sectionName, "specificLineOption", specificLineOption)
+    writeSetting(sectionName, "specificCaseOption", specificCaseOption)
+    writeSetting(sectionName, "specificSeparatorOption", specificSeparatorOption)
+
+    if (!HasValue(presetList, presetName)) {
+        presetList.Push(presetName)
+        writeSetting("Presets", "PresetList", Join(presetList, ","))
+    }
+
+    ; Set as current preset
+    currentPreset := presetName
+    writeSetting("Presets", "CurrentPreset", currentPreset)
+
+    ; Only show notification for new presets, not when saving existing ones
+    if (!HasValue(presetList, presetName)) {
+        showNotification("Preset '" . presetName . "' created")
+    }
+}
+
+loadPreset(presetName, showNotify := true) {
+    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global lineOption, caseOption, separatorOption
+    global specificUseBeforeLatest, specificRemoveAccentsEnabled, specificNormSpaceEnabled
+    global specificRemoveSpecialEnabled, specificLineOption, specificCaseOption, specificSeparatorOption
+    global currentPreset
+
+    sectionName := "Preset_" . presetName
+
+    removeAccentsEnabled := readSetting(sectionName, "removeAccentsEnabled", "0") = "1"
+    normSpaceEnabled := readSetting(sectionName, "normSpaceEnabled", "1") = "1"
+    removeSpecialEnabled := readSetting(sectionName, "removeSpecialEnabled", "0") = "1"
+    lineOption := Integer(readSetting(sectionName, "lineOption", "1"))
+    caseOption := Integer(readSetting(sectionName, "caseOption", "0"))
+    separatorOption := Integer(readSetting(sectionName, "separatorOption", "0"))
+
+    specificUseBeforeLatest := readSetting(sectionName, "specificUseBeforeLatest", "1") = "1"
+    specificRemoveAccentsEnabled := readSetting(sectionName, "specificRemoveAccentsEnabled", "1") = "1"
+    specificNormSpaceEnabled := readSetting(sectionName, "specificNormSpaceEnabled", "0") = "1"
+    specificRemoveSpecialEnabled := readSetting(sectionName, "specificRemoveSpecialEnabled", "0") = "1"
+    specificLineOption := Integer(readSetting(sectionName, "specificLineOption", "0"))
+    specificCaseOption := Integer(readSetting(sectionName, "specificCaseOption", "3"))
+    specificSeparatorOption := Integer(readSetting(sectionName, "specificSeparatorOption", "3"))
+
+    currentPreset := presetName
+    writeSetting("Presets", "CurrentPreset", currentPreset)
 }
