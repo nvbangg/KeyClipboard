@@ -83,6 +83,8 @@ pasteByPosition(position := 1, formatMode := 0) {
 
 pasteSpecific() {
     global historyTab
+    global specificRemoveAccentsEnabled, specificNormSpaceEnabled, specificRemoveSpecialEnabled
+    global specificLineOption, specificCaseOption, specificSeparatorOption, specificUseBeforeLatest
 
     if (historyTab.Length < 2) {
         showNotification("Not enough items in clipboard history")
@@ -91,13 +93,38 @@ pasteSpecific() {
     latest := historyTab[historyTab.Length].text
     beforeLatest := historyTab[historyTab.Length - 1].text
 
-    ; Format only the latest part
-    latest := removeAccents(latest)
-    latest := TitleCase(latest)
-    latest := StrReplace(latest, " ", "")
+    ; Format only the latest part using specific format options
+    if (specificRemoveSpecialEnabled)
+        latest := removeSpecial(latest)
+    if (specificRemoveAccentsEnabled)
+        latest := removeAccents(latest)
+    if (specificNormSpaceEnabled)
+        latest := normSpace(latest)
 
-    ; Combine with beforeLatest
-    content := beforeLatest . "_" . latest
+    ; Apply line break option
+    switch specificLineOption {
+        case 1: latest := trimLines(latest)
+        case 2: latest := removeLineBreaks(latest)
+    }
+
+    ; Apply case option
+    switch specificCaseOption {
+        case 1: latest := StrUpper(latest)
+        case 2: latest := StrLower(latest)
+        case 3: latest := TitleCase(latest)
+        case 4: latest := SentenceCase(latest)
+    }
+
+    ; Apply separator option
+    switch specificSeparatorOption {
+        case 1: latest := StrReplace(latest, " ", "_")
+        case 2: latest := StrReplace(latest, " ", "-")
+        case 3: latest := StrReplace(latest, " ", "")
+    }
+
+    ; Create content based on specificUseBeforeLatest setting
+    content := specificUseBeforeLatest ? (beforeLatest . "_" . latest) : latest
+
     paste(content)
 }
 

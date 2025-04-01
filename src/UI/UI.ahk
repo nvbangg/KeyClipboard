@@ -5,9 +5,7 @@ A_TrayMenu.Add("Settings (Caps+S)", showSettings)
 A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
 A_IconTip := "KeyClipboard - Double click to open settings"
-
-; Configure tray icon to show settings on left click
-A_TrayMenu.Click := 1  ; 1 means single click
+A_TrayMenu.Click := 1
 A_TrayMenu.Default := "Settings (Caps+S)"
 
 showSettings(*) {
@@ -22,12 +20,9 @@ showSettings(*) {
     settingsGui.SetFont("s10")
     yPos := 10
 
-    ; Use the new function for App Settings
     yPos := addAppSettings(settingsGui, yPos)
-
-    ; Keyboard settings removed
-
     yPos := addFormatOptions(settingsGui, yPos)
+    yPos := addFormatSpecificSection(settingsGui, yPos)
 
     ; Helper function for saving and closing
     CloseAndSave() {
@@ -45,6 +40,71 @@ showSettings(*) {
 
     settingsGui.Show("w375 h" . (yPos + 50))
     closeEvents(settingsGui, (*) => CloseAndSave())
+    isCreating := false
+}
+
+; Add new function to show Format Specific Settings popup
+showFormatSpecificSettings(*) {
+    static formatSpecificGui := 0
+    static isCreating := false
+    if (isCreating)
+        return
+    isCreating := true
+    formatSpecificGui := cleanupGui(formatSpecificGui)
+
+    formatSpecificGui := Gui("+AlwaysOnTop +ToolWindow", "Format Specific Settings")
+    formatSpecificGui.SetFont("s10")
+    yPos := 10
+
+    formatSpecificGui.Add("GroupBox", "x10 y" . yPos . " w350 h240", "Format Specific Options")
+
+    ; Add the new beforeLatest option at the top
+    yPos += 25
+    formatSpecificGui.Add("CheckBox", "x20 y" . yPos . " vspecificUseBeforeLatest Checked" . specificUseBeforeLatest,
+        "Include previous clipboard item (beforeLatest_latest)")
+    yPos += 30
+
+    ; Add all formatting options just like in regular Format Options
+    checkboxOptions := [
+        ["specificRemoveAccentsEnabled", specificRemoveAccentsEnabled, "Remove Accents"],
+        ["specificNormSpaceEnabled", specificNormSpaceEnabled, "Normalize Spaces"],
+        ["specificRemoveSpecialEnabled", specificRemoveSpecialEnabled, "Remove Special Characters (# *)"]
+    ]
+
+    for option in checkboxOptions {
+        formatSpecificGui.Add("CheckBox", "x20 y" . yPos . " v" . option[1] . " Checked" . option[2], option[3])
+        yPos += 25
+    }
+    yPos += 10
+
+    dropdownOptions := [
+        ["Line Break:", "specificLineOption", ["None", "Trim Lines", "Remove All Line Breaks"], specificLineOption],
+        ["Text Case:", "specificCaseOption", ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"],
+        specificCaseOption],
+        ["Word Separator:", "specificSeparatorOption", ["None", "Underscore (_)", "Hyphen (-)", "Remove Spaces"],
+        specificSeparatorOption]
+    ]
+
+    for option in dropdownOptions {
+        formatSpecificGui.Add("Text", "x20 y" . yPos . " w150", option[1])
+        formatSpecificGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] . " Choose" . (
+            option[4] + 1), option[3])
+        yPos += 30
+    }
+
+    ; Helper function for saving and closing
+    SaveFormatSpecific() {
+        formData := formatSpecificGui.Submit()
+        formatSpecificGui := cleanupGui(formatSpecificGui)
+        saveFormatSpecificSettings(formData)
+        isCreating := false
+    }
+
+    formatSpecificGui.Add("Button", "x130 y" . (yPos + 20) . " w100 Default", "Save")
+    .OnEvent("Click", (*) => SaveFormatSpecific())
+
+    formatSpecificGui.Show("w375 h" . (yPos + 70))
+    closeEvents(formatSpecificGui, (*) => SaveFormatSpecific())
     isCreating := false
 }
 
@@ -70,7 +130,7 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.3.3`n" .
+        "Version: 1.6.4`n" .
         "Date: 01/04/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"

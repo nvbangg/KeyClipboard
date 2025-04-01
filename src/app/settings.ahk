@@ -5,6 +5,11 @@ initSettings() {
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
 
+    ; Add all Format Specific options
+    global specificRemoveAccentsEnabled, specificNormSpaceEnabled, specificRemoveSpecialEnabled
+    global specificLineOption, specificCaseOption, specificSeparatorOption
+    global specificUseBeforeLatest  ; Add new option for beforeLatest
+
     existFile(settingsFilePath)
 
     firstRun := readSetting("AppSettings", "firstRun", "1") = "1"
@@ -18,6 +23,15 @@ initSettings() {
     lineOption := Integer(readSetting("FormatOptions", "lineOption", "1"))
     caseOption := Integer(readSetting("FormatOptions", "caseOption", "0"))
     separatorOption := Integer(readSetting("FormatOptions", "separatorOption", "0"))
+
+    ; Initialize Format Specific options with defaults matching current behavior
+    specificRemoveAccentsEnabled := readSetting("FormatSpecific", "specificRemoveAccentsEnabled", "1") = "1"
+    specificNormSpaceEnabled := readSetting("FormatSpecific", "specificNormSpaceEnabled", "0") = "1"
+    specificRemoveSpecialEnabled := readSetting("FormatSpecific", "specificRemoveSpecialEnabled", "0") = "1"
+    specificLineOption := Integer(readSetting("FormatSpecific", "specificLineOption", "0"))
+    specificCaseOption := Integer(readSetting("FormatSpecific", "specificCaseOption", "3")) ; Title Case
+    specificSeparatorOption := Integer(readSetting("FormatSpecific", "specificSeparatorOption", "3")) ; Remove Spaces
+    specificUseBeforeLatest := readSetting("FormatSpecific", "specificUseBeforeLatest", "1") = "1" ; Default is enabled
 
     updateWinClipboardHotkey()
     updateStartupSetting()
@@ -66,6 +80,31 @@ saveSettings(savedValues) {
     updateStartupSetting()
 }
 
+; Add new function to save Format Specific settings
+saveFormatSpecificSettings(formData) {
+    global specificRemoveAccentsEnabled, specificNormSpaceEnabled, specificRemoveSpecialEnabled
+    global specificLineOption, specificCaseOption, specificSeparatorOption, specificUseBeforeLatest
+
+    specificUseBeforeLatest := !!formData.specificUseBeforeLatest
+    specificRemoveAccentsEnabled := !!formData.specificRemoveAccentsEnabled
+    specificNormSpaceEnabled := !!formData.specificNormSpaceEnabled
+    specificRemoveSpecialEnabled := !!formData.specificRemoveSpecialEnabled
+
+    specificLineOption := formData.specificLineOption - 1
+    specificCaseOption := formData.specificCaseOption - 1
+    specificSeparatorOption := formData.specificSeparatorOption - 1
+
+    writeSetting("FormatSpecific", "specificUseBeforeLatest", specificUseBeforeLatest ? "1" : "0")
+    writeSetting("FormatSpecific", "specificRemoveAccentsEnabled", specificRemoveAccentsEnabled ? "1" : "0")
+    writeSetting("FormatSpecific", "specificNormSpaceEnabled", specificNormSpaceEnabled ? "1" : "0")
+    writeSetting("FormatSpecific", "specificRemoveSpecialEnabled", specificRemoveSpecialEnabled ? "1" : "0")
+    writeSetting("FormatSpecific", "specificLineOption", specificLineOption)
+    writeSetting("FormatSpecific", "specificCaseOption", specificCaseOption)
+    writeSetting("FormatSpecific", "specificSeparatorOption", specificSeparatorOption)
+
+    showNotification("Format Specific settings saved")
+}
+
 addAppSettings(guiObj, yPos) {
     guiObj.Add("GroupBox", "x10 y" . yPos . " w350 h80", "App Settings")
 
@@ -105,10 +144,20 @@ addFormatOptions(settingsGui, yPos) {
 
     for option in dropdownOptions {
         settingsGui.Add("Text", "x20 y" . yPos . " w150", option[1])
-        settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] .
-        " Choose" . (option[4] + 1), option[3])
+        settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] . " Choose" . (option[4
+            ] + 1), option[3])
         yPos += 30
     }
 
     return yPos + 15
+}
+
+; Add new function for Format Specific section in the main settings
+addFormatSpecificSection(settingsGui, yPos) {
+    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h60", "Format Specific Options (CapsLock + F)")
+    settingsGui.Add("Text", "x20 y" . (yPos + 25) . " w230", "Click Edit to modify: ")
+    settingsGui.Add("Button", "x150 y" . (yPos + 18) . " w50", "Edit")
+    .OnEvent("Click", (*) => showFormatSpecificSettings())
+
+    return yPos + 70
 }
