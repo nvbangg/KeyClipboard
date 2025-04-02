@@ -12,6 +12,7 @@ initClipboard() {
     loadSavedItems()
     ; Register callback for clipboard content changes
     updateClipboard(Type) {
+        global maxHistoryCount
         if (isProcessing)
             return
         if (Type = 1 && A_Clipboard != "") {
@@ -20,7 +21,7 @@ initClipboard() {
                     text: A_Clipboard,
                     original: ClipboardAll()
                 })
-                if (historyTab.Length > 100)
+                if (historyTab.Length > maxHistoryCount)
                     historyTab.RemoveAt(1)
             }
         }
@@ -110,11 +111,13 @@ updateLV(LV, searchText := "", useSavedTab := false) {
 
     filteredCaption := ""
     for index, content in filteredItems {
+        displayText := RegExReplace(content.text, "[\r\n]+", "    ")
+
         ; Truncate display content if too long
-        if (StrLen(content.text) > 100)
-            filteredCaption := SubStr(content.text, 1, 100) . "..."
+        if (StrLen(displayText) > 100)
+            filteredCaption := SubStr(displayText, 1, 100) . "..."
         else
-            filteredCaption := content.text
+            filteredCaption := displayText
 
         LV.Add(, content.originalIndex, filteredCaption)
     }

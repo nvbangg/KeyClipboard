@@ -70,7 +70,7 @@ showFormatSpecificSettings(*) {
     formatSpecificGui.SetFont("s10")
     yPos := 10
 
-    formatSpecificGui.Add("GroupBox", "x10 y" . yPos . " w350 h240", "Format Specific Options")
+    formatSpecificGui.Add("GroupBox", "x10 y" . yPos . " w350 h230", "Format Specific Options")
     yPos += 25
     formatSpecificGui.Add("CheckBox", "x20 y" . yPos . " vspecificUseBeforeLatest Checked" . specificUseBeforeLatest,
         "Include beforeLatest item (beforeLatest_latest)")
@@ -110,9 +110,9 @@ showFormatSpecificSettings(*) {
         isCreating := false
     }
 
-    formatSpecificGui.Add("Button", "x130 y" . (yPos + 20) . " w100 Default", "Save")
+    formatSpecificGui.Add("Button", "x130 y" . (yPos + 10) . " w100 Default", "Save")
     .OnEvent("Click", (*) => SaveFormatSpecific())
-    formatSpecificGui.Show("w375 h" . (yPos + 70))
+    formatSpecificGui.Show("w375 h" . (yPos + 50))
     closeEvents(formatSpecificGui, (*) => SaveFormatSpecific())
     isCreating := false
 }
@@ -139,7 +139,7 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.4.1`n" .
+        "Version: 1.6.4.2`n" .
         "Date: 02/04/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"

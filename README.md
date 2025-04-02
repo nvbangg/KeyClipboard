@@ -4,15 +4,19 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 
 ## Highlighted Features
 
-- **Always on Top**: Pin a window to stay on top with a shortcut
-- **Formatted Paste**: Paste text with your custom format
-- **Multi-Item Paste**: Paste all or selected items from your clipboard
-- **Edit & Rearrange**: Easily edit content and move items in the clipboard.
-- **Quick Search**: Fast search clipboard content.
-- **Saved Items**: Access saved items fast with shortcuts
+- **Always On Top**: Keep any window pinned
+- **Custom Paste**: Format text your way
+- **Multi-Paste**: Paste all or selected items from clipboard
+- **Edit & Sort**: Edit and reorder clipboard content
+- **Quick Search**: Fast search clipboard content
+- **Saved Items**: Quick access saved items with shortcuts
+- **Fast Naming**: Paste file names quickly with custom formats, like `CodeLesson_SomeLessonName.cpp`
+
+***Access features fast with keyboard shortcuts***
 
 ### Format Options
 
+- **Using beforeLatest_Latest format**: In format specific options
 - **Remove accents**
 - **Normalize Punctuation Space**
 - **Remove Special Characters**
@@ -30,7 +34,7 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - `CapsLock + C`: Show **Clipboard** History
 - `CapsLock + Tab + C`: Show **Clipboard** Saved
 - `CapsLock + Shift + C`: **Clear** clipboard history
-- `CapsLock + F`: Specific **Format** (Paste combining previous and current items) 
+- `CapsLock + F`: Paste Specific **Format**
 
 - `CapsLock + V`: Paste latest clipboard item 
 - `CapsLock + B`: Paste **Before** Latest item
@@ -57,3 +61,5 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 ### Changelog: 
 - Thêm tùy chọn sửa được format specific
 - Thêm tính năng tùy chọn cấu hình để chỉnh nhanh settings
+- Thêm tùy chọn số lượng mục tối đa trong Clipboard
+- Sửa lại giao diện tốt hơn

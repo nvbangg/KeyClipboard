@@ -221,3 +221,14 @@ deletePreset(presetName) {
 
     showNotification("Preset '" . presetName . "' deleted")
 }
+
+getMaxHistoryIndex(value) {
+    switch value {
+        case 50: return 1
+        case 100: return 2
+        case 200: return 3
+        case 500: return 4
+        case 1000: return 5
+        default: return 2  ; Default to 100
+    }
+}

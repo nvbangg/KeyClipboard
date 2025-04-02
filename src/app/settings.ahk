@@ -1,7 +1,7 @@
 ; === APP_FUNCTIONS MODULE ===
 
 initSettings() {
-    global firstRun, replaceWinClipboard, startWithWindows
+    global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
     global specificRemoveAccentsEnabled, specificNormSpaceEnabled, specificRemoveSpecialEnabled
@@ -14,6 +14,7 @@ initSettings() {
     firstRun := readSetting("AppSettings", "firstRun", "1") = "1"
     replaceWinClipboard := readSetting("AppSettings", "replaceWinClipboard", "1") = "1"
     startWithWindows := readSetting("AppSettings", "startWithWindows", "1") = "1"
+    maxHistoryCount := Integer(readSetting("AppSettings", "maxHistoryCount", "100"))
 
     loadPresetList()
     currentPreset := readSetting("Presets", "CurrentPreset", "Default")
@@ -51,13 +52,14 @@ initSettings() {
     updateWinClipboardHotkey()
     updateStartupSetting()
 
-    ; Show welcome message on first run
     if (firstRun) {
+        showSettings()
         showWelcomeMessage()
         createDesktopShortcut()
         writeSetting("AppSettings", "firstRun", "0")
         writeSetting("AppSettings", "replaceWinClipboard", "1")
         writeSetting("AppSettings", "startWithWindows", "1")
+        writeSetting("AppSettings", "maxHistoryCount", "100")
     }
 
     if (replaceWinClipboard) {
@@ -66,7 +68,7 @@ initSettings() {
 }
 
 saveSettings(savedValues) {
-    global firstRun, replaceWinClipboard, startWithWindows
+    global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
     global currentPreset
@@ -75,6 +77,7 @@ saveSettings(savedValues) {
 
     replaceWinClipboard := !!savedValues.replaceWinClipboard
     startWithWindows := !!savedValues.startWithWindows
+    maxHistoryCount := Integer(savedValues.maxHistoryCount)
 
     removeAccentsEnabled := !!savedValues.removeAccentsEnabled
     normSpaceEnabled := !!savedValues.normSpaceEnabled
@@ -86,6 +89,7 @@ saveSettings(savedValues) {
 
     writeSetting("AppSettings", "replaceWinClipboard", replaceWinClipboard ? "1" : "0")
     writeSetting("AppSettings", "startWithWindows", startWithWindows ? "1" : "0")
+    writeSetting("AppSettings", "maxHistoryCount", maxHistoryCount)
 
     sectionName := "Preset_" . currentPreset
     writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
@@ -124,7 +128,7 @@ saveFormatSpecificSettings(formData) {
 }
 
 addAppSettings(guiObj, yPos) {
-    guiObj.Add("GroupBox", "x10 y" . yPos . " w350 h70", "App Settings")
+    guiObj.Add("GroupBox", "x10 y" . yPos . " w350 h100", "App Settings")
 
     guiObj.Add("Checkbox", "x20 y" . (yPos + 20) . " w330 vReplaceWinClipboard",
     "Replace Windows Clipboard")
@@ -134,7 +138,11 @@ addAppSettings(guiObj, yPos) {
     "Start with Windows")
     .Value := startWithWindows
 
-    return yPos + 80
+    guiObj.Add("Text", "x20 y" . (yPos + 70) . " w150", "Max History Items:")
+    guiObj.Add("DropDownList", "x160 y" . (yPos + 67) . " w180 vMaxHistoryCount Choose" .
+    getMaxHistoryIndex(maxHistoryCount), ["50", "100", "200", "500", "1000"])
+
+    return yPos + 110
 }
 
 addFormatOptions(settingsGui, yPos) {

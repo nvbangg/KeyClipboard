@@ -127,9 +127,9 @@ buildTabUI(clipGui, tabs, useSavedTab) {
 
     listView := clipGui.Add("ListView", "x10 y70 w700 h270 Grid Multi", ["#", "Content"])
     listView.ModifyCol(1, 50, "Integer")
-    listView.ModifyCol(2, 640)
+    listView.ModifyCol(2, 645)
 
-    contentViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll HScroll", "")
+    contentViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll +Wrap", "")
 
     if (!useSavedTab) {
         historyLV := listView
