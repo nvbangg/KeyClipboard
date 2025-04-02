@@ -37,6 +37,7 @@ if (A_Args.Length > 0 && A_Args[1] = "settings") {
 #HotIf GetKeyState("CapsLock", "P")
 s:: showSettings()
 +s:: alwaysOnTop()
+Tab & s:: switchTabPreset()  ; Cycle to next preset in the list
 c:: showClipboard()
 Tab & c:: showClipboard(true)   ; Open clipboard Saved tab
 +c:: clearClipboard()

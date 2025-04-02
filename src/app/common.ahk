@@ -222,6 +222,34 @@ deletePreset(presetName) {
     showNotification("Preset '" . presetName . "' deleted")
 }
 
+switchTabPreset() {
+    global presetList, currentPreset
+
+    if (presetList.Length < 2) {
+        showNotification("Only one preset available")
+        return
+    }
+
+    currentIndex := 0
+    for i, name in presetList {
+        if (name = currentPreset) {
+            currentIndex := i
+            break
+        }
+    }
+
+    ; If current preset is not in the list or it's the last one, go to the first
+    if (currentIndex = 0 || currentIndex = presetList.Length) {
+        nextIndex := 1
+    } else {
+        nextIndex := currentIndex + 1
+    }
+
+    nextPreset := presetList[nextIndex]
+    loadPreset(nextPreset, true)
+    showNotification("Switched to preset: " . nextPreset)
+}
+
 getMaxHistoryIndex(value) {
     switch value {
         case 50: return 1

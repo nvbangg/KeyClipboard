@@ -30,19 +30,24 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 
 
 ### Core Shortcuts
+
 - `CapsLock + S`: Show **Settings** popup
-- `CapsLock + Shift + S`: **Always on Top** for active Window
+- `CapsLock + Tab + S`: **Switch** to the next preset **tab**
+- `CapsLock + Shift + S`: **Always on Top** for active Window<br><br>
+
 - `CapsLock + C`: Show **Clipboard** History
 - `CapsLock + Tab + C`: Show **Clipboard** Saved
-- `CapsLock + Shift + C`: **Clear** clipboard history
-- `CapsLock + F`: Paste Specific **Format**
+- `CapsLock + Shift + C`: **Clear** clipboard history<br><br>
 
 - `CapsLock + V`: Paste latest clipboard item 
 - `CapsLock + B`: Paste **Before** Latest item
-- `CapsLock + A`: Paste **All** items 
+- `CapsLock + A`: Paste **All** items <br><br>
+
 - `CapsLock + Shift + V/B/A`: Paste item(s) with Format
 - `CapsLock + Ctrl + V/B/A`: Paste item(s) as Original
-- `CapsLock + Tab + V/B/A`: Paste item(s) from Saved tab
+- `CapsLock + Tab + V/B/A`: Paste item(s) from Saved **Tab**<br><br>
+
+- `CapsLock + F`: Paste Specific **Format**
 - `CapsLock + 1-9`: Paste item by position from saved tab
 
 ## Installation
@@ -62,5 +67,6 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 ### Changelog: 
 - Thêm tùy chọn sửa được format specific
 - Thêm tính năng tùy chọn cấu hình để chỉnh nhanh settings
+- Dùng phím tắt CapsLock + Tab + S để chuyển giữa các cấu hình
 - Thêm tùy chọn số lượng mục tối đa trong Clipboard
 - Sửa lại giao diện tốt hơn

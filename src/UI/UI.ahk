@@ -120,17 +120,18 @@ showFormatSpecificSettings(*) {
 showShortcuts(*) {
     shortcutsText :=
         "• CapsLock+S: Show Settings Popup`n" .
-        "• CapsLock+Shift+S: Always-on-Top for active Window`n" .
+        "• CapsLock+Tab+S: Switch to the next preset tab`n" .
+        "• CapsLock+Shift+S: Always-on-Top for active Window`n`n" .
         "• CapsLock+C: Show Clipboard History`n" .
         "• CapsLock+Tab+C: Show Clipboard Saved tab`n" .
-        "• CapsLock+Shift+C: Clear Clipboard History`n" .
-        "• CapsLock+F: Paste combining previous and current item`n`n" .
+        "• CapsLock+Shift+C: Clear Clipboard History`n`n" .
         "• CapsLock+V: Paste latest item from clipboard history`n" .
         "• CapsLock+B: Paste the item before the latest`n" .
-        "• CapsLock+A: Paste all clipboard items`n" .
+        "• CapsLock+A: Paste all clipboard items`n`n" .
         "• CapsLock+Shift+V/B/A: Paste item(s) with Format`n" .
         "• CapsLock+Ctrl+V/B/A: Paste item(s) as Original`n" .
-        "• CapsLock+Tab+V/B/A: Paste item(s) from Saved tab`n" .
+        "• CapsLock+Tab+V/B/A: Paste item(s) from Saved tab`n`n" .
+        "• CapsLock+F: Paste combining previous and current item`n" .
         "• CapsLock+1-9: Paste item by position from saved tab`n"
 
     showInfo("Shortcuts - KeyClipboard", shortcutsText, 375)
@@ -139,8 +140,8 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.4.2`n" .
-        "Date: 02/04/2025`n`n" .
+        "Version: 1.6.4.3`n" .
+        "Date: 03/04/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
 
@@ -164,7 +165,6 @@ showWelcomeMessage() {
         "KeyClipboard has been successfully installed!`n" .
         "A shortcut has been created on your desktop to open settings.`n`n" .
         "• CapsLock+C: Open Clipboard History`n" .
-        "• CapsLock+Tab+C: Open Clipboard Saved tab`n" .
         "• CapsLock+S: Open Settings`n" .
         "• Double-click the tray icon in the system tray to open settings`n`n"
 
