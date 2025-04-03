@@ -4,7 +4,16 @@
 alwaysOnTop() {
     WinSetAlwaysOnTop(-1, "A")
     isAlwaysOnTop := WinGetExStyle("A") & 0x8
-    showNotification("Always On Top: " . (isAlwaysOnTop ? "Enabled" : "Disabled"))
+    windowTitle := WinGetTitle("A")
+
+    ; Get the process name (application name)
+    processName := WinGetProcessName("A")
+    appName := RegExReplace(processName, "\.exe$", "")
+
+    if (StrLen(windowTitle) > 40)
+        windowTitle := SubStr(windowTitle, 1, 37) . "..."
+    showNotification("Always On Top: " . appName . " - " . (isAlwaysOnTop ? "Enabled" : "Disabled") .
+    "`n" . windowTitle)
 }
 
 initCapsLockMonitor() {
