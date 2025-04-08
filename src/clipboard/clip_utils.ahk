@@ -35,6 +35,19 @@ isListViewFocused() {
     return InStr(focusedControl, "SysListView32")
 }
 
+isContentViewerFocused() {
+    focusedHwnd := ControlGetFocus("A")
+    focusedControl := ControlGetClassNN(focusedHwnd)
+    return InStr(focusedControl, "Edit")
+}
+
+global contentViewerIsFocused := false
+
+updateContentViewerFocusState(isFocused) {
+    global contentViewerIsFocused
+    contentViewerIsFocused := isFocused
+}
+
 getSelectedIndex(LV) {
     selectedIndex := []
     rowNum := 0
@@ -201,15 +214,27 @@ filterItems(searchText := "", useSavedTab := false) {
     global historyTab, savedTab
     clipTab := useSavedTab ? savedTab : historyTab
     filteredItems := []
-    searchTextLower := searchText ? StrLower(searchText) : ""
 
-    for index, item in clipTab {
-        if (searchText = "" || InStr(StrLower(item.text), searchTextLower)) {
+    if (searchText = "") {
+        for index, item in clipTab {
             filteredItems.Push({
                 text: item.text,
                 original: item.original,
                 originalIndex: index
             })
+        }
+    } else {
+        searchTextLower := StrLower(searchText)
+        if (searchTextLower != "") {
+            for index, item in clipTab {
+                if (item.HasProp("text") && item.text && InStr(StrLower(item.text), searchTextLower)) {
+                    filteredItems.Push({
+                        text: item.text,
+                        original: item.original,
+                        originalIndex: index
+                    })
+                }
+            }
         }
     }
 
@@ -307,8 +332,16 @@ execAction(action, clipGui) {
         moveSelectedItem(elements.listView, elements.contentViewer, -1, elements.isSaved)
     else if (action = "altDown")
         moveSelectedItem(elements.listView, elements.contentViewer, 1, elements.isSaved)
-    else if (action = "ctrlA")
-        selectAllItems(elements.listView, elements.contentViewer)
-    else if (action = "delete")
-        deleteSelected(elements.listView, clipGui, elements.isSaved)
+    else if (action = "ctrlA") {
+        if (isContentViewerFocused())
+            Send("^a")
+        else
+            selectAllItems(elements.listView, elements.contentViewer)
+    }
+    else if (action = "delete") {
+        if (isContentViewerFocused())
+            Send("{Delete}")
+        else
+            deleteSelected(elements.listView, clipGui, elements.isSaved)
+    }
 }

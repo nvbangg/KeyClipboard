@@ -162,6 +162,15 @@ deleteSelected(LV, clipGui := 0, useSavedTab := false) {
             historyTab.RemoveAt(item)
     }
     updateLV(LV, "", useSavedTab)
+
+    ; Focus on the last item after deletion
+    rowCount := LV.GetCount()
+    if (rowCount > 0) {
+        LV.Modify(rowCount, "Select Focus Vis")
+        LV.Focus()
+        ; Use a timer to ensure focus is properly set
+        SetTimer(() => LV.Focus(), -50)
+    }
 }
 
 clearClipboard(clipGui := 0, useSavedTab := false) {

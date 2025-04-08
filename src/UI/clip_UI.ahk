@@ -1,5 +1,6 @@
 showClipboard(useSavedTab := false) {
     global historyTab, savedTab, clipGuiInstance, historyLV, savedLV, historyViewer, savedViewer, tabs
+    global clipGuiActivated := false
 
     if (!checkClipInstance())
         return
@@ -48,6 +49,8 @@ showClipboard(useSavedTab := false) {
                 savedLV.Modify(lastRow, "Select Focus Vis")
                 savedLV.Focus()
                 updateContent(savedLV, savedViewer, true)
+                ; Set a timer to ensure ListView receives focus
+                SetTimer(() => savedLV.Focus(), -50)
             }
         } else if (historyTab.Length > 0) {
             lastRow := historyLV.GetCount()
@@ -55,6 +58,8 @@ showClipboard(useSavedTab := false) {
                 historyLV.Modify(lastRow, "Select Focus Vis")
                 historyLV.Focus()
                 updateContent(historyLV, historyViewer, false)
+                ; Set a timer to ensure ListView receives focus
+                SetTimer(() => historyLV.Focus(), -50)
             }
         }
     } else if (historyTab.Length > 0) {
@@ -63,6 +68,8 @@ showClipboard(useSavedTab := false) {
             historyLV.Modify(lastRow, "Select Focus Vis")
             historyLV.Focus()
             updateContent(historyLV, historyViewer, false)
+            ; Set a timer to ensure ListView receives focus
+            SetTimer(() => historyLV.Focus(), -50)
         }
     } else if (savedTab.Length > 0) {
         tabs.Value := 2
@@ -71,10 +78,19 @@ showClipboard(useSavedTab := false) {
             savedLV.Modify(lastRow, "Select Focus Vis")
             savedLV.Focus()
             updateContent(savedLV, savedViewer, true)
+            ; Set a timer to ensure ListView receives focus
+            SetTimer(() => savedLV.Focus(), -50)
         }
     }
 
     clipGui.Show("w720 h570")
+
+    ; Focus the active ListView after the GUI is shown
+    activeListView := useSavedTab ? savedLV : historyLV
+    if (activeListView) {
+        ; Use a short delay to ensure GUI is fully rendered before focusing
+        SetTimer(() => activeListView.Focus(), -100)
+    }
 }
 
 showClipboardHelp(*) {
@@ -98,6 +114,27 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     global historyViewer, savedViewer
     contentViewer := useSavedTab ? savedViewer : historyViewer
 
+    ; Ensure LV is focused before showing the context menu
+    LV.Focus()
+
+    ; Preserve selection state by ensuring selected items remain focused
+    selectedIndex := []
+    rowNum := 0
+    loop {
+        rowNum := LV.GetNext(rowNum)
+        if (!rowNum)
+            break
+        selectedIndex.Push(rowNum)
+    }
+
+    ; Re-apply Select and Focus to all selected items
+    for _, rowNum in selectedIndex {
+        LV.Modify(rowNum, "Select Focus")
+    }
+
+    CoordMode("Mouse", "Screen")
+    MouseGetPos(&mouseX, &mouseY)
+
     menuItems := [
         ["Paste", (*) => (pasteSelected(LV, clipGui, 0, useSavedTab))],
         ["Paste with Format", (*) => (pasteSelected(LV, clipGui, 1, useSavedTab))],
@@ -114,7 +151,9 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     menuItems.Push(["Delete Item", (*) => deleteSelected(LV, clipGui, useSavedTab)])
 
     contextMenu := createContextMenu(menuItems)
-    contextMenu.Show(X, Y)
+
+    CoordMode("Menu", "Screen")
+    contextMenu.Show(mouseX, mouseY)
 }
 
 buildTabUI(clipGui, tabs, useSavedTab) {
@@ -145,11 +184,67 @@ buildTabUI(clipGui, tabs, useSavedTab) {
     listView.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
         showContextMenu(LV, clipGui, Item, X, Y, useSavedTab))
 
-    listView.OnEvent("Click", (*) => updateContent(listView, contentViewer, useSavedTab))
-    listView.OnEvent("ItemSelect", (*) => updateContent(listView, contentViewer, useSavedTab))
-    listView.OnEvent("ItemFocus", (*) => updateContent(listView, contentViewer, useSavedTab))
-    listView.OnEvent("DoubleClick", (*) => pasteSelected(listView, clipGui, 0, useSavedTab))
+    listViewClickHandler(*) {
+        if (!listView || !listView.Hwnd) {
+            return
+        }
+        try {
+            WinActivate("ahk_id " . clipGui.Hwnd)
+            listView.Focus()
+            Sleep(10)
+            updateContent(listView, contentViewer, useSavedTab)
+        } catch Error as e {
 
+        }
+    }
+    listView.OnEvent("Click", listViewClickHandler)
+
+    itemSelectHandler(*) {
+        if (!listView || !listView.Hwnd) {
+            return
+        }
+        try {
+            WinActivate("ahk_id " . clipGui.Hwnd)
+            updateContent(listView, contentViewer, useSavedTab)
+        } catch Error as e {
+
+        }
+    }
+    listView.OnEvent("ItemSelect", itemSelectHandler)
+
+    itemFocusHandler(*) {
+        if (!listView || !listView.Hwnd) {
+            return
+        }
+        try {
+            WinActivate("ahk_id " . clipGui.Hwnd)
+            updateContent(listView, contentViewer, useSavedTab)
+        } catch Error as e {
+
+        }
+    }
+    listView.OnEvent("ItemFocus", itemFocusHandler)
+
+    doubleClickHandler(*) {
+        if (!listView || !listView.Hwnd) {
+            return
+        }
+        try {
+            WinActivate("ahk_id " . clipGui.Hwnd)
+            pasteSelected(listView, clipGui, 0, useSavedTab)
+        } catch Error as e {
+
+        }
+    }
+    listView.OnEvent("DoubleClick", doubleClickHandler)
+
+    contentViewer.OnEvent("Focus", FocusCallback)
+    FocusCallback(*) {
+        WinActivate("ahk_id " . clipGui.Hwnd)
+        updateContentViewerFocusState(true)
+    }
+
+    contentViewer.OnEvent("LoseFocus", (*) => updateContentViewerFocusState(false))
     actionBtns := [
         ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, useSavedTab)]
     ]
@@ -163,6 +258,8 @@ buildTabUI(clipGui, tabs, useSavedTab) {
 
     actionBtns.Push(["x410 y530 w120", "Help", (*) => showClipboardHelp()])
 
-    for option in actionBtns
-        clipGui.Add("Button", option[1], option[2]).OnEvent("Click", option[3])
+    for option in actionBtns {
+        btn := clipGui.Add("Button", option[1], option[2])
+        btn.OnEvent("Click", option[3])
+    }
 }

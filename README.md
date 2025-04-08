@@ -71,4 +71,8 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - Thêm tùy chọn số lượng mục tối đa trong Clipboard
 - Sửa lại giao diện tốt hơn
 - Thêm hiển thị tên app và cửa sổ được kích hoạt khi bật Always on Top
-  
+- Trong contentviewer sẽ dùng phím tắt riêng để chỉnh sửa văn bản
+- Sửa lỗi menu chuột phải vị trí không hợp lý khi nhấn ra bên ngoài rồi click lại
+- Thêm nếu xóa một mục thì sẽ tự động focus xuống mục cuối cùng (giúp xóa nhanh nhiều mục bằng delete)
+- Sửa lỗi thanh tìm kiếm không hoạt động
+- Sửa một vài lỗi khác
