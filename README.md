@@ -76,3 +76,4 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - Thêm nếu xóa một mục thì sẽ tự động focus xuống mục cuối cùng (giúp xóa nhanh nhiều mục bằng delete)
 - Sửa lỗi thanh tìm kiếm không hoạt động
 - Sửa một vài lỗi khác
+  
