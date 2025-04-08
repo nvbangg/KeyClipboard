@@ -71,3 +71,4 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - Thêm tùy chọn số lượng mục tối đa trong Clipboard
 - Sửa lại giao diện tốt hơn
 - Thêm hiển thị tên app và cửa sổ được kích hoạt khi bật Always on Top
+  
