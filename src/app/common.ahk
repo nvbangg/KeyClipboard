@@ -22,7 +22,7 @@ writeSetting(section, key, value) {
     IniWrite(value, settingsFilePath, section, key)
 }
 
-showNotification(message, timeout := 1200) {
+showNotification(message, timeout := 1300) {
     notify := Gui("+AlwaysOnTop -Caption +ToolWindow")
     notify.SetFont("s12 bold")
     notify.Add("Text", "w300 Center", message)

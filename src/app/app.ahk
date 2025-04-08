@@ -10,8 +10,8 @@ alwaysOnTop() {
     processName := WinGetProcessName("A")
     appName := RegExReplace(processName, "\.exe$", "")
 
-    if (StrLen(windowTitle) > 40)
-        windowTitle := SubStr(windowTitle, 1, 37) . "..."
+    if (StrLen(windowTitle) > 35)
+        windowTitle := SubStr(windowTitle, 1, 32) . "..."
     showNotification("Always On Top: " . appName . " - " . (isAlwaysOnTop ? "Enabled" : "Disabled") .
     "`n" . windowTitle)
 }
