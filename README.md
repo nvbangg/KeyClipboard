@@ -77,4 +77,4 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - Sửa lỗi thanh tìm kiếm không hoạt động
 - Sửa để chỉ sửa được với 1 mục được chọn  
 - Sửa một vài lỗi khác
-- sửa để có thể dùng phím esc để đóng cửa sổ
+- Có thể dùng phím esc để đóng cửa sổ

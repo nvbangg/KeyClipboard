@@ -83,6 +83,7 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     contextMenu.Show(mouseX, mouseY)
 }
 
+; Constructs the UI elements for a clipboard tab (History or Saved)
 buildTabUI(clipGui, tabs, useSavedTab) {
     global historyLV, savedLV, historyViewer, savedViewer
 

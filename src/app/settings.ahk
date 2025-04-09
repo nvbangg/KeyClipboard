@@ -1,5 +1,6 @@
 ; === APP_FUNCTIONS MODULE ===
 
+; Initialize application settings and create defaults if first run
 initSettings() {
     global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
@@ -65,6 +66,7 @@ initSettings() {
     }
 }
 
+; Save general application settings from the main settings form
 saveSettings(savedValues) {
     global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
     global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
@@ -101,6 +103,7 @@ saveSettings(savedValues) {
     updateStartupSetting()
 }
 
+; Save format-specific settings from the format settings form
 saveFormatSpecificSettings(formData) {
     global specificRemoveAccentsEnabled, specificNormSpaceEnabled, specificRemoveSpecialEnabled
     global specificLineOption, specificCaseOption, specificSeparatorOption, specificUseBeforeLatest
@@ -125,6 +128,7 @@ saveFormatSpecificSettings(formData) {
     writeSetting(sectionName, "specificSeparatorOption", specificSeparatorOption)
 }
 
+; Add application settings section to settings GUI
 addAppSettings(guiObj, yPos) {
     guiObj.Add("GroupBox", "x10 y" . yPos . " w350 h100", "App Settings")
 
@@ -143,6 +147,7 @@ addAppSettings(guiObj, yPos) {
     return yPos + 110
 }
 
+; Add text formatting options section to settings GUI
 addFormatOptions(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h190", "Format Options")
 
@@ -176,6 +181,7 @@ addFormatOptions(settingsGui, yPos) {
     return yPos + 10
 }
 
+; Add format-specific options button to settings GUI
 addFormatSpecificSection(settingsGui, yPos) {
     settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h55", "Format Specific Options (CapsLock + F)")
     settingsGui.Add("Text", "x20 y" . (yPos + 25) . " w230", "Click Edit to modify: ")
@@ -185,6 +191,7 @@ addFormatSpecificSection(settingsGui, yPos) {
     return yPos + 60
 }
 
+; Add preset management dropdown and buttons to settings GUI
 addPresetManagementSection(settingsGui, yPos, presetChangedCallback, deletePresetCallback, createPresetCallback) {
     global presetList, currentPreset
 

@@ -1,3 +1,4 @@
+; Ensure settings file exists, creating it if necessary
 existFile(filePath) {
     if !DirExist(dataDir) {
         DirCreate(dataDir)
@@ -38,11 +39,13 @@ cleanupGui(guiObj) {
     return guiObj
 }
 
+; Setup standard close events (Escape key and X button)
 closeEvents(guiObj, closeCallback) {
     guiObj.OnEvent("Escape", closeCallback)
     guiObj.OnEvent("Close", closeCallback)
 }
 
+; Show information dialog with auto-sized content
 showInfo(title, content, width := 350, btnOpts := "") {
     static activeDialog := 0
 
