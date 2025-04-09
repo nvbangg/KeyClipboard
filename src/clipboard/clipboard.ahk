@@ -60,6 +60,7 @@ pastePrev(offset := 0, formatMode := 0, useSavedTab := false) {
     }
 
     item := clipTab[clipTab.Length - offset]
+
     if (formatMode == -1)
         paste(item.original)
     else
@@ -90,10 +91,10 @@ pasteSpecific() {
         showNotification("Not enough items in clipboard history")
         return
     }
+
     latest := historyTab[historyTab.Length].text
     beforeLatest := historyTab[historyTab.Length - 1].text
 
-    ; Format only the latest part using specific format options
     if (specificRemoveSpecialEnabled)
         latest := removeSpecial(latest)
     if (specificRemoveAccentsEnabled)
@@ -101,13 +102,11 @@ pasteSpecific() {
     if (specificNormSpaceEnabled)
         latest := normSpace(latest)
 
-    ; Apply line break option
     switch specificLineOption {
         case 1: latest := trimLines(latest)
         case 2: latest := removeLineBreaks(latest)
     }
 
-    ; Apply case option
     switch specificCaseOption {
         case 1: latest := StrUpper(latest)
         case 2: latest := StrLower(latest)
@@ -115,14 +114,12 @@ pasteSpecific() {
         case 4: latest := SentenceCase(latest)
     }
 
-    ; Apply separator option
     switch specificSeparatorOption {
         case 1: latest := StrReplace(latest, " ", "_")
         case 2: latest := StrReplace(latest, " ", "-")
         case 3: latest := StrReplace(latest, " ", "")
     }
 
-    ; Create content based on specificUseBeforeLatest setting
     content := specificUseBeforeLatest ? (beforeLatest . "_" . latest) : latest
 
     paste(content)
@@ -130,6 +127,7 @@ pasteSpecific() {
 
 deleteSelected(LV, clipGui := 0, useSavedTab := false) {
     global historyTab, savedTab
+
     if (!isListViewFocused()) {
         Send("{Delete}")
         return
@@ -153,7 +151,7 @@ deleteSelected(LV, clipGui := 0, useSavedTab := false) {
     }
 
     if (useSavedTab) {
-        for i, item in selectedIndex
+        for _, item in selectedIndex
             savedTab.RemoveAt(item)
         saveSavedItems()
     }
@@ -161,14 +159,13 @@ deleteSelected(LV, clipGui := 0, useSavedTab := false) {
         for i, item in selectedIndex
             historyTab.RemoveAt(item)
     }
+
     updateLV(LV, "", useSavedTab)
 
-    ; Focus on the last item after deletion
     rowCount := LV.GetCount()
     if (rowCount > 0) {
         LV.Modify(rowCount, "Select Focus Vis")
         LV.Focus()
-        ; Use a timer to ensure focus is properly set
         SetTimer(() => LV.Focus(), -50)
     }
 }
@@ -177,9 +174,8 @@ clearClipboard(clipGui := 0, useSavedTab := false) {
     global historyTab, savedTab, clipGuiInstance
 
     if (useSavedTab) {
-        ; Add confirmation dialog when clearing Saved tab
         result := MsgBox("Are you sure you want to clear all saved items?",
-            "Confirm Clear Saved Items", "YesNo 262144") ; YesNo with AlwaysOnTop flag
+            "Confirm Clear Saved Items", "YesNo 262144")
 
         if (result != "Yes")
             return
@@ -199,8 +195,8 @@ clearClipboard(clipGui := 0, useSavedTab := false) {
 
 saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
     global historyTab, savedTab
-    selectedItems := getSelectedIndex(LV)
 
+    selectedItems := getSelectedIndex(LV)
     clipTab := useSavedTab ? savedTab : historyTab
 
     if (selectedItems.Length = 0 || clipTab.Length = 0) {
@@ -208,31 +204,25 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
         return
     }
 
-    if (selectedItems.Length = 1) {
-        if (selectedItems[1] > 0 && selectedItems[1] <= clipTab.Length) {
-            newText := contentViewer.Value
-            clipTab[selectedItems[1]].text := newText
-            rowNum := 1
-            loop LV.GetCount() {
-                if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
-                    displayContent := StrLen(newText) > 100 ?
-                        SubStr(newText, 1, 100) . "..." : newText
-                    LV.Modify(rowNum, , selectedItems[1], displayContent)
-                    break
-                }
-                rowNum++
+    if (selectedItems.Length = 1 && selectedItems[1] > 0 && selectedItems[1] <= clipTab.Length) {
+        newText := contentViewer.Value
+        clipTab[selectedItems[1]].text := newText
+
+        rowNum := 1
+        loop LV.GetCount() {
+            if (Integer(LV.GetText(rowNum, 1)) = selectedItems[1]) {
+                displayContent := StrLen(newText) > 100 ?
+                    SubStr(newText, 1, 100) . "..." : newText
+                LV.Modify(rowNum, , selectedItems[1], displayContent)
+                break
             }
-
-            if (useSavedTab)
-                saveSavedItems()
-
-            showNotification("Changes saved")
-        } else {
-            showNotification("Invalid item index")
+            rowNum++
         }
-    } else {
-        showNotification("Cannot save changes when multiple items are selected.")
-        return
+
+        if (useSavedTab)
+            saveSavedItems()
+
+        showNotification("Changes saved")
     }
 
     if (useSavedTab)
@@ -245,8 +235,8 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
 
 saveToSavedItems(LV := 0) {
     global historyTab, savedTab
-    selectedItems := getSelectedItems(LV, false)
 
+    selectedItems := getSelectedItems(LV, false)
     if (!IsObject(selectedItems) || selectedItems.Length < 1)
         return
 
@@ -263,8 +253,8 @@ saveToSavedItems(LV := 0) {
 
 saveToClipboard(LV := 0, formatTextEnable := false) {
     global historyTab
-    selectedItems := getSelectedItems(LV, false)
 
+    selectedItems := getSelectedItems(LV, false)
     if (!IsObject(selectedItems) || selectedItems.Length < 1)
         return
 
@@ -311,4 +301,78 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
     }
 
     showNotification(addedCount . " item(s) added to clipboard history")
+}
+
+moveSelectedItem(LV, contentViewer, direction, useSavedTab := false) {
+    global historyTab, savedTab
+
+    if (!isListViewFocused())
+        return
+
+    selectedRow := LV.GetNext(0)
+    if (!selectedRow)
+        return
+
+    currentIndex := Integer(LV.GetText(selectedRow, 1))
+    targetIndex := currentIndex + direction
+
+    clipTab := useSavedTab ? savedTab : historyTab
+
+    if (targetIndex < 1 || targetIndex > clipTab.Length)
+        return
+
+    temp := clipTab[currentIndex]
+    clipTab[currentIndex] := clipTab[targetIndex]
+    clipTab[targetIndex] := temp
+
+    if (useSavedTab) {
+        savedTab := clipTab
+        saveSavedItems()
+    } else {
+        historyTab := clipTab
+    }
+
+    updateLV(LV, "", useSavedTab)
+    LV.Modify(0, "-Select")
+
+    loop LV.GetCount() {
+        rowNum := A_Index
+        itemIndex := Integer(LV.GetText(rowNum, 1))
+        if (itemIndex = targetIndex) {
+            LV.Modify(rowNum, "Select Focus Vis")
+            break
+        }
+    }
+
+    updateContent(LV, contentViewer, useSavedTab)
+}
+
+filterItems(searchText := "", useSavedTab := false) {
+    global historyTab, savedTab
+    clipTab := useSavedTab ? savedTab : historyTab
+    filteredItems := []
+
+    if (searchText = "") {
+        for index, item in clipTab {
+            filteredItems.Push({
+                text: item.text,
+                original: item.original,
+                originalIndex: index
+            })
+        }
+        return filteredItems
+    }
+
+    searchTextLower := StrLower(searchText)
+    for index, item in clipTab {
+        if (item.HasProp("text") && item.text && InStr(StrLower(item.text), searchTextLower)) {
+            filteredItems.Push({
+                text: item.text,
+                original: item.original,
+                originalIndex: index
+            })
+        }
+    }
+
+    return filteredItems
 }

@@ -75,4 +75,7 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 - Sửa lỗi menu chuột phải vị trí không hợp lý khi nhấn ra bên ngoài rồi click lại
 - Thêm nếu xóa một mục thì sẽ tự động focus xuống mục cuối cùng (giúp xóa nhanh nhiều mục bằng delete)
 - Sửa lỗi thanh tìm kiếm không hoạt động
+- Sửa để chỉ sửa được với 1 mục được chọn  
 - Sửa một vài lỗi khác
+
+- sửa để có thể dùng phím esc để đóng cửa sổ

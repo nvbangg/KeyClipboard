@@ -12,6 +12,7 @@ global savedTab := []
 global isProcessing := false
 global originalClip := ""
 global clipGuiInstance := 0
+global contentViewerIsFocused := false
 
 initSettings()
 initCapsLockMonitor()
@@ -37,7 +38,7 @@ if (A_Args.Length > 0 && A_Args[1] = "settings") {
 #HotIf GetKeyState("CapsLock", "P")
 s:: showSettings()
 +s:: alwaysOnTop()
-Tab & s:: switchTabPreset()  ; Cycle to next preset in the list
+Tab & s:: switchTabPreset()     ; Cycle to next preset in the list
 c:: showClipboard()
 Tab & c:: showClipboard(true)   ; Open clipboard Saved tab
 +c:: clearClipboard()

@@ -19,7 +19,6 @@ initSettings() {
     loadPresetList()
     currentPreset := readSetting("Presets", "CurrentPreset", "Default")
 
-    ; Ensure Default preset exists
     if (!HasValue(presetList, "Default")) {
         defaultPresetSection := "Preset_Default"
 
@@ -38,7 +37,6 @@ initSettings() {
         writeSetting(defaultPresetSection, "specificCaseOption", "3")
         writeSetting(defaultPresetSection, "specificSeparatorOption", "3")
 
-        ; Add Default to preset list
         presetList.Push("Default")
         writeSetting("Presets", "PresetList", Join(presetList, ","))
         currentPreset := "Default"
@@ -222,7 +220,6 @@ savePresetSettings(sectionName) {
     global specificUseBeforeLatest, specificRemoveAccentsEnabled, specificNormSpaceEnabled
     global specificRemoveSpecialEnabled, specificLineOption, specificCaseOption, specificSeparatorOption
 
-    ; Save all Format Options and Format Specific Options
     writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
     writeSetting(sectionName, "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
     writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
@@ -246,7 +243,6 @@ saveAsPreset(presetName) {
     global specificRemoveSpecialEnabled, specificLineOption, specificCaseOption, specificSeparatorOption
     global currentPreset
 
-    ; Create preset section name
     sectionName := "Preset_" . presetName
 
     writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
@@ -269,11 +265,9 @@ saveAsPreset(presetName) {
         writeSetting("Presets", "PresetList", Join(presetList, ","))
     }
 
-    ; Set as current preset
     currentPreset := presetName
     writeSetting("Presets", "CurrentPreset", currentPreset)
 
-    ; Only show notification for new presets, not when saving existing ones
     if (!HasValue(presetList, presetName)) {
         showNotification("Preset '" . presetName . "' created")
     }

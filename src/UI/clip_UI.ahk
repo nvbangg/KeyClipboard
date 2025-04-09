@@ -10,87 +10,17 @@ showClipboard(useSavedTab := false) {
     clipGui.SetFont("s10")
 
     tabs := clipGui.Add("Tab3", "x5 y5 w710 h560", ["History", "Saved"])
-    SendMessage(0x1329, 2, 0, tabs.hwnd)
-
+    SendMessage(0x1329, 2, 0, tabs.hwnd)  ; Set tab size
     tabs.OnEvent("Change", onTabChange)
 
-    buildTabUI(clipGui, tabs, false)
-    buildTabUI(clipGui, tabs, true)
+    buildTabUI(clipGui, tabs, false)  ; History tab
+    buildTabUI(clipGui, tabs, true)   ; Saved tab
 
-    ; tabs.UseTab() ; no need to call UseTab here
-
-    clipGui.OnEvent("Close", (*) => clipGui.Destroy())
-    clipGui.OnEvent("Escape", (*) => clipGui.Destroy())
-
-    HotIfWinActive("ahk_id " . clipGui.Hwnd)
-
-    enterHotkey(*) => execAction("enter", clipGui)
-    altUpHotkey(*) => execAction("altUp", clipGui)
-    altDownHotkey(*) => execAction("altDown", clipGui)
-    ctrlAHotkey(*) => execAction("ctrlA", clipGui)
-    deleteHotkey(*) => execAction("delete", clipGui)
-
-    Hotkey "Enter", enterHotkey
-    Hotkey "!Up", altUpHotkey
-    Hotkey "!Down", altDownHotkey
-    Hotkey "^a", ctrlAHotkey
-    Hotkey "Delete", deleteHotkey
-    HotIf()
-
-    updateLV(historyLV, "", false)
-    updateLV(savedLV, "", true)
-
-    ; Set active tab based on parameter
-    if (useSavedTab) {
-        tabs.Value := 2
-        if (savedTab.Length > 0) {
-            lastRow := savedLV.GetCount()
-            if (lastRow > 0) {
-                savedLV.Modify(lastRow, "Select Focus Vis")
-                savedLV.Focus()
-                updateContent(savedLV, savedViewer, true)
-                ; Set a timer to ensure ListView receives focus
-                SetTimer(() => savedLV.Focus(), -50)
-            }
-        } else if (historyTab.Length > 0) {
-            lastRow := historyLV.GetCount()
-            if (lastRow > 0) {
-                historyLV.Modify(lastRow, "Select Focus Vis")
-                historyLV.Focus()
-                updateContent(historyLV, historyViewer, false)
-                ; Set a timer to ensure ListView receives focus
-                SetTimer(() => historyLV.Focus(), -50)
-            }
-        }
-    } else if (historyTab.Length > 0) {
-        lastRow := historyLV.GetCount()
-        if (lastRow > 0) {
-            historyLV.Modify(lastRow, "Select Focus Vis")
-            historyLV.Focus()
-            updateContent(historyLV, historyViewer, false)
-            ; Set a timer to ensure ListView receives focus
-            SetTimer(() => historyLV.Focus(), -50)
-        }
-    } else if (savedTab.Length > 0) {
-        tabs.Value := 2
-        lastRow := savedLV.GetCount()
-        if (lastRow > 0) {
-            savedLV.Modify(lastRow, "Select Focus Vis")
-            savedLV.Focus()
-            updateContent(savedLV, savedViewer, true)
-            ; Set a timer to ensure ListView receives focus
-            SetTimer(() => savedLV.Focus(), -50)
-        }
-    }
+    setupClipboardEvents(clipGui)
+    setInitialActiveTab(useSavedTab)
 
     clipGui.Show("w720 h570")
-
-    ; Focus the active ListView after the GUI is shown
-    activeListView := useSavedTab ? savedLV : historyLV
-    if (activeListView) {
-        ; Use a short delay to ensure GUI is fully rendered before focusing
-        SetTimer(() => activeListView.Focus(), -100)
-    }
+    SetTimer(() => (useSavedTab ? savedLV : historyLV).Focus(), -100)
 }
 
 showClipboardHelp(*) {
@@ -114,10 +44,8 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     global historyViewer, savedViewer
     contentViewer := useSavedTab ? savedViewer : historyViewer
 
-    ; Ensure LV is focused before showing the context menu
     LV.Focus()
 
-    ; Preserve selection state by ensuring selected items remain focused
     selectedIndex := []
     rowNum := 0
     loop {
@@ -127,7 +55,6 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
         selectedIndex.Push(rowNum)
     }
 
-    ; Re-apply Select and Focus to all selected items
     for _, rowNum in selectedIndex {
         LV.Modify(rowNum, "Select Focus")
     }
@@ -142,12 +69,12 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
     ]
 
     if (!useSavedTab) {
-        menuItems.Push([])
+        menuItems.Push([])  ; Separator
         menuItems.Push(["Save to Saved Tab", (*) => (saveToSavedItems(LV))])
         menuItems.Push(["Save Format to Clipboard", (*) => (saveToClipboard(LV, true))])
     }
 
-    menuItems.Push([])
+    menuItems.Push([])  ; Separator
     menuItems.Push(["Delete Item", (*) => deleteSelected(LV, clipGui, useSavedTab)])
 
     contextMenu := createContextMenu(menuItems)
@@ -160,6 +87,7 @@ buildTabUI(clipGui, tabs, useSavedTab) {
     global historyLV, savedLV, historyViewer, savedViewer
 
     tabs.UseTab(useSavedTab ? 2 : 1)
+
     selectAllBtn := clipGui.Add("Button", "x10 y35 w70", "Select All")
     clipGui.Add("Text", "x90 y40", "Search:")
     searchBox := clipGui.Add("Edit", "x150 y37 w560")
@@ -169,6 +97,7 @@ buildTabUI(clipGui, tabs, useSavedTab) {
     listView.ModifyCol(2, 645)
 
     contentViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll +Wrap", "")
+    contentViewer.Opt("+ReadOnly")  ; Start in read-only mode
 
     if (!useSavedTab) {
         historyLV := listView
@@ -178,7 +107,17 @@ buildTabUI(clipGui, tabs, useSavedTab) {
         savedViewer := contentViewer
     }
 
-    searchBox.OnEvent("Change", (*) => handleSearch(searchBox, useSavedTab))
+    searchBoxChangeHandler(*) {
+        handleSearch(searchBox, useSavedTab)
+    }
+    searchBoxFocusHandler(*) {
+        WinActivate("ahk_id " . clipGui.Hwnd)
+        searchBox.Focus()
+    }
+
+    searchBox.OnEvent("Change", searchBoxChangeHandler)
+    searchBox.OnEvent("Focus", searchBoxFocusHandler)
+
     selectAllBtn.OnEvent("Click", (*) => selectAllItems(listView, contentViewer))
 
     listView.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
@@ -194,7 +133,7 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             Sleep(10)
             updateContent(listView, contentViewer, useSavedTab)
         } catch Error as e {
-
+            ; Silently handle errors
         }
     }
     listView.OnEvent("Click", listViewClickHandler)
@@ -207,7 +146,7 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             WinActivate("ahk_id " . clipGui.Hwnd)
             updateContent(listView, contentViewer, useSavedTab)
         } catch Error as e {
-
+            ; Silently handle errors
         }
     }
     listView.OnEvent("ItemSelect", itemSelectHandler)
@@ -220,7 +159,7 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             WinActivate("ahk_id " . clipGui.Hwnd)
             updateContent(listView, contentViewer, useSavedTab)
         } catch Error as e {
-
+            ; Silently handle errors
         }
     }
     listView.OnEvent("ItemFocus", itemFocusHandler)
@@ -233,7 +172,7 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             WinActivate("ahk_id " . clipGui.Hwnd)
             pasteSelected(listView, clipGui, 0, useSavedTab)
         } catch Error as e {
-
+            ; Silently handle errors
         }
     }
     listView.OnEvent("DoubleClick", doubleClickHandler)
@@ -242,14 +181,25 @@ buildTabUI(clipGui, tabs, useSavedTab) {
     FocusCallback(*) {
         WinActivate("ahk_id " . clipGui.Hwnd)
         updateContentViewerFocusState(true)
+
+        elements := getActiveTabElements(tabs)
+        selectedIndex := getSelectedIndex(elements.listView)
+
+        if (selectedIndex.Length = 1) {
+            elements.contentViewer.Opt("-ReadOnly")
+        } else {
+            elements.contentViewer.Opt("+ReadOnly")
+            if (selectedIndex.Length = 0)
+                elements.listView.Focus()
+        }
     }
 
     contentViewer.OnEvent("LoseFocus", (*) => updateContentViewerFocusState(false))
+
     actionBtns := [
         ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, useSavedTab)]
     ]
 
-    ; Clear All button with different behavior for History vs Saved tab
     if (useSavedTab) {
         actionBtns.Push(["x280 y530 w120", "Clear All", (*) => clearClipboard(clipGui, true)])
     } else {

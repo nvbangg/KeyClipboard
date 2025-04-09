@@ -50,6 +50,7 @@ saveSavedItems() {
         showNotification("Error saving data: " . err.Message)
     }
 }
+
 ; Encode text as hex values to safely store in file
 encodeLine(text) {
     if (text = "")
@@ -62,6 +63,7 @@ encodeLine(text) {
 
     return encoded
 }
+
 ; Decode hex values back to original text
 decodeLine(encodedLine) {
     if (encodedLine = "")

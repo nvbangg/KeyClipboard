@@ -63,7 +63,6 @@ showInfo(title, content, width := 350, btnOpts := "") {
         btnOpts := "w100 x" . buttonX . " y" . buttonY
     }
 
-    ; Helper to properly clean up dialog references
     CleanupDialog(gui, *) {
         static dialogRef := &activeDialog
         %dialogRef% := 0
@@ -139,7 +138,7 @@ DeleteCurrentPreset(dropdown, settingsGui := 0) {
         return
     }
     result := MsgBox("Are you sure you want to delete preset '" . presetToDelete . "'?",
-        "Confirm Delete", "YesNo 262144") ; YesNo with AlwaysOnTop flag
+        "Confirm Delete", "YesNo 262144")
 
     if (result = "Yes") {
         deletePreset(presetToDelete)
@@ -149,7 +148,6 @@ DeleteCurrentPreset(dropdown, settingsGui := 0) {
     }
 }
 
-; Add preset management functions
 loadPresetList() {
     global presetList := []
     presetString := readSetting("Presets", "PresetList", "")
@@ -170,7 +168,6 @@ saveToCurrentPreset() {
     }
 }
 
-; Helper function to check if an array contains a value
 HasValue(arr, val) {
     for i, v in arr {
         if (v = val)
@@ -179,7 +176,6 @@ HasValue(arr, val) {
     return false
 }
 
-; Helper function to join array elements with a delimiter
 Join(arr, delimiter) {
     result := ""
     for i, v in arr {
@@ -193,7 +189,6 @@ Join(arr, delimiter) {
 deletePreset(presetName) {
     global presetList, currentPreset
 
-    ; Check if the preset exists
     if (!HasValue(presetList, presetName)) {
         showNotification("Preset '" . presetName . "' not found")
         return
@@ -205,7 +200,6 @@ deletePreset(presetName) {
     sectionName := "Preset_" . presetName
     IniDelete(settingsFilePath, sectionName)
 
-    ; Remove from preset list
     newPresetList := []
     for _, name in presetList {
         if (name != presetName)
@@ -238,7 +232,6 @@ switchTabPreset() {
         }
     }
 
-    ; If current preset is not in the list or it's the last one, go to the first
     if (currentIndex = 0 || currentIndex = presetList.Length) {
         nextIndex := 1
     } else {
@@ -259,4 +252,22 @@ getMaxHistoryIndex(value) {
         case 1000: return 5
         default: return 2  ; Default to 100
     }
+}
+
+AddCheckboxGroup(gui, yPos, options) {
+    for option in options {
+        gui.Add("CheckBox", "x20 y" . yPos . " v" . option[1] . " Checked" . option[2], option[3])
+        yPos += 25
+    }
+    return yPos + 10
+}
+
+AddDropdownGroup(gui, yPos, options) {
+    for option in options {
+        gui.Add("Text", "x20 y" . yPos . " w150", option[1])
+        gui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] . " Choose" . (
+            option[4] + 1), option[3])
+        yPos += 30
+    }
+    return yPos
 }

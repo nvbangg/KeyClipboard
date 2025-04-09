@@ -1,6 +1,6 @@
 #Include clip_UI.ahk
 
-; Set up tray menu and icon click behavior
+; System Tray Configuration
 A_TrayMenu.Add("Settings (Caps+S)", showSettings)
 A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
@@ -11,16 +11,20 @@ A_TrayMenu.Default := "Settings (Caps+S)"
 showSettings(*) {
     static settingsGui := 0
     static isCreating := false
+
     if (isCreating)
         return
+
     isCreating := true
     settingsGui := cleanupGui(settingsGui)
 
     settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
     settingsGui.SetFont("s10")
     yPos := 10
+
     yPos := addAppSettings(settingsGui, yPos)
 
+    ; Add preset management handler
     OnPresetChanged(ctrl, *) {
         selectedPreset := ctrl.Text
         initialPreset := currentPreset
@@ -30,14 +34,12 @@ showSettings(*) {
             showSettings()
         }
     }
-    yPos := addPresetManagementSection(settingsGui, yPos,
-        OnPresetChanged,
-        DeleteCurrentPreset,
-        (*) => CreateNewPreset())
 
+    yPos := addPresetManagementSection(settingsGui, yPos, OnPresetChanged, DeleteCurrentPreset, (*) => CreateNewPreset())
     yPos := addFormatOptions(settingsGui, yPos)
     yPos := addFormatSpecificSection(settingsGui, yPos)
 
+    ; Create save function
     CloseAndSave() {
         formData := settingsGui.Submit()
         saveSettings(formData)
@@ -46,6 +48,7 @@ showSettings(*) {
         isCreating := false
     }
 
+    ; Add control buttons
     settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
     .OnEvent("Click", (*) => CloseAndSave())
     settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts")
@@ -61,8 +64,10 @@ showSettings(*) {
 showFormatSpecificSettings(*) {
     static formatSpecificGui := 0
     static isCreating := false
+
     if (isCreating)
         return
+
     isCreating := true
     formatSpecificGui := cleanupGui(formatSpecificGui)
 
@@ -72,36 +77,24 @@ showFormatSpecificSettings(*) {
 
     formatSpecificGui.Add("GroupBox", "x10 y" . yPos . " w350 h230", "Format Specific Options")
     yPos += 25
+
     formatSpecificGui.Add("CheckBox", "x20 y" . yPos . " vspecificUseBeforeLatest Checked" . specificUseBeforeLatest,
         "Include beforeLatest item (beforeLatest_latest)")
     yPos += 30
 
-    checkboxOptions := [
+    yPos := AddCheckboxGroup(formatSpecificGui, yPos, [
         ["specificRemoveAccentsEnabled", specificRemoveAccentsEnabled, "Remove Accents"],
         ["specificNormSpaceEnabled", specificNormSpaceEnabled, "Normalize Spaces"],
         ["specificRemoveSpecialEnabled", specificRemoveSpecialEnabled, "Remove Special Characters (# *)"]
-    ]
+    ])
 
-    for option in checkboxOptions {
-        formatSpecificGui.Add("CheckBox", "x20 y" . yPos . " v" . option[1] . " Checked" . option[2], option[3])
-        yPos += 25
-    }
-    yPos += 10
-
-    dropdownOptions := [
+    yPos := AddDropdownGroup(formatSpecificGui, yPos, [
         ["Line Break:", "specificLineOption", ["None", "Trim Lines", "Remove All Line Breaks"], specificLineOption],
         ["Text Case:", "specificCaseOption", ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"],
         specificCaseOption],
         ["Word Separator:", "specificSeparatorOption", ["None", "Underscore (_)", "Hyphen (-)", "Remove Spaces"],
         specificSeparatorOption]
-    ]
-
-    for option in dropdownOptions {
-        formatSpecificGui.Add("Text", "x20 y" . yPos . " w150", option[1])
-        formatSpecificGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] . " Choose" . (
-            option[4] + 1), option[3])
-        yPos += 30
-    }
+    ])
 
     SaveFormatSpecific() {
         formData := formatSpecificGui.Submit()
@@ -112,6 +105,7 @@ showFormatSpecificSettings(*) {
 
     formatSpecificGui.Add("Button", "x130 y" . (yPos + 10) . " w100 Default", "Save")
     .OnEvent("Click", (*) => SaveFormatSpecific())
+
     formatSpecificGui.Show("w375 h" . (yPos + 50))
     closeEvents(formatSpecificGui, (*) => SaveFormatSpecific())
     isCreating := false
@@ -151,11 +145,13 @@ showAbout(*) {
         try {
             Run("https://github.com/nvbangg/KeyClipboard")
         } catch Error as e {
+            ; Silently handle errors
         }
     } else if (result == "No") {
         try {
-            Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ") ; =)))))
+            Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ") ; Easter egg :)
         } catch Error as e {
+            ; Silently handle errors
         }
     }
 }
