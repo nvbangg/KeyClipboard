@@ -41,10 +41,19 @@ showSettings(*) {
 
     ; Create save function
     CloseAndSave() {
-        formData := settingsGui.Submit()
-        saveSettings(formData)
-        saveToCurrentPreset()
-        settingsGui := cleanupGui(settingsGui)
+        global settingsGui, isCreating
+
+        try {
+            if (isGuiValid(settingsGui)) {
+                formData := settingsGui.Submit()
+                saveSettings(formData)
+                saveToCurrentPreset()
+                settingsGui := cleanupGui(settingsGui)
+            }
+        } catch Error as e {
+            ; Silently handle errors
+        }
+
         isCreating := false
     }
 
@@ -97,9 +106,16 @@ showFormatSpecificSettings(*) {
     ])
 
     SaveFormatSpecific() {
-        formData := formatSpecificGui.Submit()
-        formatSpecificGui := cleanupGui(formatSpecificGui)
-        saveFormatSpecificSettings(formData)
+        try {
+            if (isGuiValid(formatSpecificGui)) {
+                formData := formatSpecificGui.Submit()
+                formatSpecificGui := cleanupGui(formatSpecificGui)
+                saveFormatSpecificSettings(formData)
+            }
+        } catch Error as e {
+            ; Silently handle errors
+        }
+
         isCreating := false
     }
 

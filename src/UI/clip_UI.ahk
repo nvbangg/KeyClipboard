@@ -1,6 +1,13 @@
 showClipboard(useSavedTab := false) {
     global historyTab, savedTab, clipGuiInstance, historyLV, savedLV, historyViewer, savedViewer, tabs
     global clipGuiActivated := false
+    static focusTimer := 0
+
+    ; Clear any existing focus timer to prevent accessing destroyed controls
+    if (focusTimer) {
+        SetTimer(focusTimer, 0)
+        focusTimer := 0
+    }
 
     if (!checkClipInstance())
         return
@@ -20,7 +27,9 @@ showClipboard(useSavedTab := false) {
     setInitialActiveTab(useSavedTab)
 
     clipGui.Show("w720 h570")
-    SetTimer(() => (useSavedTab ? savedLV : historyLV).Focus(), -100)
+
+    ; Use a safer focus function with validity checks
+    focusTimer := SetTimer(focusListView.Bind(useSavedTab), -100)
 }
 
 showClipboardHelp(*) {
