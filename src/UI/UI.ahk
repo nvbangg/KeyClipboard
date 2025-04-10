@@ -39,34 +39,35 @@ showSettings(*) {
     yPos := addFormatOptions(settingsGui, yPos)
     yPos := addFormatSpecificSection(settingsGui, yPos)
 
-    ; Create save function
-    CloseAndSave() {
-        global settingsGui, isCreating
+    ; Create save function - FIX: Remove global reference, use local scope
+    CloseAndSave(*) {
+        local guiRef := settingsGui
+        local isCreatingRef := &isCreating
 
         try {
-            if (isGuiValid(settingsGui)) {
-                formData := settingsGui.Submit()
+            if (isGuiValid(guiRef)) {
+                formData := guiRef.Submit()
                 saveSettings(formData)
                 saveToCurrentPreset()
-                settingsGui := cleanupGui(settingsGui)
+                settingsGui := cleanupGui(guiRef)
             }
         } catch Error as e {
             ; Silently handle errors
         }
 
-        isCreating := false
+        %isCreatingRef% := false
     }
 
     ; Add control buttons
     settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
-    .OnEvent("Click", (*) => CloseAndSave())
+    .OnEvent("Click", CloseAndSave)
     settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts")
     .OnEvent("Click", (*) => showShortcuts())
     settingsGui.Add("Button", "x240 y" . (yPos + 10) . " w100", "About")
     .OnEvent("Click", (*) => showAbout())
 
     settingsGui.Show("w375 h" . (yPos + 50))
-    closeEvents(settingsGui, (*) => CloseAndSave())
+    closeEvents(settingsGui, CloseAndSave)
     isCreating := false
 }
 

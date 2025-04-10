@@ -204,6 +204,9 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
         return
     }
 
+    ; Store original selection index to restore later
+    originalIndex := selectedItems.Length = 1 ? selectedItems[1] : 0
+
     if (selectedItems.Length = 1 && selectedItems[1] > 0 && selectedItems[1] <= clipTab.Length) {
         newText := contentViewer.Value
         clipTab[selectedItems[1]].text := newText
@@ -230,7 +233,21 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
     else
         historyTab := clipTab
 
+    ; Update ListView with all items
     updateLV(LV, "", useSavedTab)
+
+    ; Restore selection to original item if it existed
+    if (originalIndex > 0) {
+        ; Find the row with the same original index
+        loop LV.GetCount() {
+            rowNum := A_Index
+            if (Integer(LV.GetText(rowNum, 1)) = originalIndex) {
+                LV.Modify(rowNum, "Select Focus Vis")
+                updateContent(LV, contentViewer, useSavedTab)
+                break
+            }
+        }
+    }
 }
 
 saveToSavedItems(LV := 0) {
