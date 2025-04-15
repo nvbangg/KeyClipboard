@@ -3,8 +3,8 @@ existFile(filePath) {
     if !DirExist(dataDir) {
         DirCreate(dataDir)
     }
-    if !FileExist(settingsFilePath) {
-        FileAppend("", settingsFilePath)
+    if !FileExist(filePath) {
+        FileAppend("", filePath)
     }
 }
 

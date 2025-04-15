@@ -151,8 +151,8 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.4.6`n" .
-        "Date: 09/04/2025`n`n" .
+        "Version: 1.6.4.7`n" .
+        "Date: 15/04/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
 
