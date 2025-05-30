@@ -63,19 +63,10 @@ A Powerful Clipboard to replace Windows Clipboard with convenient Keyboard short
 2. Install environment from [AutoHotkey v2](https://www.autohotkey.com)
 3. Run `KeyClipboard.ahk`
 4. Look for the app icon in the system tray
-  
-### Changelog: 
-- Thêm tùy chọn sửa được format specific
-- Thêm tính năng tùy chọn cấu hình để chỉnh nhanh settings
-- Dùng phím tắt CapsLock + Tab + S để chuyển giữa các cấu hình
-- Thêm tùy chọn số lượng mục tối đa trong Clipboard
-- Sửa lại giao diện tốt hơn
-- Thêm hiển thị tên app và cửa sổ được kích hoạt khi bật Always on Top
-- Trong contentviewer sẽ dùng phím tắt riêng để chỉnh sửa văn bản
-- Có thể dùng phím esc để đóng cửa sổ
-- Sửa lỗi menu chuột phải vị trí không hợp lý khi nhấn ra bên ngoài rồi click lại
-- Thêm nếu xóa một mục thì sẽ tự động focus xuống mục cuối cùng (giúp xóa nhanh nhiều mục bằng delete)
-- Sửa lỗi thanh tìm kiếm không hoạt động
-- Sửa để chỉ sửa được với 1 mục được chọn
-- sửa lỗi không tạo file savedHistory lần đầu khởi chạy
-- Sửa một vài lỗi khác
+
+### Follow me👀 and Star⭐ 
+ **Follow👀:** [![Follow](https://img.shields.io/github/followers/nvbangg?label=Follow&style=social)](https://github.com/nvbangg) | **Star⭐:** [![Star](https://img.shields.io/github/stars/nvbangg/KeyClipboard?style=social)](https://github.com/nvbangg/KeyClipboard)
+
+![StarGuide](https://raw.githubusercontent.com/nvbangg/nvbangg/main/data/star.gif)
+
+[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard&countColor=%232ccce4)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard)
