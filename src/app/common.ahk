@@ -24,11 +24,11 @@ writeSetting(section, key, value) {
 }
 
 showNotification(message, timeout := 1300) {
-    notify := Gui("+AlwaysOnTop -Caption +ToolWindow")
+    notify := Gui("+AlwaysOnTop -Caption +ToolWindow")  ; Borderless, always on top
     notify.SetFont("s12 bold")
     notify.Add("Text", "w300 Center", message)
-    notify.Show("NoActivate")
-    SetTimer(() => notify.Destroy(), -timeout)
+    notify.Show("NoActivate")  ; Show without stealing focus
+    SetTimer(() => notify.Destroy(), -timeout)  ; Auto-close after timeout
 }
 
 cleanupGui(guiObj) {
@@ -41,14 +41,15 @@ cleanupGui(guiObj) {
 
 ; Setup standard close events (Escape key and X button)
 closeEvents(guiObj, closeCallback) {
-    guiObj.OnEvent("Escape", closeCallback)
-    guiObj.OnEvent("Close", closeCallback)
+    guiObj.OnEvent("Escape", closeCallback) 
+    guiObj.OnEvent("Close", closeCallback)   
 }
 
 ; Show information dialog with auto-sized content
 showInfo(title, content, width := 350, btnOpts := "") {
-    static activeDialog := 0
+    static activeDialog := 0  ; Track single instance
 
+    ; Activate existing dialog if present
     if (activateExistingGui(activeDialog))
         return activeDialog
 
@@ -57,15 +58,16 @@ showInfo(title, content, width := 350, btnOpts := "") {
 
     infoGui.SetFont("s10")
     textControl := infoGui.Add("Text", "w" . width, content)
-    textControl.GetPos(, , , &textHeight)
+    textControl.GetPos(, , , &textHeight)  ; Get text height for layout
+    buttonY := textHeight + 20  
 
-    buttonY := textHeight + 20
-
+    ; Calculate default button position if not specified
     if (btnOpts = "") {
-        buttonX := width / 2 - 50
+        buttonX := width / 2 - 50  ; Center button horizontally
         btnOpts := "w100 x" . buttonX . " y" . buttonY
     }
 
+    ; Cleanup function to reset static reference and destroy GUI
     CleanupDialog(gui, *) {
         static dialogRef := &activeDialog
         %dialogRef% := 0
@@ -81,6 +83,7 @@ showInfo(title, content, width := 350, btnOpts := "") {
     return infoGui
 }
 
+; Check if GUI object is valid and window still exists
 isGuiValid(guiObj) {
     try {
         return IsObject(guiObj) && guiObj.HasProp("Hwnd") && WinExist("ahk_id " . guiObj.Hwnd)
@@ -89,10 +92,11 @@ isGuiValid(guiObj) {
     }
 }
 
+; Activate existing GUI window if valid
 activateExistingGui(guiObj) {
     if (isGuiValid(guiObj)) {
         hwnd := guiObj.Hwnd
-        WinActivate("ahk_id " . hwnd)
+        WinActivate("ahk_id " . hwnd)  ; Bring window to front
         return true
     }
     return false
@@ -171,6 +175,7 @@ saveToCurrentPreset() {
     }
 }
 
+; Check if array contains a specific value
 HasValue(arr, val) {
     for i, v in arr {
         if (v = val)
@@ -179,10 +184,11 @@ HasValue(arr, val) {
     return false
 }
 
+; Join array elements with delimiter (like JavaScript join())
 Join(arr, delimiter) {
     result := ""
     for i, v in arr {
-        if (i > 1)
+        if (i > 1)  ; Add delimiter before all except first element
             result .= delimiter
         result .= v
     }
@@ -192,6 +198,7 @@ Join(arr, delimiter) {
 deletePreset(presetName) {
     global presetList, currentPreset
 
+    ; Validate preset exists and is not default
     if (!HasValue(presetList, presetName)) {
         showNotification("Preset '" . presetName . "' not found")
         return
@@ -201,15 +208,17 @@ deletePreset(presetName) {
         return
     }
     sectionName := "Preset_" . presetName
-    IniDelete(settingsFilePath, sectionName)
+    IniDelete(settingsFilePath, sectionName)  ; Remove from INI file
 
+    ; Remove from preset list and update settings
     newPresetList := []
     for _, name in presetList {
-        if (name != presetName)
+        if (name != presetName)  
             newPresetList.Push(name)
     }
     presetList := newPresetList
-    writeSetting("Presets", "PresetList", Join(presetList, ","))
+    writeSetting("Presets", "PresetList", Join(presetList, ","))  ; Save updated list
+    ; Switch to Default if deleting current preset
     if (currentPreset = presetName) {
         currentPreset := "Default"
         writeSetting("Presets", "CurrentPreset", "Default")
@@ -227,6 +236,7 @@ switchTabPreset() {
         return
     }
 
+    ; Find current preset index
     currentIndex := 0
     for i, name in presetList {
         if (name = currentPreset) {
@@ -235,10 +245,11 @@ switchTabPreset() {
         }
     }
 
+    ; Calculate next index with wrapping
     if (currentIndex = 0 || currentIndex = presetList.Length) {
         nextIndex := 1
     } else {
-        nextIndex := currentIndex + 1
+        nextIndex := currentIndex + 1  ; Move to next preset
     }
 
     nextPreset := presetList[nextIndex]
@@ -259,6 +270,7 @@ getMaxHistoryIndex(value) {
 
 AddCheckboxGroup(gui, yPos, options) {
     for option in options {
+        ; Each option: [varName, checked, text]
         gui.Add("CheckBox", "x20 y" . yPos . " v" . option[1] . " Checked" . option[2], option[3])
         yPos += 25
     }
@@ -267,7 +279,8 @@ AddCheckboxGroup(gui, yPos, options) {
 
 AddDropdownGroup(gui, yPos, options) {
     for option in options {
-        gui.Add("Text", "x20 y" . yPos . " w150", option[1])
+        ; Each option: [label, varName, items, selectedIndex]
+        gui.Add("Text", "x20 y" . yPos . " w150", option[1])  ; Label
         gui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] . " Choose" . (
             option[4] + 1), option[3])
         yPos += 30

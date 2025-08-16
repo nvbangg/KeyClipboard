@@ -10,6 +10,7 @@ alwaysOnTop() {
     processName := WinGetProcessName("A")
     appName := RegExReplace(processName, "\.exe$", "")
 
+    ; Truncate long window titles for better notification display
     if (StrLen(windowTitle) > 35)
         windowTitle := SubStr(windowTitle, 1, 32) . "..."
     showNotification("Always On Top: " . appName . " - " . (isAlwaysOnTop ? "Enabled" : "Disabled") .
@@ -24,9 +25,10 @@ initCapsLockMonitor() {
     }
 }
 
+; Manage Win+V hotkey registration based on user preference
 updateWinClipboardHotkey() {
     global replaceWinClipboard
-    static hotkeyRegistered := false
+    static hotkeyRegistered := false  ; Track registration state
 
     try {
         if (hotkeyRegistered) {
@@ -34,22 +36,21 @@ updateWinClipboardHotkey() {
             hotkeyRegistered := false
         }
     } catch {
-        ; Ignore if hotkey wasn't previously registered
     }
 
+    ; Register our custom Win+V handler if replacement is enabled
     if (replaceWinClipboard) {
         try {
-            ; Register with higher priority and make it persistent
             Hotkey "#v", WinVHandler, "On T3"
             hotkeyRegistered := true
-            monitorWinClipboard()
+            monitorWinClipboard()  
         } catch Error as e {
             showInfo("Hotkey Error", "Failed to register Win+V hotkey:`n" . e.Message)
         }
     }
 }
 
-; Handler function for Win+V
+; Handler function for Win+V - prevents interference and shows our clipboard
 WinVHandler(*) {
     BlockInput "On"
     Sleep 50
@@ -57,10 +58,9 @@ WinVHandler(*) {
     showClipboard()
 }
 
-; Monitor for Windows Clipboard and override it
 monitorWinClipboard() {
     static timer := 0
-
+    ; Clear any existing timer
     if (timer) {
         SetTimer timer, 0
         timer := 0
@@ -69,12 +69,12 @@ monitorWinClipboard() {
     if (replaceWinClipboard) {
         checkForWindowsClipboard() {
             if WinExist("ahk_class Windows.UI.Core.CoreWindow ahk_exe ShellExperienceHost.exe") {
-                WinClose
-                Sleep 50
-                showClipboard()
+                WinClose         ; Close Windows clipboard
+                Sleep 50         
+                showClipboard()  
             }
         }
-        timer := SetTimer(checkForWindowsClipboard, 100)
+        timer := SetTimer(checkForWindowsClipboard, 100)  ; Monitor every 100ms
     }
 }
 
@@ -92,7 +92,6 @@ updateStartupSetting() {
             try {
                 RegDelete(regKey, appName)
             } catch {
-                ; Ignore if key doesn't exist
             }
         }
     } catch Error as e {
@@ -109,6 +108,7 @@ createDesktopShortcut() {
         workingDir := A_ScriptDir
         args := "settings"
 
+        ; Create shortcut with icon and description
         FileCreateShortcut(targetPath, shortcutPath, workingDir, args,
             "KeyClipboard - Clipboard Manager", A_ScriptDir . "app\app_icon.ico")
     } catch Error as e {

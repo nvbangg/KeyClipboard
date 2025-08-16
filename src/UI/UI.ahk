@@ -5,13 +5,14 @@ A_TrayMenu.Add("Settings (Caps+S)", showSettings)
 A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
 A_IconTip := "KeyClipboard - Double click to open settings"
-A_TrayMenu.Click := 1
-A_TrayMenu.Default := "Settings (Caps+S)"
+A_TrayMenu.Click := 1  ; Single click to activate
+A_TrayMenu.Default := "Settings (Caps+S)"  ; Default action on double-click
 
 showSettings(*) {
     static settingsGui := 0
     static isCreating := false
 
+    ; Prevent multiple instances
     if (isCreating)
         return
 
@@ -22,9 +23,10 @@ showSettings(*) {
     settingsGui.SetFont("s10")
     yPos := 10
 
+    ; Add application settings section
     yPos := addAppSettings(settingsGui, yPos)
 
-    ; Add preset management handler
+    ; Handle preset dropdown changes - reload GUI when preset changes
     OnPresetChanged(ctrl, *) {
         selectedPreset := ctrl.Text
         initialPreset := currentPreset
@@ -35,30 +37,28 @@ showSettings(*) {
         }
     }
 
+    ; Add preset management and format options sections
     yPos := addPresetManagementSection(settingsGui, yPos, OnPresetChanged, DeleteCurrentPreset, (*) => CreateNewPreset())
     yPos := addFormatOptions(settingsGui, yPos)
-    yPos := addFormatSpecificSection(settingsGui, yPos)
 
-    ; Create save function - FIX: Remove global reference, use local scope
     CloseAndSave(*) {
         local guiRef := settingsGui
         local isCreatingRef := &isCreating
 
         try {
             if (isGuiValid(guiRef)) {
-                formData := guiRef.Submit()
-                saveSettings(formData)
-                saveToCurrentPreset()
+                formData := guiRef.Submit()  ; Get all form values
+                saveSettings(formData)       ; Save to settings file
+                saveToCurrentPreset()        ; Update current preset
                 settingsGui := cleanupGui(guiRef)
             }
         } catch Error as e {
-            ; Silently handle errors
         }
 
-        %isCreatingRef% := false
+        %isCreatingRef% := false  ; Reset creation flag
     }
 
-    ; Add control buttons
+    ; Add control buttons at bottom of GUI
     settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
     .OnEvent("Click", CloseAndSave)
     settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts")
@@ -67,92 +67,38 @@ showSettings(*) {
     .OnEvent("Click", (*) => showAbout())
 
     settingsGui.Show("w375 h" . (yPos + 50))
-    closeEvents(settingsGui, CloseAndSave)
+    closeEvents(settingsGui, CloseAndSave)  ; Setup ESC and X button handlers
     isCreating := false
 }
 
-showFormatSpecificSettings(*) {
-    static formatSpecificGui := 0
-    static isCreating := false
-
-    if (isCreating)
-        return
-
-    isCreating := true
-    formatSpecificGui := cleanupGui(formatSpecificGui)
-
-    formatSpecificGui := Gui("+AlwaysOnTop +ToolWindow", "Format Specific Settings")
-    formatSpecificGui.SetFont("s10")
-    yPos := 10
-
-    formatSpecificGui.Add("GroupBox", "x10 y" . yPos . " w350 h230", "Format Specific Options")
-    yPos += 25
-
-    formatSpecificGui.Add("CheckBox", "x20 y" . yPos . " vspecificUseBeforeLatest Checked" . specificUseBeforeLatest,
-        "Include beforeLatest item (beforeLatest_latest)")
-    yPos += 30
-
-    yPos := AddCheckboxGroup(formatSpecificGui, yPos, [
-        ["specificRemoveAccentsEnabled", specificRemoveAccentsEnabled, "Remove Accents"],
-        ["specificNormSpaceEnabled", specificNormSpaceEnabled, "Normalize Spaces"],
-        ["specificRemoveSpecialEnabled", specificRemoveSpecialEnabled, "Remove Special Characters (# *)"]
-    ])
-
-    yPos := AddDropdownGroup(formatSpecificGui, yPos, [
-        ["Line Break:", "specificLineOption", ["None", "Trim Lines", "Remove All Line Breaks"], specificLineOption],
-        ["Text Case:", "specificCaseOption", ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"],
-        specificCaseOption],
-        ["Word Separator:", "specificSeparatorOption", ["None", "Underscore (_)", "Hyphen (-)", "Remove Spaces"],
-        specificSeparatorOption]
-    ])
-
-    SaveFormatSpecific() {
-        try {
-            if (isGuiValid(formatSpecificGui)) {
-                formData := formatSpecificGui.Submit()
-                formatSpecificGui := cleanupGui(formatSpecificGui)
-                saveFormatSpecificSettings(formData)
-            }
-        } catch Error as e {
-            ; Silently handle errors
-        }
-
-        isCreating := false
-    }
-
-    formatSpecificGui.Add("Button", "x130 y" . (yPos + 10) . " w100 Default", "Save")
-    .OnEvent("Click", (*) => SaveFormatSpecific())
-
-    formatSpecificGui.Show("w375 h" . (yPos + 50))
-    closeEvents(formatSpecificGui, (*) => SaveFormatSpecific())
-    isCreating := false
-}
-
+; Display keyboard shortcuts help dialog
 showShortcuts(*) {
     shortcutsText :=
-        "• CapsLock+S: Show Settings Popup`n" .
-        "• CapsLock+Tab+S: Switch to the next preset tab`n" .
-        "• CapsLock+Shift+S: Always-on-Top for active Window`n`n" .
+        "• CapsLock+S: Show Settings`n" .
+        "• CapsLock+Shift+S: Always-on-Top for active Window`n" .
+        "• CapsLock+Tab+S: Switch to next preset`n`n" .
         "• CapsLock+C: Show Clipboard History`n" .
-        "• CapsLock+Tab+C: Show Clipboard Saved tab`n" .
-        "• CapsLock+Shift+C: Clear Clipboard History`n`n" .
-        "• CapsLock+V: Paste latest item from clipboard history`n" .
-        "• CapsLock+B: Paste the item before the latest`n" .
+        "• CapsLock+Shift+C: Clear Clipboard History`n" .
+        "• CapsLock+Tab+C: Show Saved Items tab`n`n" .
+        "• CapsLock+V: Paste latest item`n" .
+        "• CapsLock+B: Paste second latest item`n" .
         "• CapsLock+A: Paste all clipboard items`n`n" .
-        "• CapsLock+Shift+V/B/A: Paste item(s) with Format`n" .
-        "• CapsLock+Ctrl+V/B/A: Paste item(s) as Original`n" .
-        "• CapsLock+Tab+V/B/A: Paste item(s) from Saved tab`n`n" .
-        "• CapsLock+F: Paste combining previous and current item`n" .
-        "• CapsLock+1-9: Paste item by position from saved tab`n"
+        "• CapsLock+1-9,0: Paste by position`n" .
+        "• CapsLock+T: Paste latest, Tab, then second latest`n" .
+        "• CapsLock+F: Paste 'second latest_latest'`n`n" .
+        "• CapsLock+Shift+V/B/A/T/Num/F: Paste with Format`n" .
+        "• CapsLock+Ctrl+V/B/A/T/Num: Paste as Original`n" .
+        "• CapsLock+Tab+V/B/A/T/Num: Paste from Saved Tab`n"
+        
 
-    showInfo("Shortcuts - KeyClipboard", shortcutsText, 375)
+    showInfo("Shortcuts - KeyClipboard", shortcutsText, 425)
 }
 
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.6.4.7`n" .
-        "Date: 15/04/2025`n`n" .
+        "Version: 1.7.0`n" .
+        "Date: 17/08/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
 
@@ -162,13 +108,11 @@ showAbout(*) {
         try {
             Run("https://github.com/nvbangg/KeyClipboard")
         } catch Error as e {
-            ; Silently handle errors
         }
     } else if (result == "No") {
         try {
             Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ") ; Easter egg :)
         } catch Error as e {
-            ; Silently handle errors
         }
     }
 }

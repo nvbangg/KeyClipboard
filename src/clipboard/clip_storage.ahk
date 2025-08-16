@@ -8,17 +8,18 @@ loadSavedItems() {
             return
 
         lines := StrSplit(fileContent, "`n", "`r")
-        savedTab := []
+        savedTab := []  ; Reset array
 
+        ; Process each line from file
         for _, line in lines {
             if (line = "")
                 continue
 
-            decodedText := decodeLine(line)
+            decodedText := decodeLine(line)  ; Decode hex back to text
             if (decodedText != "") {
                 savedTab.Push({
                     text: decodedText,
-                    original: decodedText
+                    original: decodedText  ; Keep original for unformatted paste
                 })
             }
         }
@@ -34,15 +35,17 @@ saveSavedItems() {
 
     try {
         fileContent := ""
+        ; Process each saved item
         for _, item in savedTab {
             if (!item || !item.HasProp("text") || item.text = "")
                 continue
 
-            encodedLine := encodeLine(item.text)
+            encodedLine := encodeLine(item.text)  ; Encode text as hex
             if (encodedLine != "")
                 fileContent .= encodedLine . "`n"
         }
 
+        ; Write to file (replace existing)
         if (FileExist(savedFilePath))
             FileDelete(savedFilePath)
         FileAppend(fileContent, savedFilePath)
@@ -57,6 +60,7 @@ encodeLine(text) {
         return ""
 
     encoded := ""
+    ; Convert each character to 4-digit hex
     for i, char in StrSplit(text) {
         encoded .= Format("{:04X}", Ord(char))
     }
@@ -72,9 +76,10 @@ decodeLine(encodedLine) {
     result := ""
     length := StrLen(encodedLine)
 
+    ; Process 4-character hex chunks
     loop length // 4 {
         charCode := "0x" . SubStr(encodedLine, (A_Index - 1) * 4 + 1, 4)
-        result .= Chr(Integer(charCode))
+        result .= Chr(Integer(charCode))  ; Convert hex back to character
     }
 
     return result

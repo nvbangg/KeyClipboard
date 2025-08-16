@@ -1,6 +1,3 @@
-; Clipboard Utility Functions
-
-; Initialize clipboard system and hook clipboard change events
 initClipboard() {
     global historyTab := []
     global isProcessing := true
@@ -13,8 +10,6 @@ initClipboard() {
     isProcessing := false
 
     loadSavedItems()
-
-    ; Inner function: Handles clipboard content changes and stores them in history
     updateClipboard(Type) {
         global maxHistoryCount
 
@@ -69,7 +64,6 @@ getSelectedIndex(LV) {
         rowNum := LV.GetNext(rowNum)  ; Get next selected row
         if (!rowNum)
             break
-
         index := LV.GetText(rowNum, 1)  ; Get index number from first column
         if (index != "")
             selectedIndex.Push(Integer(index))
@@ -107,7 +101,6 @@ getSelectedItems(LV := 0, useSavedTab := false) {
     return selectedItems
 }
 
-; Toggle selection of all items in the ListView
 selectAllItems(LV, contentViewer) {
     if (!LV || LV.GetCount() == 0)
         return
@@ -116,7 +109,7 @@ selectAllItems(LV, contentViewer) {
     selectedCount := 0
     rowNum := 0
 
-    ; Count selected items
+    ; Count currently selected items
     loop {
         rowNum := LV.GetNext(rowNum)
         if (!rowNum)
@@ -147,6 +140,7 @@ updateLV(LV, searchText := "", useSavedTab := false) {
     if (filteredItems.Length = 0)
         return
 
+    ; Add each filtered item to ListView
     for index, content in filteredItems {
         displayText := RegExReplace(content.text, "[\r\n]+", "    ")  ; Replace line breaks for display
 
@@ -161,6 +155,7 @@ updateLV(LV, searchText := "", useSavedTab := false) {
 
     LV.ModifyCol(1, "Integer")  ; Format first column as numbers
 }
+
 ; Helper function to safely focus the ListView
 focusListView(useSavedTab) {
     global historyLV, savedLV, clipGuiInstance
@@ -177,7 +172,6 @@ focusListView(useSavedTab) {
             targetLV.Focus()
         }
     } catch Error as e {
-        ; Silently handle errors related to destroyed controls
     }
 }
 
@@ -213,7 +207,7 @@ updateContent(LV, contentViewer, useSavedTab := false) {
     contentViewer.Value := mergedItems
 }
 
-; Filter clip items based on search text
+; Filter clip items based on search text and update display
 handleSearch(searchCtrl, useSavedTab := false) {
     if (useSavedTab) {
         updateLV(savedLV, searchCtrl.Value, true)
@@ -244,11 +238,8 @@ checkClipInstance() {
                     %timerVar% := 0
                 }
             } catch Error as e {
-                ; Silently handle errors
             }
         }
-
-        ; Now safe to destroy the GUI
         destroyGui(clipGuiInstance)
     }
 
@@ -279,7 +270,6 @@ updateTabContent(tabIndex, clipGuiHwnd) {
             SetTimer(() => elements.listView.Focus(), -50)  ; Delayed focus for UI stability
         }
     } catch {
-        ; Handle any errors accessing destroyed controls
     }
 }
 
@@ -300,7 +290,6 @@ getActiveTabElements(tabsObj) {
     }
 }
 
-; Create right-click context menu with specified menu items
 createContextMenu(menuItems) {
     contextMenu := Menu()
 
@@ -400,7 +389,7 @@ focusLastItem(LV, viewer, isSaved) {
     }
 }
 
-; New helper function to safely focus ListView
+; Helper function to safely focus ListView with error handling
 safeFocus(control) {
     try {
         if (isGuiValid(control) && control.HasProp("Focus"))
