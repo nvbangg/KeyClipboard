@@ -13,6 +13,7 @@ initClipboard() {
     updateClipboard(Type) {
         global maxHistoryCount
 
+        Sleep(10)
         if (isProcessing)
             return
 

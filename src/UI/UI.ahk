@@ -74,12 +74,12 @@ showSettings(*) {
 ; Display keyboard shortcuts help dialog
 showShortcuts(*) {
     shortcutsText :=
-        "• CapsLock+S: Show Settings`n" .
-        "• CapsLock+Shift+S: Always-on-Top for active Window`n" .
-        "• CapsLock+Tab+S: Switch to next preset`n`n" .
+        "• CapsLock+S (or E): Show Settings`n" .
+        "• CapsLock+Shift+S (or E): Always-on-Top for active Window`n" .
+        "• CapsLock+Tab(or Alt)+S (or E): Switch to next preset`n`n" .
         "• CapsLock+C: Show Clipboard History`n" .
         "• CapsLock+Shift+C: Clear Clipboard History`n" .
-        "• CapsLock+Tab+C: Show Saved Items tab`n`n" .
+        "• CapsLock+Tab(or Alt)+C: Show Saved Items tab`n`n" .
         "• CapsLock+V: Paste latest item`n" .
         "• CapsLock+B: Paste second latest item`n" .
         "• CapsLock+A: Paste all clipboard items`n`n" .
@@ -88,7 +88,7 @@ showShortcuts(*) {
         "• CapsLock+F: Paste 'second latest_latest'`n`n" .
         "• CapsLock+Shift+V/B/A/T/Num/F: Paste with Format`n" .
         "• CapsLock+Ctrl+V/B/A/T/Num: Paste as Original`n" .
-        "• CapsLock+Tab+V/B/A/T/Num: Paste from Saved Tab`n"
+        "• CapsLock+Tab(or Alt)+V/B/A/T/Num: Paste from Saved Tab`n"
         
 
     showInfo("Shortcuts - KeyClipboard", shortcutsText, 425)
@@ -97,8 +97,8 @@ showShortcuts(*) {
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.7.0`n" .
-        "Date: 17/08/2025`n`n" .
+        "Version: 1.7.1`n" .
+        "Date: 09/09/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
 
