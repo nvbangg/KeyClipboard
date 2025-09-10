@@ -23,7 +23,7 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 4. Look for the app icon in the system tray
 
 ### Method 2: Advanced (Using Source Code)
-1. Download and extract [KeyClipboard-v1.x.x.zip](https://github.com/nvbangg/KeyClipboard/releases/latest)   
+1. Download and extract [KeyClipboard.zip](https://github.com/nvbangg/KeyClipboard/releases/latest)   
 2. Install environment from [AutoHotkey v2](https://www.autohotkey.com)
 3. Run `KeyClipboard.ahk`
 
