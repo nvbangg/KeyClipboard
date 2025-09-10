@@ -28,7 +28,7 @@ showNotification(message, timeout := 1300) {
     notify.SetFont("s12 bold")
     notify.Add("Text", "w300 Center", message)
     notify.Show("NoActivate")  ; Show without stealing focus
-    SetTimer(() => notify.Destroy(), -timeout)  ; Auto-close after timeout
+    SetTimer(() => notify.Destroy(), -timeout)  
 }
 
 cleanupGui(guiObj) {
@@ -39,17 +39,15 @@ cleanupGui(guiObj) {
     return guiObj
 }
 
-; Setup standard close events (Escape key and X button)
 closeEvents(guiObj, closeCallback) {
     guiObj.OnEvent("Escape", closeCallback) 
     guiObj.OnEvent("Close", closeCallback)   
 }
 
-; Show information dialog with auto-sized content
+; Show information dialog
 showInfo(title, content, width := 350, btnOpts := "") {
     static activeDialog := 0  ; Track single instance
 
-    ; Activate existing dialog if present
     if (activateExistingGui(activeDialog))
         return activeDialog
 
@@ -61,13 +59,11 @@ showInfo(title, content, width := 350, btnOpts := "") {
     textControl.GetPos(, , , &textHeight)  ; Get text height for layout
     buttonY := textHeight + 20  
 
-    ; Calculate default button position if not specified
     if (btnOpts = "") {
-        buttonX := width / 2 - 50  ; Center button horizontally
+        buttonX := width / 2 - 50  
         btnOpts := "w100 x" . buttonX . " y" . buttonY
     }
 
-    ; Cleanup function to reset static reference and destroy GUI
     CleanupDialog(gui, *) {
         static dialogRef := &activeDialog
         %dialogRef% := 0
@@ -184,7 +180,7 @@ HasValue(arr, val) {
     return false
 }
 
-; Join array elements with delimiter (like JavaScript join())
+; Join array elements with delimiter
 Join(arr, delimiter) {
     result := ""
     for i, v in arr {
@@ -208,7 +204,7 @@ deletePreset(presetName) {
         return
     }
     sectionName := "Preset_" . presetName
-    IniDelete(settingsFilePath, sectionName)  ; Remove from INI file
+    IniDelete(settingsFilePath, sectionName) 
 
     ; Remove from preset list and update settings
     newPresetList := []
@@ -217,7 +213,8 @@ deletePreset(presetName) {
             newPresetList.Push(name)
     }
     presetList := newPresetList
-    writeSetting("Presets", "PresetList", Join(presetList, ","))  ; Save updated list
+    writeSetting("Presets", "PresetList", Join(presetList, ","))
+
     ; Switch to Default if deleting current preset
     if (currentPreset = presetName) {
         currentPreset := "Default"
@@ -236,7 +233,6 @@ switchTabPreset() {
         return
     }
 
-    ; Find current preset index
     currentIndex := 0
     for i, name in presetList {
         if (name = currentPreset) {
@@ -245,11 +241,10 @@ switchTabPreset() {
         }
     }
 
-    ; Calculate next index with wrapping
     if (currentIndex = 0 || currentIndex = presetList.Length) {
         nextIndex := 1
     } else {
-        nextIndex := currentIndex + 1  ; Move to next preset
+        nextIndex := currentIndex + 1 
     }
 
     nextPreset := presetList[nextIndex]
@@ -270,7 +265,6 @@ getMaxHistoryIndex(value) {
 
 AddCheckboxGroup(gui, yPos, options) {
     for option in options {
-        ; Each option: [varName, checked, text]
         gui.Add("CheckBox", "x20 y" . yPos . " v" . option[1] . " Checked" . option[2], option[3])
         yPos += 25
     }
@@ -279,8 +273,7 @@ AddCheckboxGroup(gui, yPos, options) {
 
 AddDropdownGroup(gui, yPos, options) {
     for option in options {
-        ; Each option: [label, varName, items, selectedIndex]
-        gui.Add("Text", "x20 y" . yPos . " w150", option[1])  ; Label
+        gui.Add("Text", "x20 y" . yPos . " w150", option[1]) 
         gui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] . " Choose" . (
             option[4] + 1), option[3])
         yPos += 30

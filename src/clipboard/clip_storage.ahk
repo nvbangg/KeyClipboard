@@ -8,7 +8,7 @@ loadSavedItems() {
             return
 
         lines := StrSplit(fileContent, "`n", "`r")
-        savedTab := []  ; Reset array
+        savedTab := []
 
         ; Process each line from file
         for _, line in lines {
@@ -19,7 +19,7 @@ loadSavedItems() {
             if (decodedText != "") {
                 savedTab.Push({
                     text: decodedText,
-                    original: decodedText  ; Keep original for unformatted paste
+                    original: decodedText
                 })
             }
         }
@@ -45,7 +45,6 @@ saveSavedItems() {
                 fileContent .= encodedLine . "`n"
         }
 
-        ; Write to file (replace existing)
         if (FileExist(savedFilePath))
             FileDelete(savedFilePath)
         FileAppend(fileContent, savedFilePath)

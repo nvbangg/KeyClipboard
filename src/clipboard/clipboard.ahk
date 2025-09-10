@@ -17,21 +17,22 @@ paste(content, useFormat := false) {
 
     A_Clipboard := originalClip  ; Restore original clipboard
     ClipWait(0.3)
-    Sleep(50)
+    Sleep(100)
 
     isProcessing := false
 }
 
-; Paste selected items from ListView with merge and format options
 pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSavedTab := false) {
     selectedItems := getSelectedItems(LV, useSavedTab)
-    if (!IsObject(selectedItems) || selectedItems.Length < 1)
+    if (!IsObject(selectedItems) || selectedItems.Length < 1) {
+        if (LV = 0)
+            showNotification((useSavedTab ? "Saved items" : "History") . " empty")
         return
+    }
 
     if (clipGui)
         clipGui.Destroy()
 
-    ; Format mode -1: paste original items individually with line breaks
     if (formatMode = -1) {
         for index, item in selectedItems {
             paste(item.original)
@@ -51,44 +52,44 @@ pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSavedTab := false) {
         paste(mergedItems, false)
 }
 
-; Paste previous item by offset (0=latest, 1=second latest, etc.)
-pastePrev(offset := 0, formatMode := 0, useSavedTab := false) {
-    global historyTab, savedTab
-
-    clipTab := useSavedTab ? savedTab : historyTab
-    tabName := useSavedTab ? "saved items list" : "clipboard history"
-
-    if (clipTab.Length < offset + 1) {
-        showNotification("Not enough items in " . tabName)
+; Paste selected items with Tab separator between each item
+pasteSelectedWithTab(LV := 0, clipGui := 0, formatMode := 0, useSavedTab := false) {
+    selectedItems := getSelectedItems(LV, useSavedTab)
+    if (!IsObject(selectedItems) || selectedItems.Length < 1) {
+        if (LV = 0)
+            showNotification((useSavedTab ? "Saved items" : "History") . " empty")
         return
     }
+    if (clipGui)
+        clipGui.Destroy()
 
-    item := clipTab[clipTab.Length - offset]  ; Get item from end (latest first)
+    ; Paste each selected item with Tab separator
+    for index, item in selectedItems {
+        if (index > 1)
+            Send("{Tab}")
 
-    if (formatMode == -1)
-        paste(item.original)  ; Paste without any formatting
-    else
-        paste(item.text, formatMode)  ; Paste with optional formatting
+        if (formatMode == -1)
+            paste(item.original)
+        else
+            paste(item.text, formatMode)
+    }
 }
 
-; Paste item by index with different behaviors for historyTab vs savedTab
-; historyTab: index 1=latest (reverse), savedTab: index 1=first saved (direct)
-pasteByIndex(index := 1, formatMode := 0, useSavedTab := false) {
+; historyTab: index 1=latest, savedTab: index 1=first saved
+pasteIndex(index := 1, formatMode := 0, useSavedTab := false) {
     global historyTab, savedTab
 
     clipTab := useSavedTab ? savedTab : historyTab
-    tabName := useSavedTab ? "saved items" : "clipboard history"
 
     if (index < 1 || index > clipTab.Length) {
-        showNotification("Index " . index . " does not exist in " . tabName)
+        showNotification("Not exist in " . (useSavedTab ? "saved items" : "history"))
         return
     }
 
-    if (useSavedTab) {
+    if (useSavedTab)
         item := clipTab[index]  ; Direct: 1=first saved, 2=second saved
-    } else {
+    else
         item := clipTab[clipTab.Length - index + 1]  ; Reverse: 1=latest, 2=second latest
-    }
 
     if (formatMode == -1)
         paste(item.original)
@@ -96,38 +97,32 @@ pasteByIndex(index := 1, formatMode := 0, useSavedTab := false) {
         paste(item.text, formatMode)
 }
 
-; Paste first item, Tab, then second item (useful for forms)
+; Paste second latest item, Tab, then latest item
 pasteWithTab(formatMode := 0, useSavedTab := false) {
     global historyTab, savedTab
 
     clipTab := useSavedTab ? savedTab : historyTab
-    tabName := useSavedTab ? "saved items list" : "clipboard history"
 
     if (clipTab.Length < 2) {
-        showNotification("Not enough items in " . tabName)
+        showNotification("Not enough items in " . (useSavedTab ? "saved items" : "history"))
         return
     }
 
-    ; Different item selection logic for different data sources
     if (useSavedTab) {
-        firstItem := clipTab[1]     ; First saved item
-        secondItem := clipTab[2]    ; Second saved item
+        firstItem := clipTab[1]   ; First saved item
+        secondItem := clipTab[2]  ; Second saved item
     } else {
-        firstItem := clipTab[clipTab.Length]      ; Latest from history
-        secondItem := clipTab[clipTab.Length - 1] ; Second latest from history
+        firstItem := clipTab[clipTab.Length - 1]  ; Second latest
+        secondItem := clipTab[clipTab.Length]     ; Latest
     }
 
-    ; Paste first item
     if (formatMode == -1)
         paste(firstItem.original)
     else
         paste(firstItem.text, formatMode)
-    
-    Sleep(100)
+
     Send("{Tab}")
-    
-    ; Paste second item
-    Sleep(100)
+
     if (formatMode == -1)
         paste(secondItem.original)
     else
@@ -138,17 +133,15 @@ pasteWithBeforeLatest(formatLatest := false) {
     global historyTab
 
     if (historyTab.Length < 2) {
-        showNotification("Not enough items in clipboard history")
+        showNotification("Not enough items in history")
         return
     }
 
     beforeLatest := historyTab[historyTab.Length - 1].text
     latest := historyTab[historyTab.Length].text
-    if (formatLatest) {
+    if (formatLatest)
         latest := formatText(latest)
-    }
-    content := beforeLatest . "_" . latest
-    paste(content)
+    paste(beforeLatest . "_" . latest)
 }
 
 deleteSelected(LV, clipGui := 0, useSavedTab := false) {
@@ -163,7 +156,7 @@ deleteSelected(LV, clipGui := 0, useSavedTab := false) {
     if (selectedIndex.Length = 0)
         return
 
-    ; Sort indices in descending order to avoid index shifting during deletion
+    ; Sort
     n := selectedIndex.Length
     loop n - 1 {
         i := A_Index
@@ -219,7 +212,7 @@ clearClipboard(clipGui := 0, useSavedTab := false) {
     destroyGui(clipGuiInstance)
     clipGuiInstance := 0
 
-    showNotification("All " . (useSavedTab ? "saved items" : "clipboard items") . " have been cleared")
+    showNotification("All " . (useSavedTab ? "saved items" : "history") . " have been cleared")
 }
 
 ; Save edited content from content viewer back to clipboard item
@@ -254,7 +247,7 @@ saveContent(LV, contentViewer, clipGui, useSavedTab := false) {
         }
 
         if (useSavedTab)
-            saveSavedItems()  ; Persist to file if saved items
+            saveSavedItems()
 
         showNotification("Changes saved")
     }
@@ -294,8 +287,62 @@ saveToSavedItems(LV := 0) {
         })
     }
 
-    saveSavedItems()  ; Persist to file
-    showNotification("Item" . (selectedItems.Length > 1 ? "s" : "") . " added to Saved Items")
+    saveSavedItems()
+    showNotification("Added to Saved Items")
+}
+
+; Split selected items by lines and add as a new item
+splitToLines(LV := 0, useSavedTab := false) {
+    global historyTab, savedTab
+
+    selectedItems := getSelectedItems(LV, useSavedTab)
+    if (!IsObject(selectedItems) || selectedItems.Length < 1)
+        return
+
+    targetTab := useSavedTab ? savedTab : historyTab
+    addedCount := 0
+
+    for _, item in selectedItems {
+        lines := StrSplit(item.text, "`n", "`r")
+        
+        for _, line in lines {
+            trimmedLine := Trim(line)
+            if (trimmedLine != "") {
+                targetTab.Push({
+                    text: trimmedLine,
+                    original: trimmedLine  
+                })
+                addedCount++
+            }
+        }
+    }
+
+    if (useSavedTab)
+        saveSavedItems()
+
+    if (LV) {
+        updateLV(LV, "", useSavedTab)
+        
+        rowCount := LV.GetCount()
+        if (rowCount > 0 && addedCount > 0) {
+            startRow := rowCount - addedCount + 1
+            if (startRow < 1)
+                startRow := 1
+
+            LV.Modify(0, "-Select")  
+
+            ; Select newly added items
+            loop addedCount {
+                currentRow := startRow + A_Index - 1
+                if (currentRow <= rowCount)
+                    LV.Modify(currentRow, "Select")
+            }
+
+            LV.Modify(rowCount, "Focus Vis") 
+        }
+    }
+
+    showNotification(addedCount . " lines added to " . (useSavedTab ? "saved items" : "history"))
 }
 
 saveToClipboard(LV := 0, formatTextEnable := false) {
@@ -323,9 +370,9 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
         try {
             parentGui := GuiCtrlFromHwnd(LV.Hwnd).Gui
             if (parentGui)
-                contentViewer := parentGui.FindControl("Edit1")  ; Find content viewer
+                contentViewer := parentGui.FindControl("Edit1")
         }
-        updateLV(LV, "", false)  
+        updateLV(LV, "", false)
 
         rowCount := LV.GetCount()
         if (rowCount > 0) {
@@ -345,11 +392,11 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
             LV.Modify(rowCount, "Focus Vis")  ; Focus on last item
 
             if (contentViewer)
-                updateContent(LV, contentViewer, false)  ; Update content viewer
+                updateContent(LV, contentViewer, false)
         }
     }
 
-    showNotification(addedCount . " item(s) added to clipboard history")
+    showNotification("Added to history")
 }
 
 ; Move selected item up or down in the list
@@ -379,12 +426,11 @@ moveSelectedItem(LV, contentViewer, direction, useSavedTab := false) {
 
     if (useSavedTab) {
         savedTab := clipTab
-        saveSavedItems()  ; Persist changes
+        saveSavedItems()
     } else {
         historyTab := clipTab
     }
 
-    ; Update ListView and select moved item
     updateLV(LV, "", useSavedTab)
     LV.Modify(0, "-Select")
 
@@ -400,7 +446,7 @@ moveSelectedItem(LV, contentViewer, direction, useSavedTab := false) {
     updateContent(LV, contentViewer, useSavedTab)
 }
 
-; Filter items by search text (case-insensitive)
+; Filter items by search text
 filterItems(searchText := "", useSavedTab := false) {
     global historyTab, savedTab
     clipTab := useSavedTab ? savedTab : historyTab
@@ -418,7 +464,7 @@ filterItems(searchText := "", useSavedTab := false) {
         return filteredItems
     }
 
-    ; Search for items containing the search text (case-insensitive)
+    ; Search for items containing the search text
     searchTextLower := StrLower(searchText)
     for index, item in clipTab {
         if (item.HasProp("text") && item.text && InStr(StrLower(item.text), searchTextLower)) {

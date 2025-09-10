@@ -4,31 +4,16 @@
 alwaysOnTop() {
     WinSetAlwaysOnTop(-1, "A")
     isAlwaysOnTop := WinGetExStyle("A") & 0x8
-    windowTitle := WinGetTitle("A")
 
-    ; Get the process name (application name)
     processName := WinGetProcessName("A")
     appName := RegExReplace(processName, "\.exe$", "")
 
-    ; Truncate long window titles for better notification display
-    if (StrLen(windowTitle) > 35)
-        windowTitle := SubStr(windowTitle, 1, 32) . "..."
-    showNotification("Always On Top: " . appName . " - " . (isAlwaysOnTop ? "Enabled" : "Disabled") .
-    "`n" . windowTitle)
+    showNotification("Pin " . appName . ": " . (isAlwaysOnTop ? "Enabled" : "Disabled"))
 }
 
-initCapsLockMonitor() {
-    SetCapsLockState "AlwaysOff"
-    ; Ensure CapsLock is off during startup
-    loop 10 {
-        SetTimer(() => SetCapsLockState("AlwaysOff"), -500 * A_Index)
-    }
-}
-
-; Manage Win+V hotkey registration based on user preference
 updateWinClipboardHotkey() {
     global replaceWinClipboard
-    static hotkeyRegistered := false  ; Track registration state
+    static hotkeyRegistered := false 
 
     try {
         if (hotkeyRegistered) {
@@ -50,7 +35,6 @@ updateWinClipboardHotkey() {
     }
 }
 
-; Handler function for Win+V - prevents interference and shows our clipboard
 WinVHandler(*) {
     BlockInput "On"
     Sleep 50

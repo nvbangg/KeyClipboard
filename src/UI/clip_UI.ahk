@@ -3,13 +3,12 @@ showClipboard(useSavedTab := false) {
     global clipGuiActivated := false
     static focusTimer := 0
 
-    ; Clear any existing focus timer to prevent accessing destroyed controls
     if (focusTimer) {
         SetTimer(focusTimer, 0)
         focusTimer := 0
     }
 
-    if (!checkClipInstance())  ; Verify clipboard has content and clean up existing GUI
+    if (!checkClipInstance())  
         return
 
     clipGui := Gui("+E0x08000000 +AlwaysOnTop", "Clipboard Manager")
@@ -21,11 +20,11 @@ showClipboard(useSavedTab := false) {
     SendMessage(0x1329, 2, 0, tabs.hwnd)  ; Set tab size
     tabs.OnEvent("Change", onTabChange)
 
-    buildTabUI(clipGui, tabs, false)  ; Build History tab UI
-    buildTabUI(clipGui, tabs, true)   ; Build Saved tab UI
+    buildTabUI(clipGui, tabs, false)  
+    buildTabUI(clipGui, tabs, true)  
 
-    setupClipboardEvents(clipGui)     ; Setup keyboard shortcuts
-    setInitialActiveTab(useSavedTab)  ; Set focus to appropriate tab
+    setupClipboardEvents(clipGui)     
+    setInitialActiveTab(useSavedTab)  
 
     clipGui.Show("w720 h570")
     focusTimer := SetTimer(focusListView.Bind(useSavedTab), -100)
@@ -65,58 +64,55 @@ showContextMenu(LV, clipGui, Item, X, Y, useSavedTab := false) {
         selectedIndex.Push(rowNum)
     }
 
-    ; Ensure all selected items remain selected
     for _, rowNum in selectedIndex {
         LV.Modify(rowNum, "Select Focus")
     }
 
     CoordMode("Mouse", "Screen")
-    MouseGetPos(&mouseX, &mouseY)  ; Get current mouse position
+    MouseGetPos(&mouseX, &mouseY) 
 
-    ; Build context menu items based on tab type
     menuItems := [
         ["Paste", (*) => (pasteSelected(LV, clipGui, 0, useSavedTab))],
         ["Paste with Format", (*) => (pasteSelected(LV, clipGui, 1, useSavedTab))],
-        ["Paste as Original", (*) => (pasteSelected(LV, clipGui, -1, useSavedTab))]
+        ["Paste as Original", (*) => (pasteSelected(LV, clipGui, -1, useSavedTab))],
+        [], 
+        ["Paste with Tab", (*) => (pasteSelectedWithTab(LV, clipGui, 0, useSavedTab))],
+        ["Paste with Tab + Format", (*) => (pasteSelectedWithTab(LV, clipGui, 1, useSavedTab))],
+        ["Paste with Tab as Original", (*) => (pasteSelectedWithTab(LV, clipGui, -1, useSavedTab))]
     ]
 
-    ; Add History-specific menu items
     if (!useSavedTab) {
         menuItems.Push([])  ; Separator
-        menuItems.Push(["Save to Saved Tab", (*) => (saveToSavedItems(LV))])
-        menuItems.Push(["Save Format to Clipboard", (*) => (saveToClipboard(LV, true))])
+        menuItems.Push(["Save to Saved Items", (*) => (saveToSavedItems(LV))])
+        menuItems.Push(["Save Format to History", (*) => (saveToClipboard(LV, true))])
+        menuItems.Push(["Split by Lines to History", (*) => (splitToLines(LV, false))])
     }
 
-    menuItems.Push([])  ; Separator
+    menuItems.Push([]) 
     menuItems.Push(["Delete Item", (*) => deleteSelected(LV, clipGui, useSavedTab)])
 
     contextMenu := createContextMenu(menuItems)
 
     CoordMode("Menu", "Screen")
-    contextMenu.Show(mouseX, mouseY)  ; Show at mouse position
+    contextMenu.Show(mouseX, mouseY)  
 }
 
-; Constructs the UI elements for a clipboard tab (History or Saved)
 buildTabUI(clipGui, tabs, useSavedTab) {
     global historyLV, savedLV, historyViewer, savedViewer
 
-    tabs.UseTab(useSavedTab ? 2 : 1)  ; Select appropriate tab
+    tabs.UseTab(useSavedTab ? 2 : 1)
 
-    ; Add search and selection controls
     selectAllBtn := clipGui.Add("Button", "x10 y35 w70", "Select All")
     clipGui.Add("Text", "x90 y40", "Search:")
     searchBox := clipGui.Add("Edit", "x150 y37 w560")
 
-    ; Create ListView with index and content columns
     listView := clipGui.Add("ListView", "x10 y70 w700 h270 Grid Multi", ["#", "Content"])
     listView.ModifyCol(1, 50, "Integer")  ; Index column width
     listView.ModifyCol(2, 645)            ; Content column width
 
-    ; Create content viewer for editing/viewing selected items
     contentViewer := clipGui.Add("Edit", "x10 y350 w700 h170 VScroll +Wrap", "")
     contentViewer.Opt("+ReadOnly")  ; Start in read-only mode
 
-    ; Assign controls to global variables based on tab type
     if (!useSavedTab) {
         historyLV := listView
         historyViewer := contentViewer
@@ -139,11 +135,9 @@ buildTabUI(clipGui, tabs, useSavedTab) {
 
     selectAllBtn.OnEvent("Click", (*) => selectAllItems(listView, contentViewer))
 
-    ; Setup ListView event handlers
     listView.OnEvent("ContextMenu", (LV, Item, IsRightClick, X, Y) =>
         showContextMenu(LV, clipGui, Item, X, Y, useSavedTab))
 
-    ; Handle ListView click events
     listViewClickHandler(*) {
         if (!listView || !listView.Hwnd) {
             return
@@ -154,7 +148,6 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             Sleep(10)
             updateContent(listView, contentViewer, useSavedTab)
         } catch Error as e {
-            ; Silently handle errors
         }
     }
     listView.OnEvent("Click", listViewClickHandler)
@@ -168,12 +161,10 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             WinActivate("ahk_id " . clipGui.Hwnd)
             updateContent(listView, contentViewer, useSavedTab)
         } catch Error as e {
-            ; Silently handle errors
         }
     }
     listView.OnEvent("ItemSelect", itemSelectHandler)
 
-    ; Handle item focus changes
     itemFocusHandler(*) {
         if (!listView || !listView.Hwnd) {
             return
@@ -182,12 +173,10 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             WinActivate("ahk_id " . clipGui.Hwnd)
             updateContent(listView, contentViewer, useSavedTab)
         } catch Error as e {
-            ; Silently handle errors
         }
     }
     listView.OnEvent("ItemFocus", itemFocusHandler)
 
-    ; Handle double-click to paste
     doubleClickHandler(*) {
         if (!listView || !listView.Hwnd) {
             return
@@ -196,12 +185,10 @@ buildTabUI(clipGui, tabs, useSavedTab) {
             WinActivate("ahk_id " . clipGui.Hwnd)
             pasteSelected(listView, clipGui, 0, useSavedTab)
         } catch Error as e {
-            ; Silently handle errors
         }
     }
     listView.OnEvent("DoubleClick", doubleClickHandler)
 
-    ; Handle content viewer focus - enable editing for single items only
     contentViewer.OnEvent("Focus", FocusCallback)
     FocusCallback(*) {
         WinActivate("ahk_id " . clipGui.Hwnd)
@@ -221,7 +208,6 @@ buildTabUI(clipGui, tabs, useSavedTab) {
 
     contentViewer.OnEvent("LoseFocus", (*) => updateContentViewerFocusState(false))
 
-    ; Create action buttons based on tab type
     actionBtns := [
         ["x150 y530 w120", "Save/Reload", (*) => saveContent(listView, contentViewer, clipGui, useSavedTab)]
     ]

@@ -1,18 +1,17 @@
 #Include clip_UI.ahk
 
 ; System Tray Configuration
-A_TrayMenu.Add("Settings (Caps+S)", showSettings)
+A_TrayMenu.Add("Settings (CapsLock+S)", showSettings)
 A_TrayMenu.Add("Shortcuts", showShortcuts)
 A_TrayMenu.Add("About", showAbout)
 A_IconTip := "KeyClipboard - Double click to open settings"
 A_TrayMenu.Click := 1  ; Single click to activate
-A_TrayMenu.Default := "Settings (Caps+S)"  ; Default action on double-click
+A_TrayMenu.Default := "Settings (CapsLock+S)"
 
 showSettings(*) {
     static settingsGui := 0
     static isCreating := false
 
-    ; Prevent multiple instances
     if (isCreating)
         return
 
@@ -23,7 +22,6 @@ showSettings(*) {
     settingsGui.SetFont("s10")
     yPos := 10
 
-    ; Add application settings section
     yPos := addAppSettings(settingsGui, yPos)
 
     ; Handle preset dropdown changes - reload GUI when preset changes
@@ -37,7 +35,6 @@ showSettings(*) {
         }
     }
 
-    ; Add preset management and format options sections
     yPos := addPresetManagementSection(settingsGui, yPos, OnPresetChanged, DeleteCurrentPreset, (*) => CreateNewPreset())
     yPos := addFormatOptions(settingsGui, yPos)
 
@@ -58,7 +55,6 @@ showSettings(*) {
         %isCreatingRef% := false  ; Reset creation flag
     }
 
-    ; Add control buttons at bottom of GUI
     settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w100 Default", "Save")
     .OnEvent("Click", CloseAndSave)
     settingsGui.Add("Button", "x130 y" . (yPos + 10) . " w100", "Shortcuts")
@@ -67,38 +63,35 @@ showSettings(*) {
     .OnEvent("Click", (*) => showAbout())
 
     settingsGui.Show("w375 h" . (yPos + 50))
-    closeEvents(settingsGui, CloseAndSave)  ; Setup ESC and X button handlers
+    closeEvents(settingsGui, CloseAndSave)  
     isCreating := false
 }
 
-; Display keyboard shortcuts help dialog
 showShortcuts(*) {
     shortcutsText :=
-        "• CapsLock+S (or E): Show Settings`n" .
-        "• CapsLock+Shift+S (or E): Always-on-Top for active Window`n" .
-        "• CapsLock+Tab(or Alt)+S (or E): Switch to next preset`n`n" .
-        "• CapsLock+C: Show Clipboard History`n" .
-        "• CapsLock+Shift+C: Clear Clipboard History`n" .
-        "• CapsLock+Tab(or Alt)+C: Show Saved Items tab`n`n" .
-        "• CapsLock+V: Paste latest item`n" .
-        "• CapsLock+B: Paste second latest item`n" .
-        "• CapsLock+A: Paste all clipboard items`n`n" .
+        "• CapsLock+S: Show Settings`n" .
+        "• CapsLock+Ctrl+S: Always-on-Top for active Window`n" .
+        "• CapsLock+Alt+S: Switch to next preset`n`n" .
+        "• CapsLock+C: Show History`n" .
+        "• CapsLock+Ctrl+C: Clear History`n" .
+        "• CapsLock+Alt+C: Show Saved Items`n`n" .
         "• CapsLock+1-9,0: Paste by position`n" .
-        "• CapsLock+T: Paste latest, Tab, then second latest`n" .
-        "• CapsLock+F: Paste 'second latest_latest'`n`n" .
-        "• CapsLock+Shift+V/B/A/T/Num/F: Paste with Format`n" .
-        "• CapsLock+Ctrl+V/B/A/T/Num: Paste as Original`n" .
-        "• CapsLock+Tab(or Alt)+V/B/A/T/Num: Paste from Saved Tab`n"
-        
+        "• CapsLock+A: Paste all History`n" .
+        "• CapsLock+V: Paste second latest, Tab, then latest`n" .
+        "• CapsLock+T: Paste all History with Tab separator`n" .
+        "• CapsLock(+Shift)+B: Paste 'second latest_latest'`n`n" .
+        "• CapsLock+Shift+Num/A/V/T: Paste with Format`n" .
+        "• CapsLock+Ctrl+Num/A/V/T: Paste from Saved Items`n" .
+        "• CapsLock+Alt+Num/A/V/T: Paste as Original`n`n"
 
-    showInfo("Shortcuts - KeyClipboard", shortcutsText, 425)
+    showInfo("Shortcuts - KeyClipboard", shortcutsText, 350)
 }
 
 showAbout(*) {
     aboutText :=
         "KeyClipboard`n" .
-        "Version: 1.7.1`n" .
-        "Date: 09/09/2025`n`n" .
+        "Version: 1.8`n" .
+        "Date: 11/09/2025`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
 

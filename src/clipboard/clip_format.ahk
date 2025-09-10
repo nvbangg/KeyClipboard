@@ -1,19 +1,17 @@
 formatText(text) {
-    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global removeAccentsEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
     if (text = "")
         return ""
 
-    if (removeSpecialEnabled)
-        text := removeSpecial(text)
     if (removeAccentsEnabled)
         text := removeAccents(text)
-    if (normSpaceEnabled)
-        text := normSpace(text)
+    if (removeSpecialEnabled)
+        text := removeSpecial(text)
 
     switch lineOption {
-        case 1: text := trimLines(text)
-        case 2: text := removeLineBreaks(text)
+        case 1: text := removeEmptyLines(text)
+        case 2: text := Trim(RegExReplace(text, "\R", " "))
     }
     switch caseOption {
         case 1: text := StrUpper(text)
@@ -22,9 +20,10 @@ formatText(text) {
         case 4: text := SentenceCase(text)
     }
     switch separatorOption {
-        case 1: text := StrReplace(text, " ", "_")
-        case 2: text := StrReplace(text, " ", "-")
-        case 3: text := StrReplace(text, " ", "")
+        case 1: text := normalizeSpaces(text)
+        case 2: text := normalizeSpaces(text, "_")
+        case 3: text := normalizeSpaces(text, "-")
+        case 4: text := RegExReplace(text, "[ \t]+", "")
     }
 
     return text
@@ -64,33 +63,20 @@ removeAccents(str) {
     return result
 }
 
-normSpace(str) {
-    str := StrReplace(str, "`r`n", "`n")
-    str := StrReplace(str, "`r", "`n")
-
-    str := RegExReplace(str, "[ \t]+", " ")
-    str := RegExReplace(str, "(^|\n)[ \t]+", "$1")
-    str := RegExReplace(str, " ([.,;:])", "$1")
-    str := RegExReplace(str, "([.,;:])([^ \n.,;:])", "$1 $2")
-
+normalizeSpaces(str, separator := " ") {
+    str := RegExReplace(str, "(?m)^[ \t]+|[ \t]+$", "") 
+    str := RegExReplace(str, "[ \t]+", separator)
     return str
 }
 
 removeSpecial(str) {
-    str := StrReplace(str, "#", "")
-    str := StrReplace(str, "*", "")
-    return str
+    str := RegExReplace(str, "[^\p{L}\p{N}\s]", " ")  
+    return normalizeSpaces(str)
 }
 
-trimLines(str) {
+removeEmptyLines(str) {
     str := RegExReplace(str, "\R+", "`r`n")
     str := RegExReplace(str, "^\R+|\R+$", "")
-    return str
-}
-
-removeLineBreaks(str) {
-    str := RegExReplace(str, "\R", " ")
-    str := RegExReplace(str, "[ \t]+", " ")
     return str
 }
 

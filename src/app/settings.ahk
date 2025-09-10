@@ -1,6 +1,6 @@
 initSettings() {
     global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
-    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global removeAccentsEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
 
     global currentPreset := "Default"
@@ -19,13 +19,11 @@ initSettings() {
     if (!HasValue(presetList, "Default")) {
         defaultPresetSection := "Preset_Default"
 
-        writeSetting(defaultPresetSection, "removeAccentsEnabled", "0")
-        writeSetting(defaultPresetSection, "normSpaceEnabled", "0")
-        writeSetting(defaultPresetSection, "removeSpecialEnabled", "0")
-        writeSetting(defaultPresetSection, "lineOption", "1")
-        writeSetting(defaultPresetSection, "caseOption", "0")
-        writeSetting(defaultPresetSection, "separatorOption", "0")
-
+        writeSetting(defaultPresetSection, "removeAccentsEnabled", "1")  
+        writeSetting(defaultPresetSection, "removeSpecialEnabled", "1") 
+        writeSetting(defaultPresetSection, "lineOption", "0")
+        writeSetting(defaultPresetSection, "caseOption", "3")           
+        writeSetting(defaultPresetSection, "separatorOption", "4")   
 
         presetList.Push("Default")
         writeSetting("Presets", "PresetList", Join(presetList, ","))
@@ -57,7 +55,7 @@ initSettings() {
 
 saveSettings(savedValues) {
     global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
-    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global removeAccentsEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
     global currentPreset
 
@@ -68,7 +66,6 @@ saveSettings(savedValues) {
     maxHistoryCount := Integer(savedValues.maxHistoryCount)
 
     removeAccentsEnabled := !!savedValues.removeAccentsEnabled
-    normSpaceEnabled := !!savedValues.normSpaceEnabled
     removeSpecialEnabled := !!savedValues.removeSpecialEnabled
 
     lineOption := savedValues.lineOption - 1
@@ -81,7 +78,6 @@ saveSettings(savedValues) {
 
     sectionName := "Preset_" . currentPreset
     writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-    writeSetting(sectionName, "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
     writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
     writeSetting(sectionName, "lineOption", lineOption)
     writeSetting(sectionName, "caseOption", caseOption)
@@ -115,8 +111,7 @@ addFormatOptions(settingsGui, yPos) {
 
     checkboxOptions := [
         ["removeAccentsEnabled", removeAccentsEnabled, "Remove Accents"],
-        ["normSpaceEnabled", normSpaceEnabled, "Normalize Punctuation Spaces"],
-        ["removeSpecialEnabled", removeSpecialEnabled, "Remove Special Characters (# *)"]
+        ["removeSpecialEnabled", removeSpecialEnabled, "Remove Special Characters"]
     ]
     yPos += 25
 
@@ -127,9 +122,9 @@ addFormatOptions(settingsGui, yPos) {
     yPos += 5
 
     dropdownOptions := [
-        ["Line Break:", "lineOption", ["None", "Trim Lines", "Remove All Line Breaks"], lineOption],
+        ["Line Break:", "lineOption", ["None", "Remove Empty Lines", "Remove Line Breaks"], lineOption],
         ["Text Case:", "caseOption", ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"], caseOption],
-        ["Word Separator:", "separatorOption", ["None", "Underscore (_)", "Hyphen (-)", "Remove Spaces"],
+        ["Word Separator:", "separatorOption", ["None", "Space ( )", "Underscore (_)", "Hyphen (-)", "Remove Spaces"],
         separatorOption]
     ]
 
@@ -174,11 +169,11 @@ addPresetManagementSection(settingsGui, yPos, presetChangedCallback, deletePrese
 }
 
 savePresetSettings(sectionName) {
-    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global removeAccentsEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
 
     writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-    writeSetting(sectionName, "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
+
     writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
     writeSetting(sectionName, "lineOption", lineOption)
     writeSetting(sectionName, "caseOption", caseOption)
@@ -186,14 +181,14 @@ savePresetSettings(sectionName) {
 }
 
 saveAsPreset(presetName) {
-    global presetList, removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+
     global lineOption, caseOption, separatorOption
     global currentPreset
 
     sectionName := "Preset_" . presetName
 
     writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-    writeSetting(sectionName, "normSpaceEnabled", normSpaceEnabled ? "1" : "0")
+
     writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
     writeSetting(sectionName, "lineOption", lineOption)
     writeSetting(sectionName, "caseOption", caseOption)
@@ -213,14 +208,14 @@ saveAsPreset(presetName) {
 }
 
 loadPreset(presetName, showNotify := true) {
-    global removeAccentsEnabled, normSpaceEnabled, removeSpecialEnabled
+    global removeAccentsEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
     global currentPreset
 
     sectionName := "Preset_" . presetName
 
     removeAccentsEnabled := readSetting(sectionName, "removeAccentsEnabled", "0") = "1"
-    normSpaceEnabled := readSetting(sectionName, "normSpaceEnabled", "0") = "1"
+
     removeSpecialEnabled := readSetting(sectionName, "removeSpecialEnabled", "0") = "1"
     lineOption := Integer(readSetting(sectionName, "lineOption", "1"))
     caseOption := Integer(readSetting(sectionName, "caseOption", "0"))

@@ -7,14 +7,18 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 - Keep any window pinned (**Always On Top**)  
 - Paste with custom format  
 - Paste all or selected items from clipboard  
-- **Paste multiple fields at once**  
+- **Paste multiple form fields at once**  
 - Edit, reorder, search, or save clipboard content  
 - Access features fast **with hotkey** 
 - …and more useful features
 
-![image](https://github.com/user-attachments/assets/fe368924-de4b-4295-90bf-f516ab37698c)
+![KeyClipboard Demo](media/demo.gif)
 
-<img width="466" height="550" alt="image" src="https://github.com/user-attachments/assets/066e93d2-45a1-42bd-8596-1b46bc2f526d" />
+<video width="600" controls>
+  <source src="media/demo.mp4" type="video/mp4">
+</video>
+
+![test](media/demo.mp4)*
 
 
 ## Installation

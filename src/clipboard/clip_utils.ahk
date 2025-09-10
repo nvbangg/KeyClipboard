@@ -5,7 +5,7 @@ initClipboard() {
 
     A_Clipboard := "Initializing..."  ; Force clipboard change to ensure hook works
     ClipWait(0.2)
-    A_Clipboard := tempClip  ; Restore original clipboard
+    A_Clipboard := tempClip 
     ClipWait(0.2)
     isProcessing := false
 
@@ -21,11 +21,11 @@ initClipboard() {
             try {
                 historyTab.Push({
                     text: A_Clipboard,
-                    original: ClipboardAll()  ; Store raw clipboard with formatting
+                    original: ClipboardAll() 
                 })
 
                 if (historyTab.Length > maxHistoryCount)
-                    historyTab.RemoveAt(1)  ; Remove oldest item when limit reached
+                    historyTab.RemoveAt(1) 
             }
         }
     }
@@ -62,10 +62,10 @@ getSelectedIndex(LV) {
         return LV
 
     loop {
-        rowNum := LV.GetNext(rowNum)  ; Get next selected row
+        rowNum := LV.GetNext(rowNum)  
         if (!rowNum)
             break
-        index := LV.GetText(rowNum, 1)  ; Get index number from first column
+        index := LV.GetText(rowNum, 1) 
         if (index != "")
             selectedIndex.Push(Integer(index))
     }
@@ -73,7 +73,6 @@ getSelectedIndex(LV) {
     return selectedIndex
 }
 
-; Get the actual clipboard items for selected indexes
 getSelectedItems(LV := 0, useSavedTab := false) {
     global historyTab, savedTab
     clipTab := useSavedTab ? savedTab : historyTab
@@ -89,14 +88,14 @@ getSelectedItems(LV := 0, useSavedTab := false) {
         if (selectedIndex.Length = 0)
             return []
 
-        selectedItems.Capacity := selectedIndex.Length  ; Pre-allocate for performance
+        selectedItems.Capacity := selectedIndex.Length 
 
         for _, index in selectedIndex {
             if (index > 0 && index <= clipTab.Length)
                 selectedItems.Push(clipTab[index])
         }
     } else {
-        selectedItems := clipTab.Clone()  ; Get all items if no selection specified
+        selectedItems := clipTab.Clone()  
     }
 
     return selectedItems
@@ -130,18 +129,16 @@ selectAllItems(LV, contentViewer) {
     }
 }
 
-; Update ListView with filtered items based on search text
 updateLV(LV, searchText := "", useSavedTab := false) {
     if (!LV || !LV.HasProp("Delete"))
         return
 
-    filteredItems := filterItems(searchText, useSavedTab)  ; Get filtered items
-    LV.Delete()  ; Clear ListView
+    filteredItems := filterItems(searchText, useSavedTab) 
+    LV.Delete() 
 
     if (filteredItems.Length = 0)
         return
 
-    ; Add each filtered item to ListView
     for index, content in filteredItems {
         displayText := RegExReplace(content.text, "[\r\n]+", "    ")  ; Replace line breaks for display
 
@@ -157,7 +154,6 @@ updateLV(LV, searchText := "", useSavedTab := false) {
     LV.ModifyCol(1, "Integer")  ; Format first column as numbers
 }
 
-; Helper function to safely focus the ListView
 focusListView(useSavedTab) {
     global historyLV, savedLV, clipGuiInstance
 
@@ -176,7 +172,6 @@ focusListView(useSavedTab) {
     }
 }
 
-; Update content viewer with selected item(s)
 updateContent(LV, contentViewer, useSavedTab := false) {
     global historyTab, savedTab
     clipTab := useSavedTab ? savedTab : historyTab
@@ -191,13 +186,11 @@ updateContent(LV, contentViewer, useSavedTab := false) {
         return
     }
 
-    ; Show single item if only one selected
     if (selectedIndex.Length = 1 && selectedIndex[1] <= clipTab.Length) {
         contentViewer.Value := clipTab[selectedIndex[1]].text
         return
     }
 
-    ; Show multiple items with separators if multiple selected
     mergedItems := ""
     for index, itemIndex in selectedIndex {
         if (itemIndex > clipTab.Length)
@@ -224,13 +217,11 @@ checkClipInstance() {
     global historyTab, savedTab, clipGuiInstance
 
     if (historyTab.Length < 1 && savedTab.Length < 1) {
-        showNotification("No items in clipboard history")
+        showNotification("History empty")
         return false
     }
 
-    ; Ensure safer GUI destruction with explicit timer cleanup
     if (isGuiValid(clipGuiInstance)) {
-        ; Cancel all active timers associated with the GUI
         static timerList := ["focusTimer"]
         for _, timerVar in timerList {
             try {
@@ -248,7 +239,6 @@ checkClipInstance() {
     return true
 }
 
-; Update tab content when switching between History and Saved tabs
 updateTabContent(tabIndex, clipGuiHwnd) {
     global historyLV, savedLV, historyViewer, savedViewer
 
@@ -268,13 +258,12 @@ updateTabContent(tabIndex, clipGuiHwnd) {
                     updateContent(elements.listView, elements.contentViewer, elements.isSaved)
             }
 
-            SetTimer(() => elements.listView.Focus(), -50)  ; Delayed focus for UI stability
+            SetTimer(() => elements.listView.Focus(), -50) 
         }
     } catch {
     }
 }
 
-; Handle tab switch events
 onTabChange(ctrl, *) {
     global clipGuiInstance
     updateTabContent(ctrl.Value, IsObject(clipGuiInstance) ? clipGuiInstance.Hwnd : 0)
@@ -312,7 +301,7 @@ execAction(action, clipGui) {
         if (isListViewFocused())
             pasteSelected(elements.listView, clipGui, 0, elements.isSaved)
         else
-            Send("{Enter}")  ; Pass through if not in list view
+            Send("{Enter}") 
     }
     else if (action = "altUp")
         moveSelectedItem(elements.listView, elements.contentViewer, -1, elements.isSaved)  ; Move item up
@@ -332,7 +321,6 @@ execAction(action, clipGui) {
     }
 }
 
-; Setup keyboard shortcuts for clipboard manager window
 setupClipboardEvents(clipGui) {
     closeCallback(*) => clipGui.Destroy()
     clipGui.OnEvent("Close", closeCallback)
@@ -350,7 +338,6 @@ setupClipboardEvents(clipGui) {
     HotIf()
 }
 
-; Set active tab and focus on initial display
 setInitialActiveTab(useSavedTab) {
     global historyTab, savedTab, historyLV, savedLV, historyViewer, savedViewer, tabs
 
@@ -369,7 +356,6 @@ setInitialActiveTab(useSavedTab) {
     }
 }
 
-; Focus the most recent clipboard item
 focusLastItem(LV, viewer, isSaved) {
     if (!isGuiValid(LV) || !LV.HasProp("GetCount"))
         return
@@ -385,17 +371,14 @@ focusLastItem(LV, viewer, isSaved) {
             ; Use a more robust timer that checks control validity
             SetTimer(() => safeFocus(LV), -50)
         } catch Error as e {
-            ; Silently handle errors
         }
     }
 }
 
-; Helper function to safely focus ListView with error handling
 safeFocus(control) {
     try {
         if (isGuiValid(control) && control.HasProp("Focus"))
             control.Focus()
     } catch Error as e {
-        ; Silently handle errors
     }
 }
