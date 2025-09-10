@@ -14,13 +14,6 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 
 ![KeyClipboard Demo](media/demo.gif)
 
-<video width="600" controls>
-  <source src="media/demo.mp4" type="video/mp4">
-</video>
-
-![test](media/demo.mp4)*
-
-
 ## Installation
 
 ### Method 1: Direct Download (Recommended)
