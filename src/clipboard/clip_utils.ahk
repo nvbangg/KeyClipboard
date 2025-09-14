@@ -17,7 +17,7 @@ initClipboard() {
         if (isProcessing)
             return
 
-        if (Type = 1 && A_Clipboard != "") {
+        if (Type = 1 && A_Clipboard != "" && !DllCall("IsClipboardFormatAvailable", "UInt", 15)) {
             try {
                 historyTab.Push({
                     text: A_Clipboard,

@@ -27,10 +27,8 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 2. Install environment from [AutoHotkey v2](https://www.autohotkey.com)
 3. Run `KeyClipboard.ahk`
 
-## Follow me👀 and Star⭐ 
- **Follow👀:** [![Follow](https://img.shields.io/github/followers/nvbangg?label=Follow&style=social)](https://github.com/nvbangg) | **Star⭐:** [![Star](https://img.shields.io/github/stars/nvbangg/KeyClipboard?style=social)](https://github.com/nvbangg/KeyClipboard)
+## [![Follow](https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github)](https://github.com/nvbangg) [![Star](https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github)](https://github.com/nvbangg/KeyClipboard)
 
 ![Gif](https://raw.githubusercontent.com/nvbangg/nvbangg/main/data/star_follow.gif)
 
-[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard&countColor=%232ccce4)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard)
-
+[![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard&countColor=%231e90ff)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard)
