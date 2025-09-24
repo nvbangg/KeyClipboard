@@ -1,5 +1,5 @@
 loadSavedItems() {
-    global savedTab
+    global saved
     existFile(savedFilePath)
 
     try {
@@ -8,39 +8,30 @@ loadSavedItems() {
             return
 
         lines := StrSplit(fileContent, "`n", "`r")
-        savedTab := []
-
-        ; Process each line from file
+        saved := []
         for _, line in lines {
             if (line = "")
                 continue
-
-            decodedText := decodeLine(line)  ; Decode hex back to text
+            decodedText := decodeLine(line)
             if (decodedText != "") {
-                savedTab.Push({
-                    text: decodedText,
-                    original: decodedText
-                })
+                saved.Push(decodedText)
             }
         }
-    } catch Error as err {
-        showNotification("Error reading data: " . err.Message)
+    } catch Error as e {
+        MsgBox("Error reading data: " . e.Message, "Error", "OK 262144")
     }
 }
 
 saveSavedItems() {
-    global savedTab
-
+    global saved
     existFile(savedFilePath)
 
     try {
         fileContent := ""
-        ; Process each saved item
-        for _, item in savedTab {
-            if (!item || !item.HasProp("text") || item.text = "")
+        for _, item in saved {
+            if (!item || item = "") 
                 continue
-
-            encodedLine := encodeLine(item.text)  ; Encode text as hex
+            encodedLine := encodeLine(item)  ; item is now a string
             if (encodedLine != "")
                 fileContent .= encodedLine . "`n"
         }
@@ -48,30 +39,25 @@ saveSavedItems() {
         if (FileExist(savedFilePath))
             FileDelete(savedFilePath)
         FileAppend(fileContent, savedFilePath)
-    } catch Error as err {
-        showNotification("Error saving data: " . err.Message)
+    } catch Error as e {
+        MsgBox("Error saving data: " . e.Message, "Error", "OK 262144")
     }
 }
 
-; Encode text as hex values to safely store in file
 encodeLine(text) {
     if (text = "")
         return ""
-
     encoded := ""
     ; Convert each character to 4-digit hex
     for i, char in StrSplit(text) {
         encoded .= Format("{:04X}", Ord(char))
     }
-
     return encoded
 }
 
-; Decode hex values back to original text
 decodeLine(encodedLine) {
     if (encodedLine = "")
         return ""
-
     result := ""
     length := StrLen(encodedLine)
 
@@ -80,6 +66,5 @@ decodeLine(encodedLine) {
         charCode := "0x" . SubStr(encodedLine, (A_Index - 1) * 4 + 1, 4)
         result .= Chr(Integer(charCode))  ; Convert hex back to character
     }
-
     return result
 }

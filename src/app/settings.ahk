@@ -1,227 +1,125 @@
-initSettings() {
-    global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption
-
-    global currentPreset := "Default"
-
-    existFile(settingsFilePath)
-
-    firstRun := readSetting("AppSettings", "firstRun", "1") = "1"
-    replaceWinClipboard := readSetting("AppSettings", "replaceWinClipboard", "1") = "1"
-    startWithWindows := readSetting("AppSettings", "startWithWindows", "1") = "1"
-    maxHistoryCount := Integer(readSetting("AppSettings", "maxHistoryCount", "100"))
-
-    loadPresetList()
-    currentPreset := readSetting("Presets", "CurrentPreset", "Default")
-
-    ; Create "Default" preset if it doesn't exist (first run)
-    if (!HasValue(presetList, "Default")) {
-        defaultPresetSection := "Preset_Default"
-
-        writeSetting(defaultPresetSection, "removeAccentsEnabled", "1")  
-        writeSetting(defaultPresetSection, "removeSpecialEnabled", "1") 
-        writeSetting(defaultPresetSection, "lineOption", "0")
-        writeSetting(defaultPresetSection, "caseOption", "3")           
-        writeSetting(defaultPresetSection, "separatorOption", "4")   
-
-        presetList.Push("Default")
-        writeSetting("Presets", "PresetList", Join(presetList, ","))
-        currentPreset := "Default"
-    }
-
-    if (!HasValue(presetList, currentPreset)) {
-        currentPreset := "Default"
-    }
-
-    loadPreset(currentPreset, false)
-    updateWinClipboardHotkey()
-    updateStartupSetting()
-
-    if (firstRun) {
-        showSettings()
-        showWelcomeMessage()
-        createDesktopShortcut()
-        writeSetting("AppSettings", "firstRun", "0")
-        writeSetting("AppSettings", "replaceWinClipboard", "1")
-        writeSetting("AppSettings", "startWithWindows", "1")
-        writeSetting("AppSettings", "maxHistoryCount", "100")
-    }
-
-    if (replaceWinClipboard) {
-        SetTimer(() => updateWinClipboardHotkey(), -1000)
-    }
+alwaysOnTop() {
+    WinSetAlwaysOnTop(-1, "A")
+    isAlwaysOnTop := WinGetExStyle("A") & 0x8
+    processName := WinGetProcessName("A")
+    appName := RegExReplace(processName, "\.exe$", "")
+    showMsg("Pin " . appName . ": " . (isAlwaysOnTop ? "Enabled" : "Disabled"))
 }
 
-saveSettings(savedValues) {
-    global firstRun, replaceWinClipboard, startWithWindows, maxHistoryCount
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption
-    global currentPreset
-
-    existFile(settingsFilePath)
-
-    replaceWinClipboard := !!savedValues.replaceWinClipboard
-    startWithWindows := !!savedValues.startWithWindows
-    maxHistoryCount := Integer(savedValues.maxHistoryCount)
-
-    removeAccentsEnabled := !!savedValues.removeAccentsEnabled
-    removeSpecialEnabled := !!savedValues.removeSpecialEnabled
-
-    lineOption := savedValues.lineOption - 1
-    caseOption := savedValues.caseOption - 1
-    separatorOption := savedValues.separatorOption - 1
-
-    writeSetting("AppSettings", "replaceWinClipboard", replaceWinClipboard ? "1" : "0")
-    writeSetting("AppSettings", "startWithWindows", startWithWindows ? "1" : "0")
-    writeSetting("AppSettings", "maxHistoryCount", maxHistoryCount)
-
-    sectionName := "Preset_" . currentPreset
-    writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-    writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
-    writeSetting(sectionName, "lineOption", lineOption)
-    writeSetting(sectionName, "caseOption", caseOption)
-    writeSetting(sectionName, "separatorOption", separatorOption)
-
-    updateWinClipboardHotkey()
-    updateStartupSetting()
-}
-
-addAppSettings(guiObj, yPos) {
-    guiObj.Add("GroupBox", "x10 y" . yPos . " w350 h100", "App Settings")
-
-    guiObj.Add("Checkbox", "x20 y" . (yPos + 20) . " w330 vReplaceWinClipboard",
-    "Replace Windows Clipboard")
-    .Value := replaceWinClipboard
-
-    guiObj.Add("Checkbox", "x20 y" . (yPos + 45) . " w330 vStartWithWindows",
-    "Start with Windows")
-    .Value := startWithWindows
-
-    guiObj.Add("Text", "x20 y" . (yPos + 70) . " w150", "Max History Items:")
-    guiObj.Add("DropDownList", "x160 y" . (yPos + 67) . " w180 vMaxHistoryCount Choose" .
-    getMaxHistoryIndex(maxHistoryCount), ["50", "100", "200", "500", "1000"])
-
-    return yPos + 110
-}
-
-; Add text formatting options section to settings GUI
-addFormatOptions(settingsGui, yPos) {
-    settingsGui.Add("GroupBox", "x10 y" . yPos . " w350 h190", "Format Options")
-
-    checkboxOptions := [
-        ["removeAccentsEnabled", removeAccentsEnabled, "Remove Accents"],
-        ["removeSpecialEnabled", removeSpecialEnabled, "Remove Special Characters"]
-    ]
-    yPos += 25
-
-    for option in checkboxOptions {
-        settingsGui.Add("CheckBox", "x20 y" . yPos . " v" . option[1] . " Checked" . option[2], option[3])
-        yPos += 25
-    }
-    yPos += 5
-
-    dropdownOptions := [
-        ["Line Break:", "lineOption", ["None", "Remove Empty Lines", "Remove Line Breaks"], lineOption],
-        ["Text Case:", "caseOption", ["None", "UPPERCASE", "lowercase", "Title Case", "Sentence case"], caseOption],
-        ["Word Separator:", "separatorOption", ["None", "Space ( )", "Underscore (_)", "Hyphen (-)", "Remove Spaces"],
-        separatorOption]
-    ]
-
-    for option in dropdownOptions {
-        settingsGui.Add("Text", "x20 y" . yPos . " w150", option[1])
-        settingsGui.Add("DropDownList", "x160 y" . (yPos - 3) . " w180 AltSubmit v" . option[2] . " Choose" . (option[4
-            ] + 1), option[3])
-        yPos += 30
-    }
-
-    return yPos + 10
-}
-
-; Add preset management dropdown and buttons to settings GUI
-addPresetManagementSection(settingsGui, yPos, presetChangedCallback, deletePresetCallback, createPresetCallback) {
-    global presetList, currentPreset
-
-    settingsGui.Add("Text", "x20 y" . (yPos + 3) . " w80", "Presets:")
-
-    presetArray := []
-    for _, name in presetList
-        presetArray.Push(name)
-    presetDropdown := settingsGui.Add("DropDownList", "x80 y" . (yPos) . " w180 vSelectedPreset", presetArray)
-    currentIndex := 1
-    if (currentPreset != "") {
-        for i, name in presetList {
-            if (name = currentPreset) {
-                currentIndex := i
-                break
-            }
+updateWinClipHotkey() {
+    global replaceWinClip
+    static hotkeyRegistered := false
+    static timer := 0
+    
+    try {
+        if (hotkeyRegistered) {
+            Hotkey "#v", "Off"
+            hotkeyRegistered := false
         }
     }
-    presetDropdown.Choose(currentIndex)
-    initialPreset := presetDropdown.Text
-    presetDropdown.OnEvent("Change", presetChangedCallback)
-    settingsGui.Add("Button", "x265 y" . (yPos - 1) . " w35 h25", "Del")
-    .OnEvent("Click", (*) => deletePresetCallback(presetDropdown))
-    settingsGui.Add("Button", "x305 y" . (yPos - 1) . " w45 h25", "New")
-    .OnEvent("Click", createPresetCallback)
-
-    return yPos + 40
-}
-
-savePresetSettings(sectionName) {
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption
-
-    writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-
-    writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
-    writeSetting(sectionName, "lineOption", lineOption)
-    writeSetting(sectionName, "caseOption", caseOption)
-    writeSetting(sectionName, "separatorOption", separatorOption)
-}
-
-saveAsPreset(presetName) {
-
-    global lineOption, caseOption, separatorOption
-    global currentPreset
-
-    sectionName := "Preset_" . presetName
-
-    writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-
-    writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
-    writeSetting(sectionName, "lineOption", lineOption)
-    writeSetting(sectionName, "caseOption", caseOption)
-    writeSetting(sectionName, "separatorOption", separatorOption)
-
-    if (!HasValue(presetList, presetName)) {
-        presetList.Push(presetName)
-        writeSetting("Presets", "PresetList", Join(presetList, ","))
+    if (timer) {
+        SetTimer timer, 0
+        timer := 0
     }
 
-    currentPreset := presetName
-    writeSetting("Presets", "CurrentPreset", currentPreset)
-
-    if (!HasValue(presetList, presetName)) {
-        showNotification("Preset '" . presetName . "' created")
+    ; Register our custom Win+V handler if replacement is enabled
+    if (replaceWinClip) {
+        try {
+            Hotkey "#v", WinVHandler, "On T3"
+            hotkeyRegistered := true
+            
+            WinVHandler(*) {
+                BlockInput "On"
+                Sleep 50
+                BlockInput "Off"
+                showClipboard()
+            }
+            ; Monitor Windows clipboard function
+            checkForWindowsClipboard() {
+                if WinExist("ahk_class Windows.UI.Core.CoreWindow ahk_exe ShellExperienceHost.exe") {
+                    WinClose
+                    Sleep 50
+                    showClipboard()
+                }
+            }
+            
+            timer := SetTimer(checkForWindowsClipboard, 100)
+        } catch Error as e {
+            MsgBox("Failed to register Win+V hotkey:`n" . e.Message, "Hotkey Error", "OK 262144")
+        }
     }
 }
 
-loadPreset(presetName, showNotify := true) {
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption
-    global currentPreset
+updateStartupSetting() {
+    global autoStart
+    try {
+        regKey := "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run"
+        appName := "KeyClipboard"
+        scriptPath := A_ScriptFullPath
+        if (autoStart)
+            RegWrite(scriptPath, "REG_SZ", regKey, appName)
+        else try RegDelete(regKey, appName)
+    } catch Error as e {
+        MsgBox("Failed to update startup settings:`n" . e.Message, "Startup Settings Error", "OK 262144")
+    }
+}
 
-    sectionName := "Preset_" . presetName
+createDesktopShortcut() {
+    try {
+        desktopPath := A_Desktop
+        shortcutPath := desktopPath . "\KeyClipboard.lnk"
+        targetPath := A_ScriptFullPath
+        workingDir := A_ScriptDir
+        args := "settings"
+        ; Create shortcut with icon and description
+        FileCreateShortcut(targetPath, shortcutPath, workingDir, args,
+            "KeyClipboard - Clipboard Manager", A_ScriptDir . "app\app_icon.ico")
+    } catch Error as e {
+        OutputDebug("Failed to create desktop shortcut: " . e.Message)
+    }
+}
 
-    removeAccentsEnabled := readSetting(sectionName, "removeAccentsEnabled", "0") = "1"
+resetAdvanced(gui) {
+    gui["monitorDelay"].Value := 100
+    gui["pasteDelay"].Value := 50
+    gui["restoreDelay"].Value := 100
+    gui["enterDelay"].Value := 50
+    gui["tabDelay"].Value := 50
+    gui["enterCount"].Value := 1
+    gui["tabCount"].Value := 1
+}
 
-    removeSpecialEnabled := readSetting(sectionName, "removeSpecialEnabled", "0") = "1"
-    lineOption := Integer(readSetting(sectionName, "lineOption", "1"))
-    caseOption := Integer(readSetting(sectionName, "caseOption", "0"))
-    separatorOption := Integer(readSetting(sectionName, "separatorOption", "0"))
+applyAdvanced(gui) {
+    try {
+        values := {
+            monitorDelay: gui["monitorDelay"].Value,
+            pasteDelay: gui["pasteDelay"].Value,
+            restoreDelay: gui["restoreDelay"].Value,
+            enterDelay: gui["enterDelay"].Value,
+            tabDelay: gui["tabDelay"].Value,
+            enterCount: gui["enterCount"].Value,
+            tabCount: gui["tabCount"].Value
+        }
 
-    ; Update current preset reference
-    currentPreset := presetName
-    writeSetting("Presets", "CurrentPreset", currentPreset)
+        for key, value in values.OwnProps() {
+            if (key = "enterCount" || key = "tabCount") {
+                if (!IsInteger(value) || value < 0 || value > 10) {
+                    MsgBox("Enter/Tab count must be 0-10", "Invalid Input", "OK 262144")
+                    return
+                }
+            } else {
+                if (!IsInteger(value) || value < 0 || value > 5000) {
+                    MsgBox("Delays must be 0-5000 ms", "Invalid Input", "OK 262144")
+                    return
+                }
+            }
+        }
+
+        existFile(settingsFilePath)
+        writeAdvancedSettings(values)
+        gui.Destroy()
+        showMsg("Advanced settings saved")
+    } catch Error as e {
+        MsgBox("Failed to save settings: " . e.Message, "Error", "OK 262144")
+    }
 }

@@ -1,3 +1,10 @@
+formatDisplayText(text) {
+    text := RegExReplace(text, "\r?\n\s*\r?\n", "  ↩↩  ")
+    text := RegExReplace(text, "[\r\n]+", "  ↩  ")
+    
+    return text
+}
+
 formatText(text) {
     global removeAccentsEnabled, removeSpecialEnabled
     global lineOption, caseOption, separatorOption
@@ -64,13 +71,13 @@ removeAccents(str) {
 }
 
 normalizeSpaces(str, separator := " ") {
-    str := RegExReplace(str, "(?m)^[ \t]+|[ \t]+$", "") 
+    str := RegExReplace(str, "(?m)^[ \t]+|[ \t]+$", "")
     str := RegExReplace(str, "[ \t]+", separator)
     return str
 }
 
 removeSpecial(str) {
-    str := RegExReplace(str, "[^\p{L}\p{N}\s]", " ")  
+    str := RegExReplace(str, "[^\p{L}\p{N}\s]", " ")
     return normalizeSpaces(str)
 }
 
@@ -83,7 +90,6 @@ removeEmptyLines(str) {
 TitleCase(str) {
     lines := StrSplit(str, "`n", "`r")
     result := ""
-
     for lineIdx, line in lines {
         if (lineIdx > 1)
             result .= "`n"

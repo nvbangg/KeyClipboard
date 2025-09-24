@@ -1,20 +1,21 @@
-#Include src\app\app.ahk
-#Include src\clipboard\clipboard.ahk
-#Include src\UI\UI.ahk
+#Include src/UI/app.ahk
+#Include src/UI/clip.ahk
 
 global dataDir := A_ScriptDir . "\data"
 global settingsFilePath := A_ScriptDir . "\data\config.ini"
 global savedFilePath := A_ScriptDir . "\data\savedHistory.ini"
-global historyTab := []
-global savedTab := []
+global history := []
+global saved := []
 
-global isProcessing := false    ; Prevents clipboard loops during paste operations
-global originalClip := ""       ; Backup of original clipboard content
-global clipGuiInstance := 0     ; Reference to clipboard UI window
-global contentViewerIsFocused := false
+global isProcessing := false
+global originalClip := ""
+global clipGuiInstance := 0
+global viewerFocused := false
+global enterCount := 1
+global tabCount := 1
 
-initSettings()
-initClipboard()
+initApp()
+initClip()
 
 ; Check for command-line parameter to open settings
 if (A_Args.Length > 0 && A_Args[1] = "settings") {
@@ -37,21 +38,16 @@ if (A_Args.Length > 0 && A_Args[1] = "settings") {
 #HotIf GetKeyState("CapsLock", "P")
 s:: showSettings()
 ^s:: alwaysOnTop()
-!s:: switchTabPreset()          ; Cycle to next preset in the list
+!s:: switchTabPreset()
 c:: showClipboard()
 ^c:: showClipboard(true)
 !c:: clearClipboard()
 
-a:: pasteSelected()             ; Paste all history
-+a:: pasteSelected(, , 1)       ; Paste all history with format
-^a:: pasteSelected(, , 0, true) ; Paste all saved items
-!a:: pasteSelected(, , -1)      ; Paste all history as original
-
-; pasteIndex(index, formatMode, useSavedTab)
-1:: pasteIndex(1)               ; Index 1 (latest) from history
-+1:: pasteIndex(1, 1)             
-^1:: pasteIndex(1, 0, true)       
-!1:: pasteIndex(1, -1)             
+; pasteIndex(index, formatMode, useSaved)
+1:: pasteIndex(1)               ; Index latest from history
++1:: pasteIndex(1, 1)           ; Paste format
+^1:: pasteIndex(1, 0, true)     ; Index 1 from saved
+!1:: pasteIndex(1, -1)          ; Paste original
 
 2:: pasteIndex(2)
 +2:: pasteIndex(2, 1)
@@ -98,17 +94,28 @@ a:: pasteSelected()             ; Paste all history
 ^0:: pasteIndex(10, 0, true)
 !0:: pasteIndex(10, -1)
 
-v:: pasteWithTab()           ; Paste item 2, tab, then item 1
-+v:: pasteWithTab(1)                
-^v:: pasteWithTab(0, true)          
-!v:: pasteWithTab(-1)          
+; Paste all
+a:: pasteSelected()
++a:: pasteSelected(, , 1)
+^a:: pasteSelected(, , 0, true)
+!a:: pasteSelected(, , -1)
 
-t:: pasteSelectedWithTab()  
-+t:: pasteSelectedWithTab(,, 1)   
-^t:: pasteSelectedWithTab(,, 0, true) 
-!t:: pasteSelectedWithTab(,, -1)  
+t:: pasteWithSeparator("{Tab}", "tabDelay")
++t:: pasteWithSeparator("{Tab}", "tabDelay", , , 1)
+^t:: pasteWithSeparator("{Tab}", "tabDelay", , , 0, true)
+!t:: pasteWithSeparator("{Tab}", "tabDelay", , , -1)
+
+e:: pasteWithSeparator("{Enter}", "enterDelay")
++e:: pasteWithSeparator("{Enter}", "enterDelay", , , 1)
+^e:: pasteWithSeparator("{Enter}", "enterDelay", , , 0, true)
+!e:: pasteWithSeparator("{Enter}", "enterDelay", , , -1)
+
+v:: pasteWithTab()           ; Paste item 2, tab, then item 1
++v:: pasteWithTab(1)
+^v:: pasteWithTab(0, true)
+!v:: pasteWithTab(-1)
 
 b:: pasteWithBeforeLatest()  ; Paste "beforeLatest_latest"
-+b:: pasteWithBeforeLatest(true)    
++b:: pasteWithBeforeLatest(true)
 
 #HotIf
