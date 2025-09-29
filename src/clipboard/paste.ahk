@@ -20,7 +20,7 @@ paste(content, useFormat := false) {
 
 pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSaved := false) {
     global enterDelay, enterCount
-    selectedItems := validateAndCleanupGui(LV, clipGui, useSaved)
+    selectedItems := getSelectedItems(LV, clipGui, useSaved)
     if (!selectedItems)
         return
 
@@ -44,7 +44,7 @@ pasteSelected(LV := 0, clipGui := 0, formatMode := 0, useSaved := false) {
 ; Unified function for pasting with separator
 pasteWithSeparator(separator, delayVar, LV := 0, clipGui := 0, formatMode := 0, useSaved := false) {
     global enterCount, tabCount
-    selectedItems := validateAndCleanupGui(LV, clipGui, useSaved)
+    selectedItems := getSelectedItems(LV, clipGui, useSaved)
     if (!selectedItems)
         return
 
@@ -69,16 +69,16 @@ pasteWithSeparator(separator, delayVar, LV := 0, clipGui := 0, formatMode := 0, 
     }
 }
 
-
-; historyTab: index 1=latest, savedTab: index 1=first saved
 pasteIndex(index := 1, formatMode := 0, useSaved := false) {
     clipTab := TabUtils.getTab(useSaved)
-    if (index < 1 || index > clipTab.Length) {
+
+    actualIndex := index > 0 ? index : clipTab.Length + index + 1
+    if (actualIndex < 1 || actualIndex > clipTab.Length) {
         showMsg("Not exist in " . TabUtils.getName(useSaved))
         return
     }
 
-    item := TabUtils.getItemAtPosition(clipTab, index, useSaved)
+    item := TabUtils.getItem(clipTab, index)
     TabUtils.pasteItem(item, formatMode, useSaved)
 }
 
@@ -89,8 +89,8 @@ pasteWithTab(formatMode := 0, useSaved := false) {
     if (!validateMinItems(clipTab, 2, TabUtils.getName(useSaved)))
         return
 
-    firstItem := TabUtils.getItemAtPosition(clipTab, useSaved ? 1 : 2, useSaved)
-    secondItem := TabUtils.getItemAtPosition(clipTab, useSaved ? 2 : 1, useSaved)
+    firstItem := TabUtils.getItem(clipTab, -2)
+    secondItem := TabUtils.getItem(clipTab, -1)
 
     TabUtils.pasteItem(firstItem, formatMode, useSaved)
     loop tabCount {

@@ -1,13 +1,3 @@
-isValidGuiControl(control, prop := "") {
-    try {
-        if (!control || !control.Hwnd)
-            return false
-        return prop ? control.HasProp(prop) : true
-    } catch {
-        return false
-    }
-}
-
 initClip() {
     global history := []
     global isProcessing := true
@@ -31,31 +21,13 @@ initClip() {
                 history.Push({ text: A_Clipboard, original: ClipboardAll(), pinned: false })
                 if (history.Length > historyLimit)
                     history.RemoveAt(1)
+                if (showCopied)
+                    showMsg("Copied", 400)
             }
         }
     }
 
     OnClipboardChange(updateClipboard, 1)
-}
-
-createMenu(menuItems) {
-    contextMenu := Menu()
-    for item in menuItems {
-        if (item.Length = 0)
-            contextMenu.Add()
-        else if (item.Length = 3 && IsObject(item[3])) {
-            submenu := Menu()
-            for subitem in item[3] {
-                if (subitem.Length = 0)
-                    submenu.Add()
-                else
-                    submenu.Add(subitem[1], subitem[2])
-            }
-            contextMenu.Add(item[1], submenu)
-        } else
-            contextMenu.Add(item[1], item[2])
-    }
-    return contextMenu
 }
 
 updateClipTabReference(clipTab, useSaved) {
@@ -79,40 +51,9 @@ isFocusedControl(controlType) {
     }
 }
 
-setViewerFocus(isFocused) {
-    global viewerFocused
-    viewerFocused := isFocused
-}
-
-; Verify GUI can be opened and clipboard has content
-checkInstance() {
-    global history, saved, clipGuiInstance
-
-    if (history.Length < 1 && saved.Length < 1) {
-        showMsg("History empty")
-        return false
-    }
-
-    if (isGuiValid(clipGuiInstance)) {
-        static timerList := ["focusTimer"]
-        for _, timerVar in timerList {
-            try {
-                if (%timerVar%) {
-                    SetTimer(%timerVar%, 0)
-                    %timerVar% := 0
-                }
-            }
-        }
-        destroyGui(clipGuiInstance)
-    }
-
-    clipGuiInstance := 0
-    return true
-}
-
 execAction(action, clipGui) {
     elements := getTabElements(tabs)
-    
+
     if (!elements.listView || !elements.viewer)
         return
 
@@ -122,15 +63,27 @@ execAction(action, clipGui) {
         else
             Send("{Enter}")
     }
+    else if (action = "shiftEnter") {
+        if (isFocusedControl("SysListView32") && !elements.isSaved)
+            pasteSelected(elements.listView, clipGui, 1, elements.isSaved)
+        else
+            Send("+{Enter}")
+    }
+    else if (action = "ctrlEnter") {
+        if (isFocusedControl("SysListView32") && !elements.isSaved)
+            pasteSelected(elements.listView, clipGui, -1, elements.isSaved)
+        else
+            Send("^{Enter}")
+    }
     else if (action = "altUp")
-        moveSelectedItems(elements.listView, elements.viewer, -1, elements.isSaved)  ; Move items up
+        moveSelectedItems(elements.listView, -1, elements.isSaved)
     else if (action = "altDown")
-        moveSelectedItems(elements.listView, elements.viewer, 1, elements.isSaved)  ; Move items down
+        moveSelectedItems(elements.listView, 1, elements.isSaved)
     else if (action = "ctrlA") {
         if (isFocusedControl("Edit"))
             Send("^a")
         else
-            selectAllItems(elements.listView, elements.viewer)
+            selectAllItems(elements.listView)
     }
     else if (action = "delete") {
         if (isFocusedControl("Edit"))
@@ -140,28 +93,10 @@ execAction(action, clipGui) {
     }
     else if (action = "ctrlS") {
         if (isFocusedControl("Edit"))
-            saveContent(elements.listView, elements.viewer, clipGui, elements.isSaved)
+            saveContent(elements.listView, clipGui, elements.isSaved)
         else
             Send("^s")
     }
-}
-
-setupEvents(clipGui) {
-    closeCallback(*) => clipGui.Destroy()
-    clipGui.OnEvent("Close", closeCallback)
-    clipGui.OnEvent("Escape", closeCallback)
-
-    HotIfWinActive("ahk_id " . clipGui.Hwnd)  ; Apply hotkeys only when clipboard window is active
-
-    Hotkey "Enter", (*) => execAction("enter", clipGui)
-    Hotkey "!Up", (*) => execAction("altUp", clipGui)
-    Hotkey "!Down", (*) => execAction("altDown", clipGui)
-    Hotkey "^a", (*) => execAction("ctrlA", clipGui)
-    Hotkey "^s", (*) => execAction("ctrlS", clipGui)
-    Hotkey "Delete", (*) => execAction("delete", clipGui)
-    Hotkey "Escape", (*) => clipGui.Destroy()
-
-    HotIf()
 }
 
 sortArray(arr, direction := 1) {
@@ -182,49 +117,6 @@ sortArray(arr, direction := 1) {
     return arr
 }
 
-onTabChange(ctrl, *) {
-    global clipGuiInstance
-    try {
-        updateTab(ctrl.Value, IsObject(clipGuiInstance) ? clipGuiInstance.Hwnd : 0)
-    } catch {
-    }
-}
-
-setActiveTab(useSaved) {
-    global history, saved, historyLV, savedLV, historyViewer, savedViewer, tabs
-    loadSavedItems()
-    
-    updateLV(historyLV, "", false)
-    updateLV(savedLV, "", true)
-
-    if (useSaved && saved.Length > 0) {
-        tabs.Value := 2
-        SetTimer(() => focusLastItem(savedLV, savedViewer, true), -50)
-    } else if (history.Length > 0) {
-        tabs.Value := 1
-        SetTimer(() => focusLastItem(historyLV, historyViewer, false), -50)
-    } else if (saved.Length > 0) {
-        tabs.Value := 2
-        SetTimer(() => focusLastItem(savedLV, savedViewer, true), -50)
-    }
-}
-
-updateTab(tabIndex, clipGuiHwnd) {
-    global historyLV, savedLV, historyViewer, savedViewer
-    if (!WinExist("ahk_id " . clipGuiHwnd))
-        return
-
-    try {
-        loadSavedItems()
-        elements := getTabElements({ Value: tabIndex })
-        if (IsObject(elements.listView) && elements.listView.HasProp("GetCount")) {
-            updateLV(elements.listView, "", elements.isSaved)
-            focusLastItem(elements.listView, elements.viewer, elements.isSaved)
-        }
-    } catch {
-    }
-}
-
 updateLV(LV, searchText := "", useSaved := false) {
     if (!isValidGuiControl(LV, "Delete"))
         return
@@ -236,7 +128,7 @@ updateLV(LV, searchText := "", useSaved := false) {
         return
     for index, content in filteredItems {
         displayText := formatDisplayText(content.text)
-        
+
         if (!useSaved && content.HasProp("pinned") && content.pinned)
             displayText := "📌 " . displayText
 
@@ -252,60 +144,7 @@ updateLV(LV, searchText := "", useSaved := false) {
     LV.ModifyCol(1, "Integer")  ; Format first column as numbers
 }
 
-focusListView(useSaved) {
-    global historyLV, savedLV, historyViewer, savedViewer, clipGuiInstance
-
-    try {
-        if (!clipGuiInstance || !clipGuiInstance.Hwnd || !WinExist("ahk_id " . clipGuiInstance.Hwnd))
-            return
-
-        targetLV := useSaved ? savedLV : historyLV
-        targetViewer := useSaved ? savedViewer : historyViewer
-
-        if (IsObject(targetLV) && targetLV.HasProp("Focus") && WinExist("ahk_id " . clipGuiInstance.Hwnd)) {
-            WinActivate("ahk_id " . clipGuiInstance.Hwnd)
-            Sleep(10)
-            focusLastItem(targetLV, targetViewer, useSaved)
-        }
-    } catch {
-    }
-}
-
-updateViewer(LV, viewer, useSaved := false) {
-    if (!isValidGuiControl(viewer, "Value"))
-        return
-    if (!isValidGuiControl(LV, "GetNext"))
-        return
-
-    selectedIndex := getSelectedIndex(LV)
-    if (selectedIndex.Length = 0) {
-        try {
-            viewer.Value := ""
-        } catch {
-        }
-        return
-    }
-
-    clipTab := TabUtils.getTab(useSaved)
-    try {
-        if (selectedIndex.Length = 1 && selectedIndex[1] <= clipTab.Length) {
-            viewer.Value := TabUtils.getText(clipTab[selectedIndex[1]], useSaved)
-            return
-        }
-
-        mergedItems := ""
-        for index, itemIndex in selectedIndex {
-            if (itemIndex <= clipTab.Length) {
-                itemText := TabUtils.getText(clipTab[itemIndex], useSaved)
-                mergedItems .= itemText . (index < selectedIndex.Length ? "`r`n" : "")
-            }
-        }
-        viewer.Value := mergedItems
-    } catch {
-    }
-}
-
-focusLastItem(LV, viewer, useSaved) {
+focusLastItem(LV, useSaved) {
     if (!isValidGuiControl(LV, "GetCount"))
         return
 
@@ -315,18 +154,10 @@ focusLastItem(LV, viewer, useSaved) {
             LV.Modify(0, "-Select")
             LV.Modify(lastRow, "Select Focus Vis")
             LV.Focus()
-            
-            if (isValidGuiControl(viewer))
-                SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, useSaved), -10)), -50)
-            SetTimer(() => focusIfValid(LV), -50)
+            updateViewer(useSaved)
         } catch {
         }
     }
-}
-
-focusIfValid(control) {
-    if (isValidGuiControl(control, "Focus"))
-        control.Focus()
 }
 
 selectRows(LV, indices, clearFirst := true) {
@@ -349,25 +180,15 @@ selectRowByIndex(LV, targetIndex, modifyOptions := "Select Focus Vis") {
     return 0
 }
 
-getViewer(LV) {
-    viewer := 0
-    try {
-        parentGui := GuiCtrlFromHwnd(LV.Hwnd).Gui
-        if (parentGui)
-            viewer := parentGui.FindControl("Edit1")
-    }
-    return viewer
-}
-
 getSelectedIndex(LV) {
     selectedIndex := []
     rowNum := 0
     if (Type(LV) = "Array")
         return LV
-    
+
     if (!isValidGuiControl(LV, "GetNext"))
         return selectedIndex
-    
+
     try {
         loop {
             rowNum := LV.GetNext(rowNum)
@@ -384,18 +205,40 @@ getSelectedIndex(LV) {
 
 getTabElements(tabsObj) {
     global historyLV, savedLV, historyViewer, savedViewer
-    return (tabsObj.Value = 1) 
+    return (tabsObj.Value = 1)
         ? { listView: historyLV, viewer: historyViewer, isSaved: false }
         : { listView: savedLV, viewer: savedViewer, isSaved: true }
 }
 
-validateAndCleanupGui(LV, clipGui, useSaved) {
-    selectedItems := getSelected(LV, useSaved)
-    if (!IsObject(selectedItems) || selectedItems.Length < 1) {
+getSelectedItems(LV, clipGui, useSaved) {
+    clipTab := TabUtils.getTab(useSaved)
+
+    if (clipTab.Length = 0) {
         if (LV = 0)
             showMsg(TabUtils.getName(useSaved) . " empty")
         return false
     }
+
+    selectedItems := []
+    if (LV) {
+        selectedIndex := getSelectedIndex(LV)
+        if (selectedIndex.Length = 0)
+            return false
+
+        selectedItems.Capacity := selectedIndex.Length
+        for _, index in selectedIndex {
+            if (index > 0 && index <= clipTab.Length) {
+                item := clipTab[index]
+                selectedItems.Push(useSaved ? { text: item, original: item } : item)
+            }
+        }
+    } else {
+        for _, item in clipTab
+            selectedItems.Push(useSaved ? { text: item, original: item } : item)
+    }
+    if (selectedItems.Length < 1)
+        return false
+
     if (clipGui)
         clipGui.Destroy()
     return selectedItems
@@ -418,38 +261,45 @@ updateLVWithNewItem(LV, clipTab, useSaved, message) {
     showMsg(message)
 }
 
-updateItemInTab(clipTab, index, newText, useSaved) {
-    if (useSaved) {
-        clipTab[index] := newText
-    } else {
-        clipTab[index].text := newText
-        clipTab[index].original := newText
+isValidGuiControl(control, prop := "") {
+    try {
+        if (!control || !control.Hwnd)
+            return false
+        return prop ? control.HasProp(prop) : true
+    } catch {
+        return false
     }
 }
 
-getSelected(LV := 0, useSaved := false) {
-    clipTab := TabUtils.getTab(useSaved)
+updateViewer(useSaved := false) {
+    global historyViewer, savedViewer, historyLV, savedLV
+    viewer := useSaved ? savedViewer : historyViewer
+    LV := useSaved ? savedLV : historyLV
 
-    if (clipTab.Length = 0)
-        return []
-    selectedItems := []
+    if (!isValidGuiControl(viewer, "Value") || !isValidGuiControl(LV, "GetNext"))
+        return
 
-    if (LV) {
-        selectedIndex := getSelectedIndex(LV)
-        if (selectedIndex.Length = 0)
-            return []
-
-        selectedItems.Capacity := selectedIndex.Length
-        for _, index in selectedIndex {
-            if (index > 0 && index <= clipTab.Length) {
-                item := clipTab[index]
-                selectedItems.Push(useSaved ? { text: item, original: item } : item)
-            }
-        }
-    } else {
-        for _, item in clipTab
-            selectedItems.Push(useSaved ? { text: item, original: item } : item)
+    selectedIndex := getSelectedIndex(LV)
+    if (selectedIndex.Length = 0) {
+        viewer.Value := ""
+        return
     }
 
-    return selectedItems
+    clipTab := TabUtils.getTab(useSaved)
+    try {
+        if (selectedIndex.Length = 1 && selectedIndex[1] <= clipTab.Length) {
+            viewer.Value := TabUtils.getText(clipTab[selectedIndex[1]], useSaved)
+            return
+        }
+
+        mergedItems := ""
+        for index, itemIndex in selectedIndex {
+            if (itemIndex <= clipTab.Length) {
+                itemText := TabUtils.getText(clipTab[itemIndex], useSaved)
+                mergedItems .= itemText . (index < selectedIndex.Length ? "`r`n" : "")
+            }
+        }
+        viewer.Value := mergedItems
+    } catch {
+    }
 }

@@ -12,7 +12,7 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 - Access features fast **with hotkey** 
 - …and more useful features
 
-![KeyClipboard Demo](media/demo.gif)
+![Demo](demo.gif)
 
 ## Installation
 

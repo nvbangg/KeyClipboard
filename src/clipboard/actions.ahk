@@ -1,5 +1,5 @@
 deleteSelected(LV, clipGui := 0, useSaved := false) {
-    global history, saved
+    global history, saved, historyViewer, savedViewer
 
     if (!isFocusedControl("SysListView32")) {
         Send("{Delete}")
@@ -20,13 +20,13 @@ deleteSelected(LV, clipGui := 0, useSaved := false) {
         history := clipTab
     updateLV(LV, "", useSaved)
 
-    ; Select last item after deletion and update viewer
     rowCount := LV.GetCount()
     if (rowCount > 0) {
-        LV.Modify(rowCount, "Select Focus Vis")
-        LV.Focus()
-        viewer := getViewer(LV)
-        SetTimer(() => (LV.Focus(), viewer ? SetTimer(() => updateViewer(LV, viewer, useSaved), -10) : 0), -50)
+        focusLastItem(LV, useSaved)
+    } else {
+        viewer := useSaved ? savedViewer : historyViewer
+        if (viewer && viewer.HasProp("Value"))
+            viewer.Value := ""
     }
 }
 
@@ -48,45 +48,41 @@ clearClipboard(clipGui := 0, useSaved := false) {
         history := pinnedItems
     }
 
-    destroyGui(clipGui)
     destroyGui(clipGuiInstance)
     clipGuiInstance := 0
     showMsg("All " . TabUtils.getName(useSaved) . " have been cleared")
 }
 
-selectAllItems(LV, viewer) {
+selectAllItems(LV) {
+    global historyViewer, savedViewer, historyLV, savedLV
     if (!isValidGuiControl(LV, "GetNext") || LV.GetCount() == 0)
         return
 
-    totalItems := LV.GetCount()
-    selectedCount := 0
-    rowNum := 0
-    loop {
-        rowNum := LV.GetNext(rowNum)
-        if (!rowNum)
-            break
-        selectedCount++
-    }
+    useSaved := (LV == savedLV)
+    selectedIndex := getSelectedIndex(LV)
 
-    ; Toggle selection
     try {
-        if (selectedCount == totalItems) {
-            LV.Modify(0, "-Select")  ; Deselect all
+        if (selectedIndex.Length == LV.GetCount()) {
+            LV.Modify(0, "-Select")
+            viewer := useSaved ? savedViewer : historyViewer
             if (viewer && viewer.HasProp("Value"))
                 viewer.Value := ""
         } else {
             if (!isFocusedControl("SysListView32"))
                 LV.Focus()
-            LV.Modify(0, "Select")  ; Select all
-            updateViewer(LV, viewer)
+            LV.Modify(0, "Select")
+            updateViewer(useSaved)
         }
     } catch {
     }
 }
 
-saveContent(LV, viewer, clipGui, useSaved := false) {
+saveContent(LV, clipGui, useSaved := false) {
+    global historyViewer, savedViewer, historyLV, savedLV
     selectedItems := getSelectedIndex(LV)
     clipTab := TabUtils.getTab(useSaved)
+    useSaved := (LV == savedLV)
+    viewer := useSaved ? savedViewer : historyViewer
     newText := viewer.Value
 
     if (selectedItems.Length = 0) {
@@ -111,7 +107,12 @@ saveContent(LV, viewer, clipGui, useSaved := false) {
     }
 
     if (selectedItems.Length = 1 && selectedItems[1] > 0 && selectedItems[1] <= clipTab.Length) {
-        updateItemInTab(clipTab, selectedItems[1], newText, useSaved)
+        if (useSaved) {
+            clipTab[selectedItems[1]] := newText
+        } else {
+            clipTab[selectedItems[1]].text := newText
+            clipTab[selectedItems[1]].original := newText
+        }
 
         rowNum := 1
         loop LV.GetCount() {
@@ -129,7 +130,7 @@ saveContent(LV, viewer, clipGui, useSaved := false) {
             saveSavedItems()
         showMsg("Changes saved")
         selectRowByIndex(LV, selectedItems[1], "Select Focus Vis")
-        SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, useSaved), -10)), -50)
+        updateViewer(useSaved)
     }
     updateClipTabReference(clipTab, useSaved)
 }
@@ -137,7 +138,7 @@ saveContent(LV, viewer, clipGui, useSaved := false) {
 ; Split selected items by lines and add as a new item
 splitToLines(LV := 0) {
     global history
-    selectedItems := validateAndCleanupGui(LV, 0, false)
+    selectedItems := getSelectedItems(LV, 0, false)
     if (!selectedItems)
         return
 
@@ -158,14 +159,13 @@ splitToLines(LV := 0) {
     }
 
     if (LV) {
-        viewer := getViewer(LV)
         updateLV(LV, "", false)
         rowCount := LV.GetCount()
         if (rowCount > 0 && addedCount > 0) {
             startRow := rowCount - addedCount + 1
             if (startRow < 1)
                 startRow := 1
-            
+
             newIndices := []
             loop addedCount {
                 currentRow := startRow + A_Index - 1
@@ -174,10 +174,7 @@ splitToLines(LV := 0) {
             }
             selectRows(LV, newIndices)
             LV.Modify(rowCount, "Focus Vis")
-            
-            if (viewer)
-                SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, false), -10)), -50)
-            
+            updateViewer(false)
         }
     }
     showMsg(addedCount . " lines added to history")
@@ -185,7 +182,7 @@ splitToLines(LV := 0) {
 
 saveToClipboard(LV := 0, formatTextEnable := false) {
     global history
-    selectedItems := validateAndCleanupGui(LV, 0, false)
+    selectedItems := getSelectedItems(LV, 0, false)
     if (!selectedItems)
         return
 
@@ -201,15 +198,13 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
     }
 
     if (LV) {
-        viewer := getViewer(LV)
         updateLV(LV, "", false)
-
         rowCount := LV.GetCount()
-        if (rowCount > 0) {
+        if (rowCount > 0 && addedCount > 0) {
             startRow := rowCount - addedCount + 1
             if (startRow < 1)
                 startRow := 1
-            
+
             newIndices := []
             loop addedCount {
                 currentRow := startRow + A_Index - 1
@@ -218,10 +213,7 @@ saveToClipboard(LV := 0, formatTextEnable := false) {
             }
             selectRows(LV, newIndices)
             LV.Modify(rowCount, "Focus Vis")
-            
-            if (viewer)
-                SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, false), -10)), -50)
-            
+            updateViewer(false)
         }
     }
     showMsg("Added to history")
@@ -232,7 +224,7 @@ replaceWithFormat(LV := 0) {
     selectedIndex := getSelectedIndex(LV)
     if (selectedIndex.Length = 0)
         return
-    
+
     for _, itemIndex in selectedIndex {
         if (itemIndex > 0 && itemIndex <= history.Length) {
             formattedText := formatText(history[itemIndex].text)
@@ -242,18 +234,16 @@ replaceWithFormat(LV := 0) {
     }
 
     if (LV) {
-        viewer := getViewer(LV)
         updateLV(LV, "", false)
         selectRows(LV, selectedIndex)
-        if (viewer)
-            SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, false), -10)), -50)
+        updateViewer(false)
     }
     showMsg("Replaced with formatted text")
 }
 
 addToTab(LV := 0, useSaved := false) {
-    sourceAddTo := !useSaved 
-    selectedItems := validateAndCleanupGui(LV, 0, sourceAddTo)
+    sourceAddTo := !useSaved
+    selectedItems := getSelectedItems(LV, 0, sourceAddTo)
     if (!selectedItems)
         return
 
@@ -265,20 +255,20 @@ addToTab(LV := 0, useSaved := false) {
     showMsg("Added to " . TabUtils.getName(useSaved))
 }
 
-moveSelectedItems(LV, viewer, direction, useSaved := false) {
+moveSelectedItems(LV, direction, useSaved := false) {
     if (!isFocusedControl("SysListView32"))
         return
 
     selectedIndex := getSelectedIndex(LV)
     if (selectedIndex.Length = 0)
         return
-    
+
     clipTab := TabUtils.getTab(useSaved)
     if (!clipTab || clipTab.Length = 0)
         return
 
     sortedIndices := selectedIndex.Clone()
-    sortArray(sortedIndices, direction > 0 ? -1 : 1) 
+    sortArray(sortedIndices, direction > 0 ? -1 : 1)
 
     movableIndices := []
     for _, currentIndex in sortedIndices {
@@ -286,91 +276,75 @@ moveSelectedItems(LV, viewer, direction, useSaved := false) {
         if (targetIndex >= 1 && targetIndex <= clipTab.Length) {
             isTargetOccupied := false
             for _, otherIndex in selectedIndex {
-                if (otherIndex = targetIndex && !HasValue(movableIndices, otherIndex)) {
+                if (otherIndex = targetIndex && !hasValue(movableIndices, otherIndex)) {
                     isTargetOccupied := true
-                    break    
-                }            
+                    break
+                }
             }
             if (!isTargetOccupied)
                 movableIndices.Push(currentIndex)
         }
     }
-    
+
     if (movableIndices.Length = 0)
         return
-    
+
     newClipTab := []
     for i, item in clipTab
         newClipTab.Push(item)
-    
+
     newSelectedIndices := []
     for _, currentIndex in movableIndices {
         targetIndex := currentIndex + direction
-        
+
         temp := newClipTab[currentIndex]
         newClipTab[currentIndex] := newClipTab[targetIndex]
         newClipTab[targetIndex] := temp
-        
+
         newSelectedIndices.Push(targetIndex)
     }
-    
+
     for i, item in newClipTab
         clipTab[i] := item
-    
+
     for _, originalIndex in selectedIndex
-        if (!HasValue(movableIndices, originalIndex))
+        if (!hasValue(movableIndices, originalIndex))
             newSelectedIndices.Push(originalIndex)
-    
+
     sortArray(newSelectedIndices, 1)
     updateClipTabReference(clipTab, useSaved)
     updateLV(LV, "", useSaved)
     selectRows(LV, newSelectedIndices)
-    
-    SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, useSaved), -10)), -50)
+
+    updateViewer(useSaved)
 }
 
 filterItems(searchText := "", useSaved := false) {
     clipTab := TabUtils.getTab(useSaved)
     filteredItems := []
+    searchTextLower := searchText = "" ? "" : StrLower(searchText)
 
-    if (searchText = "") {
-        for index, item in clipTab {
-            if (useSaved)
-                filteredItems.Push({ text: item, original: item, originalIndex: index })
-            else {
-                itemObj := { text: item.text, original: item.original, originalIndex: index }
-                if (item.HasProp("pinned"))
-                    itemObj.pinned := item.pinned
-                filteredItems.Push(itemObj)
-            }
-        }
-        return filteredItems
-    }
-
-    searchTextLower := StrLower(searchText)
     for index, item in clipTab {
         itemText := TabUtils.getText(item, useSaved)
-        if (itemText && InStr(StrLower(itemText), searchTextLower)) {
-            if (useSaved)
-                filteredItems.Push({ text: item, original: item, originalIndex: index })
-            else {
-                itemObj := { text: item.text, original: item.original, originalIndex: index }
-                if (item.HasProp("pinned"))
-                    itemObj.pinned := item.pinned
-                filteredItems.Push(itemObj)
-            }
+        if (searchText = "" || (itemText && InStr(StrLower(itemText), searchTextLower))) {
+            itemObj := { text: TabUtils.getText(item, useSaved), original: TabUtils.getText(item, useSaved),
+                originalIndex: index }
+            if (!useSaved && item.HasProp("pinned"))
+                itemObj.pinned := item.pinned
+            filteredItems.Push(itemObj)
         }
     }
     return filteredItems
 }
 
 search(searchCtrl, useSaved := false) {
+    global historyLV, savedLV, historyViewer, savedViewer
     if (useSaved) {
         updateLV(savedLV, searchCtrl.Value, true)
-        updateViewer(savedLV, savedViewer, true)
+        updateViewer(true)
     } else {
         updateLV(historyLV, searchCtrl.Value, false)
-        updateViewer(historyLV, historyViewer, false)
+        updateViewer(false)
     }
 }
 
@@ -389,11 +363,9 @@ setPinState(LV := 0, pinState := true) {
     }
 
     if (LV) {
-        viewer := getViewer(LV)
         updateLV(LV, "", false)
         selectRows(LV, selectedIndex)
-        if (viewer)
-            SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, false), -10)), -50)
+        updateViewer(false)
     }
     showMsg(pinState ? "Items pinned" : "Items unpinned")
 }
@@ -402,10 +374,10 @@ getPinState(selectedIndex) {
     global history
     if (selectedIndex.Length = 0)
         return "none"
-    
+
     pinnedCount := 0
     unpinnedCount := 0
-    
+
     for _, itemIndex in selectedIndex {
         if (itemIndex > 0 && itemIndex <= history.Length) {
             isPinned := history[itemIndex].HasProp("pinned") && history[itemIndex].pinned
@@ -415,7 +387,7 @@ getPinState(selectedIndex) {
                 unpinnedCount++
         }
     }
-    
+
     if (pinnedCount > 0 && unpinnedCount > 0)
         return "mixed"
     else if (pinnedCount > 0)
@@ -428,7 +400,7 @@ deleteOthers(LV := 0, useSaved := false) {
     global history, saved
     if (!isValidGuiControl(LV, "GetNext"))
         return
-        
+
     selectedIndex := getSelectedIndex(LV)
     if (selectedIndex.Length = 0)
         return
@@ -450,39 +422,145 @@ deleteOthers(LV := 0, useSaved := false) {
         history := keepItems
 
     if (LV) {
-        viewer := getViewer(LV)
         updateLV(LV, "", useSaved)
         newIndices := []
         loop keepItems.Length
             newIndices.Push(A_Index)
         selectRows(LV, newIndices)
-        if (viewer)
-            SetTimer(() => (LV.Focus(), SetTimer(() => updateViewer(LV, viewer, useSaved), -10)), -50)
+        updateViewer(useSaved)
     }
     showMsg("Other items deleted")
 }
 
-selectPinnedItems(LV, viewer) {
-    global history
-    if (!isValidGuiControl(LV, "GetNext") || LV.GetCount() == 0)
-        return
-    if (!isValidGuiControl(viewer, "Value"))
+moveToBottom(LV := 0, useSaved := false) {
+    if (!isFocusedControl("SysListView32"))
         return
 
-    pinnedIndices := []
-    selectedIndices := []
-    rowNum := 0
-    
-    try {
-        loop {
-            rowNum := LV.GetNext(rowNum)
-            if (!rowNum)
-                break
-            selectedIndices.Push(LV.GetText(rowNum, 1))
-        }
-    } catch {
+    selectedIndex := getSelectedIndex(LV)
+    if (selectedIndex.Length = 0)
         return
+
+    clipTab := TabUtils.getTab(useSaved)
+    if (!clipTab || clipTab.Length = 0)
+        return
+
+    sortArray(selectedIndex, 1)
+    selectedItems := []
+    for _, index in selectedIndex {
+        if (index > 0 && index <= clipTab.Length)
+            selectedItems.Push(clipTab[index])
     }
+
+    loop selectedIndex.Length {
+        removeIndex := selectedIndex[selectedIndex.Length - A_Index + 1]
+        if (removeIndex > 0 && removeIndex <= clipTab.Length)
+            clipTab.RemoveAt(removeIndex)
+    }
+
+    for _, item in selectedItems
+        clipTab.Push(item)
+
+    updateClipTabReference(clipTab, useSaved)
+    updateLV(LV, "", useSaved)
+
+    newSelectedIndices := []
+    startIndex := clipTab.Length - selectedItems.Length + 1
+    loop selectedItems.Length
+        newSelectedIndices.Push(startIndex + A_Index - 1)
+
+    selectRows(LV, newSelectedIndices)
+    updateViewer(useSaved)
+    showMsg("Items moved to bottom")
+}
+
+moveToTop(LV := 0, useSaved := false) {
+    if (!isFocusedControl("SysListView32"))
+        return
+
+    selectedIndex := getSelectedIndex(LV)
+    if (selectedIndex.Length = 0)
+        return
+
+    clipTab := TabUtils.getTab(useSaved)
+    if (!clipTab || clipTab.Length = 0)
+        return
+
+    sortArray(selectedIndex, 1)
+    selectedItems := []
+    for _, index in selectedIndex {
+        if (index > 0 && index <= clipTab.Length)
+            selectedItems.Push(clipTab[index])
+    }
+
+    remainingItems := []
+    for i, item in clipTab {
+        isSelected := false
+        for _, selectedIdx in selectedIndex {
+            if (i = selectedIdx) {
+                isSelected := true
+                break
+            }
+        }
+        if (!isSelected)
+            remainingItems.Push(item)
+    }
+
+    clipTab.RemoveAt(1, clipTab.Length)
+    for _, item in selectedItems
+        clipTab.Push(item)
+    for _, item in remainingItems
+        clipTab.Push(item)
+
+    updateClipTabReference(clipTab, useSaved)
+    updateLV(LV, "", useSaved)
+
+    newSelectedIndices := []
+    loop selectedItems.Length
+        newSelectedIndices.Push(A_Index)
+
+    selectRows(LV, newSelectedIndices)
+    updateViewer(useSaved)
+    showMsg("Items moved to top")
+}
+
+reverseOrder(LV := 0, useSaved := false) {
+    if (!isFocusedControl("SysListView32"))
+        return
+
+    selectedIndex := getSelectedIndex(LV)
+    if (selectedIndex.Length < 2)
+        return
+
+    clipTab := TabUtils.getTab(useSaved)
+    if (!clipTab || clipTab.Length = 0)
+        return
+
+    sortArray(selectedIndex, 1)
+    selectedItems := []
+    for _, index in selectedIndex {
+        if (index > 0 && index <= clipTab.Length)
+            selectedItems.Push(clipTab[index])
+    }
+
+    for i, index in selectedIndex {
+        if (index > 0 && index <= clipTab.Length)
+            clipTab[index] := selectedItems[selectedItems.Length - i + 1]
+    }
+
+    updateClipTabReference(clipTab, useSaved)
+    updateLV(LV, "", useSaved)
+    selectRows(LV, selectedIndex)
+    updateViewer(useSaved)
+    showMsg("Items reversed")
+}
+
+selectPinnedItems(LV) {
+    global history, historyViewer
+    if (!isValidGuiControl(LV, "GetNext") || LV.GetCount() == 0)
+        return
+
+    selectedIndex := getSelectedIndex(LV)
+    pinnedIndices := []
 
     loop LV.GetCount() {
         rowNum := A_Index
@@ -495,7 +573,8 @@ selectPinnedItems(LV, viewer) {
 
     if (pinnedIndices.Length = 0) {
         try {
-            viewer.Value := ""
+            if (historyViewer && historyViewer.HasProp("Value"))
+                historyViewer.Value := ""
         } catch {
         }
         return
@@ -503,7 +582,7 @@ selectPinnedItems(LV, viewer) {
 
     allPinnedSelected := true
     for _, pinnedIndex in pinnedIndices {
-        if (!HasValue(selectedIndices, String(pinnedIndex))) {
+        if (!hasValue(selectedIndex, pinnedIndex)) {
             allPinnedSelected := false
             break
         }
@@ -512,13 +591,14 @@ selectPinnedItems(LV, viewer) {
     try {
         if (allPinnedSelected) {
             LV.Modify(0, "-Select")
-            viewer.Value := ""
+            if (historyViewer && historyViewer.HasProp("Value"))
+                historyViewer.Value := ""
         } else {
             if (!isFocusedControl("SysListView32"))
                 LV.Focus()
             LV.Modify(0, "-Select")
             selectRows(LV, pinnedIndices, false)
-            updateViewer(LV, viewer)
+            updateViewer(false)
         }
     } catch {
     }

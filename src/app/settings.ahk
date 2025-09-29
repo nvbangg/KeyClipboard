@@ -10,7 +10,7 @@ updateWinClipHotkey() {
     global replaceWinClip
     static hotkeyRegistered := false
     static timer := 0
-    
+
     try {
         if (hotkeyRegistered) {
             Hotkey "#v", "Off"
@@ -27,7 +27,7 @@ updateWinClipHotkey() {
         try {
             Hotkey "#v", WinVHandler, "On T3"
             hotkeyRegistered := true
-            
+
             WinVHandler(*) {
                 BlockInput "On"
                 Sleep 50
@@ -42,8 +42,8 @@ updateWinClipHotkey() {
                     showClipboard()
                 }
             }
-            
-            timer := SetTimer(checkForWindowsClipboard, 100)
+
+            timer := SetTimer(checkForWindowsClipboard, 500)
         } catch Error as e {
             MsgBox("Failed to register Win+V hotkey:`n" . e.Message, "Hotkey Error", "OK 262144")
         }
@@ -64,29 +64,14 @@ updateStartupSetting() {
     }
 }
 
-createDesktopShortcut() {
-    try {
-        desktopPath := A_Desktop
-        shortcutPath := desktopPath . "\KeyClipboard.lnk"
-        targetPath := A_ScriptFullPath
-        workingDir := A_ScriptDir
-        args := "settings"
-        ; Create shortcut with icon and description
-        FileCreateShortcut(targetPath, shortcutPath, workingDir, args,
-            "KeyClipboard - Clipboard Manager", A_ScriptDir . "app\app_icon.ico")
-    } catch Error as e {
-        OutputDebug("Failed to create desktop shortcut: " . e.Message)
-    }
-}
-
 resetAdvanced(gui) {
-    gui["monitorDelay"].Value := 100
-    gui["pasteDelay"].Value := 50
-    gui["restoreDelay"].Value := 100
-    gui["enterDelay"].Value := 50
-    gui["tabDelay"].Value := 50
-    gui["enterCount"].Value := 1
-    gui["tabCount"].Value := 1
+    gui["monitorDelay"].Value := DEFAULT_SETTINGS()["monitorDelay"]
+    gui["pasteDelay"].Value := DEFAULT_SETTINGS()["pasteDelay"]
+    gui["restoreDelay"].Value := DEFAULT_SETTINGS()["restoreDelay"]
+    gui["enterDelay"].Value := DEFAULT_SETTINGS()["enterDelay"]
+    gui["tabDelay"].Value := DEFAULT_SETTINGS()["tabDelay"]
+    gui["enterCount"].Value := DEFAULT_SETTINGS()["enterCount"]
+    gui["tabCount"].Value := DEFAULT_SETTINGS()["tabCount"]
 }
 
 applyAdvanced(gui) {
@@ -115,8 +100,7 @@ applyAdvanced(gui) {
             }
         }
 
-        existFile(settingsFilePath)
-        writeAdvancedSettings(values)
+        saveSettings(, values)
         gui.Destroy()
         showMsg("Advanced settings saved")
     } catch Error as e {

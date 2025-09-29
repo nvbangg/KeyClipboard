@@ -1,18 +1,14 @@
+#SingleInstance Force
 #Include src/UI/app.ahk
 #Include src/UI/clip.ahk
 
 global dataDir := A_ScriptDir . "\data"
-global settingsFilePath := A_ScriptDir . "\data\config.ini"
-global savedFilePath := A_ScriptDir . "\data\savedHistory.ini"
+global SETTINGS_PATH := A_ScriptDir . "\data\settings.ini"
+global SAVED_PATH := A_ScriptDir . "\data\saved.ini"
 global history := []
 global saved := []
-
 global isProcessing := false
-global originalClip := ""
 global clipGuiInstance := 0
-global viewerFocused := false
-global enterCount := 1
-global tabCount := 1
 
 initApp()
 initClip()
@@ -43,77 +39,92 @@ c:: showClipboard()
 ^c:: showClipboard(true)
 !c:: clearClipboard()
 
-; pasteIndex(index, formatMode, useSaved)
-1:: pasteIndex(1)               ; Index latest from history
-+1:: pasteIndex(1, 1)           ; Paste format
-^1:: pasteIndex(1, 0, true)     ; Index 1 from saved
-!1:: pasteIndex(1, -1)          ; Paste original
+1:: pasteIndex(-1)
+!1:: pasteIndex(1)
++1:: pasteIndex(-1, 1)
++!1:: pasteIndex(1, 1)
+^1:: pasteIndex(-1, , true)
+^!1:: pasteIndex(1, , true)
 
-2:: pasteIndex(2)
-+2:: pasteIndex(2, 1)
-^2:: pasteIndex(2, 0, true)
-!2:: pasteIndex(2, -1)
+2:: pasteIndex(-2)
++2:: pasteIndex(-2, 1)
+^2:: pasteIndex(-2, , true)
+!2:: pasteIndex(2)
+^!2:: pasteIndex(2, , true)
++!2:: pasteIndex(2, 1)
 
-3:: pasteIndex(3)
-+3:: pasteIndex(3, 1)
-^3:: pasteIndex(3, 0, true)
-!3:: pasteIndex(3, -1)
+3:: pasteIndex(-3)
++3:: pasteIndex(-3, 1)
+^3:: pasteIndex(-3, , true)
+!3:: pasteIndex(3)
+^!3:: pasteIndex(3, , true)
++!3:: pasteIndex(3, 1)
 
-4:: pasteIndex(4)
-+4:: pasteIndex(4, 1)
-^4:: pasteIndex(4, 0, true)
-!4:: pasteIndex(4, -1)
+4:: pasteIndex(-4)
++4:: pasteIndex(-4, 1)
+^4:: pasteIndex(-4, , true)
+!4:: pasteIndex(4)
+^!4:: pasteIndex(4, , true)
++!4:: pasteIndex(4, 1)
 
-5:: pasteIndex(5)
-+5:: pasteIndex(5, 1)
-^5:: pasteIndex(5, 0, true)
-!5:: pasteIndex(5, -1)
+5:: pasteIndex(-5)
++5:: pasteIndex(-5, 1)
+^5:: pasteIndex(-5, , true)
+!5:: pasteIndex(5)
+^!5:: pasteIndex(5, , true)
++!5:: pasteIndex(5, 1)
 
-6:: pasteIndex(6)
-+6:: pasteIndex(6, 1)
-^6:: pasteIndex(6, 0, true)
-!6:: pasteIndex(6, -1)
+6:: pasteIndex(-6)
++6:: pasteIndex(-6, 1)
+^6:: pasteIndex(-6, , true)
+!6:: pasteIndex(6)
+^!6:: pasteIndex(6, , true)
++!6:: pasteIndex(6, 1)
 
-7:: pasteIndex(7)
-+7:: pasteIndex(7, 1)
-^7:: pasteIndex(7, 0, true)
-!7:: pasteIndex(7, -1)
+7:: pasteIndex(-7)
++7:: pasteIndex(-7, 1)
+^7:: pasteIndex(-7, , true)
+!7:: pasteIndex(7)
+^!7:: pasteIndex(7, , true)
++!7:: pasteIndex(7, 1)
 
-8:: pasteIndex(8)
-+8:: pasteIndex(8, 1)
-^8:: pasteIndex(8, 0, true)
-!8:: pasteIndex(8, -1)
+8:: pasteIndex(-8)
++8:: pasteIndex(-8, 1)
+^8:: pasteIndex(-8, , true)
+!8:: pasteIndex(8)
+^!8:: pasteIndex(8, , true)
++!8:: pasteIndex(8, 1)
 
-9:: pasteIndex(9)
-+9:: pasteIndex(9, 1)
-^9:: pasteIndex(9, 0, true)
-!9:: pasteIndex(9, -1)
+9:: pasteIndex(-9)
++9:: pasteIndex(-9, 1)
+^9:: pasteIndex(-9, , true)
+!9:: pasteIndex(9)
+^!9:: pasteIndex(9, , true)
++!9:: pasteIndex(9, 1)
 
-0:: pasteIndex(10)
-+0:: pasteIndex(10, 1)
-^0:: pasteIndex(10, 0, true)
-!0:: pasteIndex(10, -1)
+0:: pasteIndex(-10)
++0:: pasteIndex(-10, 1)
+^0:: pasteIndex(-10, , true)
+!0:: pasteIndex(10)
+^!0:: pasteIndex(10, , true)
++!0:: pasteIndex(10, 1)
 
 ; Paste all
 a:: pasteSelected()
 +a:: pasteSelected(, , 1)
-^a:: pasteSelected(, , 0, true)
-!a:: pasteSelected(, , -1)
+^a:: pasteSelected(, , , true)
 
 t:: pasteWithSeparator("{Tab}", "tabDelay")
 +t:: pasteWithSeparator("{Tab}", "tabDelay", , , 1)
-^t:: pasteWithSeparator("{Tab}", "tabDelay", , , 0, true)
-!t:: pasteWithSeparator("{Tab}", "tabDelay", , , -1)
+^t:: pasteWithSeparator("{Tab}", "tabDelay", , , , true)
 
 e:: pasteWithSeparator("{Enter}", "enterDelay")
 +e:: pasteWithSeparator("{Enter}", "enterDelay", , , 1)
-^e:: pasteWithSeparator("{Enter}", "enterDelay", , , 0, true)
-!e:: pasteWithSeparator("{Enter}", "enterDelay", , , -1)
+^e:: pasteWithSeparator("{Enter}", "enterDelay", , , , true)
 
 v:: pasteWithTab()           ; Paste item 2, tab, then item 1
 +v:: pasteWithTab(1)
-^v:: pasteWithTab(0, true)
-!v:: pasteWithTab(-1)
+^v:: pasteWithTab(, true)
 
 b:: pasteWithBeforeLatest()  ; Paste "beforeLatest_latest"
 +b:: pasteWithBeforeLatest(true)
