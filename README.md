@@ -10,9 +10,9 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 - **Paste multiple form fields at once**  
 - Edit, reorder, search, or pin clipboard content  
 - Access features fast **with hotkey** 
-- …and more useful features
+- …and many other useful features
 
-![Demo](demo.gif)
+![Demo](https://raw.githubusercontent.com/nvbangg/KeyClipboard/main/demo.gif)
 
 ## Installation
 
