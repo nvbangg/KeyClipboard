@@ -2,7 +2,7 @@
 
 A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 
-## Highlighted Features
+## 📌 Highlighted Features
 
 - Keep any window pinned (**Always On Top**)  
 - **Paste with custom format or with Tab/Enter**
@@ -14,7 +14,7 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 
 ![Demo](https://raw.githubusercontent.com/nvbangg/KeyClipboard/main/demo.gif)
 
-## Installation
+## ⬇️ Installation
 
 ### Method 1: Direct Download (Recommended)
 1. Download and run [KeyClipboard.exe](https://github.com/nvbangg/KeyClipboard/releases/latest)  
@@ -28,9 +28,9 @@ A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 3. Run `KeyClipboard.ahk`
 
 <div align="center">
-    <a href="https://github.com/nvbangg"><img src="https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github" height="23" style="margin-right:10px; border-radius:10px;"></a>
-    <a href="https://github.com/nvbangg/KeyClipboard"><img src="https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github" height="23" style="margin-right:10px; border-radius:10px;"></a>
-    <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard&countColor=blue&textColor=000000" height="23" style="border-radius:10px;">
+    <a href="https://github.com/nvbangg"><img src="https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github"></a>
+    <a href="https://github.com/nvbangg/KeyClipboard"><img src="https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github"></a>
+    <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard&countColor=blue&textColor=000000" height="20">
     <br>
-    <img src="https://raw.githubusercontent.com/nvbangg/nvbangg/main/data/star_follow.gif" height="150" style="border-radius:10px;">
+    <img src="https://raw.githubusercontent.com/nvbangg/nvbangg/main/data/star_follow.gif" height="150">
 </div>
