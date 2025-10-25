@@ -18,12 +18,14 @@
 ## ⬇️ Installation
 
 ### Method 1: Direct Download (Recommended)
+
 1. Download and run [KeyClipboard.exe](https://github.com/nvbangg/KeyClipboard/releases/latest)  
 2. Press `CapsLock + S` to open Settings and view the guide
 3. Press `CapsLock + C` to open Clipboard
 4. Look for the app icon in the system tray
 
 ### Method 2: Advanced (Using Source Code)
+
 1. Download and extract [KeyClipboard.zip](https://github.com/nvbangg/KeyClipboard/releases/latest)   
 2. Install environment from [AutoHotkey v2](https://www.autohotkey.com)
 3. Run `KeyClipboard.ahk`
