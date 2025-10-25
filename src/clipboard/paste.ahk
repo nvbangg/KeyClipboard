@@ -83,14 +83,14 @@ pasteIndex(index := 1, formatMode := 0, useSaved := false) {
 }
 
 ; Paste second latest item, Tab, then latest item
-pasteWithTab(formatMode := 0, useSaved := false) {
+pasteWithTab(formatMode := 0, useSaved := false, reverse := false) {
     global tabDelay, tabCount
     clipTab := TabUtils.getTab(useSaved)
     if (!validateMinItems(clipTab, 2, TabUtils.getName(useSaved)))
         return
 
-    firstItem := TabUtils.getItem(clipTab, -2)
-    secondItem := TabUtils.getItem(clipTab, -1)
+    firstItem := TabUtils.getItem(clipTab, reverse ? 1 : -2)
+    secondItem := TabUtils.getItem(clipTab, reverse ? 2 : -1)
 
     TabUtils.pasteItem(firstItem, formatMode, useSaved)
     loop tabCount {

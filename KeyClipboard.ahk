@@ -125,6 +125,8 @@ e:: pasteWithSeparator("{Enter}", "enterDelay")
 v:: pasteWithTab()           ; Paste item 2, tab, then item 1
 +v:: pasteWithTab(1)
 ^v:: pasteWithTab(, true)
+!v:: pasteWithTab(, , true)
+^!v:: pasteWithTab(, true, true)
 
 b:: pasteWithBeforeLatest()  ; Paste "beforeLatest_latest"
 +b:: pasteWithBeforeLatest(true)
