@@ -31,19 +31,16 @@
 3. Run `KeyClipboard.ahk`
 
 <div align="center">
-    <a href="https://github.com/nvbangg"><img src="https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github"></a>
-    <a href="https://github.com/nvbangg/KeyClipboard"><img src="https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github"></a>
-    <img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2Fnvbangg%2FKeyClipboard&countColor=blue&textColor=000000" height="20">
-    <br>
-    <img src="https://nvbangg.github.io/assets/gifs/follow_star_github.gif" height="100">
+
+[![Followers](https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github)](https://github.com/nvbangg) [![Stars](https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github)](https://github.com/nvbangg/KeyClipboard) ![Visitors](https://api.visitorbadge.io/api/visitors?path=nvbangg%2FKeyClipboard&countColor=blue&style=flat&labelStyle=none)<br><img src="https://nvbangg.github.io/assets/gifs/follow_star_github.gif" height="100">
+
 </div>
 
 ---
-## 🔒 Privacy Policy
 
-- We do not collect or use any personal data from users
+## ⚖️ Privacy Policy & License
 
-## 📄 License
-
+- KeyClipboard does not collect any data of any kind
 - Copyright (c) 2025 Nguyễn Văn Bằng (nvbangg, [github.com/nvbangg](https://github.com/nvbangg))
-- Licensed under the [GNU General Public License v3.0](./LICENSE) 
+- Licensed under the [GNU General Public License v3.0](https://github.com/nvbangg/EDAns/blob/main/LICENSE)
+
