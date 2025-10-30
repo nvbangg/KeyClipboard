@@ -42,5 +42,5 @@
 
 - KeyClipboard does not collect any data of any kind
 - Copyright (c) 2025 Nguyễn Văn Bằng (nvbangg, [github.com/nvbangg](https://github.com/nvbangg))
-- Licensed under the [GNU General Public License v3.0](https://github.com/nvbangg/EDAns/blob/main/LICENSE)
+- Licensed under the [GNU General Public License v3.0](./LICENSE)
 
