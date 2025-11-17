@@ -32,7 +32,7 @@
 
 <div align="center">
 
-[![Followers](https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github)](https://github.com/nvbangg) [![Stars](https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github)](https://github.com/nvbangg/KeyClipboard) ![Visitors](https://api.visitorbadge.io/api/visitors?path=nvbangg%2FKeyClipboard&countColor=blue&style=flat&labelStyle=none)<br><img src="https://nvbangg.github.io/assets/gifs/follow_star_github.gif" height="100">
+[![Followers](https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github)](https://github.com/nvbangg) &nbsp; [![Stars](https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github)](https://github.com/nvbangg/KeyClipboard) &nbsp; ![Visitors](https://api.visitorbadge.io/api/visitors?path=KeyClipboard&countColor=blue&style=flat&labelStyle=none)<br><img src="https://nvbangg.github.io/assets/gifs/follow_star_github.gif" height="100">
 
 </div>
 
