@@ -53,8 +53,8 @@ showShortcuts(*) {
 showAbout(*) {
     text :=
         "KeyClipboard`n" .
-        "Version: 1.10.1`n" .
-        "Date: 28/09/2025`n`n" .
+        "Version: 1.11.0`n" .
+        "Date: 2026-01-13`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
     if (MsgBox(text, "About KeyClipboard", "YesNo 262144") == "Yes") ; 262144: AlwaysOnTop flag

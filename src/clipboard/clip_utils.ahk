@@ -1,12 +1,12 @@
 initClip() {
     global history := []
     global isProcessing := true
-    tempClip := ClipboardAll()
-
-    A_Clipboard := "Initializing..."  ; Force clipboard change to ensure hook works
-    ClipWait(0.3)
-    A_Clipboard := tempClip
-    ClipWait(0.3)
+    try {
+        A_Clipboard := "Initializing..."  ; Force clipboard change to ensure hook works
+        ClipWait(0.3)
+        A_Clipboard := ""
+    } catch {
+    }
     isProcessing := false
 
     loadSavedItems()
