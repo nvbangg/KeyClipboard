@@ -3,6 +3,8 @@
 > [!NOTE]
 > A Clipboard with Advanced features and Hotkeys to replace Windows Clipboard!
 
+[![Stars](https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Like%20this%20project%3F%20Give%20it%20a%20Star%20%E2%AD%90&logo=github)](https://github.com/nvbangg/KeyClipboard) &nbsp; [![Followers](https://img.shields.io/github/followers/nvbangg?label=Follow%20me&logo=github)](https://github.com/nvbangg) &nbsp; [![Sponsor](https://img.shields.io/badge/Sponsor-pink?logo=github-sponsors)](https://nvbangg.github.io/#donate)
+
 ## 📌 Highlighted Features
 
 - Keep any window pinned (**Always On Top**)  
@@ -30,13 +32,9 @@
 2. Install environment from [AutoHotkey v2](https://www.autohotkey.com)
 3. Run `KeyClipboard.ahk`
 
-[![Followers](https://img.shields.io/github/followers/nvbangg?label=Follow%20my%20GitHub&logo=github)](https://github.com/nvbangg) &nbsp; [![Stars](https://img.shields.io/github/stars/nvbangg/KeyClipboard?label=Star%20this%20repo&logo=github)](https://github.com/nvbangg/KeyClipboard) &nbsp; ![Visitors](https://api.visitorbadge.io/api/visitors?path=KeyClipboard&countColor=blue&style=flat&labelStyle=none)
-
 ---
 
-## ⚖️ Privacy Policy & License
+## ⚖️ Privacy Policy & Legal
 
-- KeyClipboard does not collect any data of any kind
+- This project does not collect any data of any kind
 - Copyright (c) 2025 Nguyễn Văn Bằng (nvbangg, [github.com/nvbangg](https://github.com/nvbangg))
-- Licensed under the [GNU General Public License v3.0](./LICENSE)
-
