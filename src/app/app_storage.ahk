@@ -1,46 +1,16 @@
-DEFAULT_APP := {
-    firstRun: "1",
-    replaceWinClip: "1", 
-    autoStart: "1",
-    historyLimit: "100"
-}
-
-DEFAULT_ADVANCED := {
-    monitorDelay: 100,
-    pasteDelay: 50,
-    restoreDelay: 100,
-    enterDelay: 50,
-    tabDelay: 50,
-    enterCount: 1,
-    tabCount: 1
-}
-
-DEFAULT_PRESET := {
-    removeAccentsEnabled: "1",
-    removeSpecialEnabled: "1",
-    lineOption: "0",
-    caseOption: "3", 
-    separatorOption: "4"
-}
-
 initApp() {
-    global firstRun, replaceWinClip, autoStart, historyLimit
-    global currentPreset := "Default"
-    global presetList, currentPreset
-    
-    existFile(settingsFilePath)
-    readAppSettings()
-    readAdvancedSettings()
-    readPresetInit()
-    
-    updateWinClipHotkey()
+    readSettings()
+    saveSettings()
     updateStartupSetting()
 
-    if (firstRun)
-        handleFirstRun()
-
+    if (firstRun) {
+        writeConfig("AppSettings", "firstRun", "0")
+        writeConfig("Presets", "PresetList", join(presetList, ","))
+        writeConfig("Presets", "CurrentPreset", currentPreset)
+        welcome()
+    }
     if (replaceWinClip)
-        SetTimer(() => updateWinClipHotkey(), -1000)
+        updateWinClipHotkey()
 }
 
 existFile(filePath) {
@@ -50,184 +20,119 @@ existFile(filePath) {
         FileAppend("", filePath)
 }
 
-readSetting(section, key, defaultValue) {
-    static settings := Map()
-
-    if (section = "__CLEAR_CACHE__") {
-        settings.Clear()
-        return ""
-    }
-    
-    fullKey := section . "_" . key
-    if (!settings.Has(fullKey))
-        settings[fullKey] := IniRead(settingsFilePath, section, key, defaultValue)
-    return settings[fullKey]
+DEFAULT_SETTINGS() {
+    return Map(
+        "firstRun", "1",
+        "replaceWinClip", "1",
+        "autoStart", "1",
+        "showCopied", "0",
+        "historyLimit", "100",
+        "removeAccentsEnabled", "1",
+        "removeSpecialEnabled", "1",
+        "lineOption", "0",
+        "caseOption", "3",
+        "separatorOption", "4",
+        "PresetList", "Default",
+        "CurrentPreset", "Default",
+        "monitorDelay", "100",
+        "pasteDelay", "50",
+        "restoreDelay", "100",
+        "enterDelay", "50",
+        "tabDelay", "50",
+        "enterCount", "1",
+        "tabCount", "1"
+    )
 }
 
-writeSetting(section, key, value) {
-    global settingsFilePath
-    IniWrite(value, settingsFilePath, section, key)
-    clearSettingFromCache(section, key)
+readConfig(section, key) {
+    return IniRead(SETTINGS_PATH, section, key, DEFAULT_SETTINGS()[key])
 }
 
-readAppSettings() {
-    global firstRun, replaceWinClip, autoStart, historyLimit
-    firstRun := readSetting("AppSettings", "firstRun", DEFAULT_APP.firstRun) = "1"
-    replaceWinClip := readSetting("AppSettings", "replaceWinClip", DEFAULT_APP.replaceWinClip) = "1"
-    autoStart := readSetting("AppSettings", "autoStart", DEFAULT_APP.autoStart) = "1"
-    historyLimit := Integer(readSetting("AppSettings", "historyLimit", DEFAULT_APP.historyLimit))
+writeConfig(section, key, value) {
+    IniWrite(value, SETTINGS_PATH, section, key)
 }
 
-resetToDefaults() {
-    global replaceWinClip, autoStart, historyLimit
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption
-    
-    replaceWinClip := DEFAULT_APP.replaceWinClip = "1"
-    autoStart := DEFAULT_APP.autoStart = "1"
-    historyLimit := Integer(DEFAULT_APP.historyLimit)
-    
-    removeAccentsEnabled := DEFAULT_PRESET.removeAccentsEnabled = "1"
-    removeSpecialEnabled := DEFAULT_PRESET.removeSpecialEnabled = "1"
-    lineOption := Integer(DEFAULT_PRESET.lineOption)
-    caseOption := Integer(DEFAULT_PRESET.caseOption)
-    separatorOption := Integer(DEFAULT_PRESET.separatorOption)
-}
+readSettings() {
+    existFile(SETTINGS_PATH)
 
-handleFirstRun() {
-    showSettings()
-    showWelcome()
-    createDesktopShortcut()
-    
-    writeSetting("AppSettings", "firstRun", "0")
-    writeSetting("AppSettings", "replaceWinClip", DEFAULT_APP.replaceWinClip)
-    writeSetting("AppSettings", "autoStart", DEFAULT_APP.autoStart)
-    writeSetting("AppSettings", "historyLimit", DEFAULT_APP.historyLimit)
-}
-
-saveSettings(savedValues) {
-    global replaceWinClip, autoStart, historyLimit
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption, currentPreset
-
-    existFile(settingsFilePath)
-
-    replaceWinClip := !!savedValues.replaceWinClip
-    autoStart := !!savedValues.autoStart
-    historyLimit := Integer(savedValues.historyLimit)
-
-    removeAccentsEnabled := !!savedValues.removeAccentsEnabled
-    removeSpecialEnabled := !!savedValues.removeSpecialEnabled
-
-    lineOption := savedValues.lineOption - 1
-    caseOption := savedValues.caseOption - 1
-    separatorOption := savedValues.separatorOption - 1
-
-    writeSetting("AppSettings", "replaceWinClip", replaceWinClip ? "1" : "0")
-    writeSetting("AppSettings", "autoStart", autoStart ? "1" : "0")
-    writeSetting("AppSettings", "historyLimit", historyLimit)
-
-    writePresetSettings("Preset_" . currentPreset)
-    
+    global firstRun := readConfig("AppSettings", "firstRun") = "1"
+    global replaceWinClip := readConfig("AppSettings", "replaceWinClip") = "1"
+    global autoStart := readConfig("AppSettings", "autoStart") = "1"
+    global showCopied := readConfig("AppSettings", "showCopied") = "1"
+    global historyLimit := Integer(readConfig("AppSettings", "historyLimit"))
     updateWinClipHotkey()
     updateStartupSetting()
+
+    global presetList := StrSplit(readConfig("Presets", "PresetList"), ",")
+    global currentPreset := readConfig("Presets", "CurrentPreset")
+
+    sectionName := "Preset_" . currentPreset
+    global removeAccentsEnabled := readConfig(sectionName, "removeAccentsEnabled") = "1"
+    global removeSpecialEnabled := readConfig(sectionName, "removeSpecialEnabled") = "1"
+    global lineOption := Integer(readConfig(sectionName, "lineOption"))
+    global caseOption := Integer(readConfig(sectionName, "caseOption"))
+    global separatorOption := Integer(readConfig(sectionName, "separatorOption"))
+
+    global monitorDelay := Integer(readConfig("AdvancedSettings", "monitorDelay"))
+    global pasteDelay := Integer(readConfig("AdvancedSettings", "pasteDelay"))
+    global restoreDelay := Integer(readConfig("AdvancedSettings", "restoreDelay"))
+    global enterDelay := Integer(readConfig("AdvancedSettings", "enterDelay"))
+    global tabDelay := Integer(readConfig("AdvancedSettings", "tabDelay"))
+    global enterCount := Integer(readConfig("AdvancedSettings", "enterCount"))
+    global tabCount := Integer(readConfig("AdvancedSettings", "tabCount"))
 }
 
-readAdvancedSettings() {
-    global monitorDelay, pasteDelay, restoreDelay
-    global enterDelay, tabDelay, enterCount, tabCount
-    
-    monitorDelay := Integer(readSetting("AdvancedSettings", "monitorDelay", DEFAULT_ADVANCED.monitorDelay))
-    pasteDelay := Integer(readSetting("AdvancedSettings", "pasteDelay", DEFAULT_ADVANCED.pasteDelay))
-    restoreDelay := Integer(readSetting("AdvancedSettings", "restoreDelay", DEFAULT_ADVANCED.restoreDelay))
-    enterDelay := Integer(readSetting("AdvancedSettings", "enterDelay", DEFAULT_ADVANCED.enterDelay))
-    tabDelay := Integer(readSetting("AdvancedSettings", "tabDelay", DEFAULT_ADVANCED.tabDelay))
-    enterCount := Integer(readSetting("AdvancedSettings", "enterCount", DEFAULT_ADVANCED.enterCount))
-    tabCount := Integer(readSetting("AdvancedSettings", "tabCount", DEFAULT_ADVANCED.tabCount))
-}
+saveSettings(settingsGui := 0, advancedValues := 0) {
+    existFile(SETTINGS_PATH)
+    global currentPreset, presetList
 
-writeAdvancedSettings(values) {
-    global monitorDelay, pasteDelay, restoreDelay
-    global enterDelay, tabDelay, enterCount, tabCount
-    
-    monitorDelay := Integer(values.monitorDelay)
-    pasteDelay := Integer(values.pasteDelay)
-    restoreDelay := Integer(values.restoreDelay)
-    enterDelay := Integer(values.enterDelay)
-    tabDelay := Integer(values.tabDelay)
-    enterCount := Integer(values.enterCount)
-    tabCount := Integer(values.tabCount)
-    
-    writeSetting("AdvancedSettings", "monitorDelay", monitorDelay)
-    writeSetting("AdvancedSettings", "pasteDelay", pasteDelay)
-    writeSetting("AdvancedSettings", "restoreDelay", restoreDelay)
-    writeSetting("AdvancedSettings", "enterDelay", enterDelay)
-    writeSetting("AdvancedSettings", "tabDelay", tabDelay)
-    writeSetting("AdvancedSettings", "enterCount", enterCount)
-    writeSetting("AdvancedSettings", "tabCount", tabCount)
-}
+    if (settingsGui) {
+        settingsValues := settingsGui.Submit()
+        oldReplaceWinClip := replaceWinClip
+        global replaceWinClip := !!settingsValues.replaceWinClip
+        global autoStart := !!settingsValues.autoStart
+        global showCopied := !!settingsValues.showCopied
+        global historyLimit := Integer(settingsValues.historyLimit)
 
-readPresetInit() {
-    global presetList := []
-    global currentPreset
-    
-    presetString := readSetting("Presets", "PresetList", "")
-    if (presetString != "") {
-        presetNames := StrSplit(presetString, ",")
-        for _, name in presetNames {
-            if (name != "")
-                presetList.Push(name)
-        }
+        global removeAccentsEnabled := !!settingsValues.removeAccentsEnabled
+        global removeSpecialEnabled := !!settingsValues.removeSpecialEnabled
+        global lineOption := settingsValues.lineOption - 1
+        global caseOption := settingsValues.caseOption - 1
+        global separatorOption := settingsValues.separatorOption - 1
+
+        if (oldReplaceWinClip != replaceWinClip)
+            updateWinClipHotkey()
+
+        destroyGui(settingsGui)
     }
-    
-    currentPreset := readSetting("Presets", "CurrentPreset", "Default")
-    if (!HasValue(presetList, "Default"))
-        createDefaultPreset()
-    if (!HasValue(presetList, currentPreset))
-        currentPreset := "Default"
-    
-    readPreset(currentPreset)
+
+    if (advancedValues) {
+        global monitorDelay := Integer(advancedValues.monitorDelay)
+        global pasteDelay := Integer(advancedValues.pasteDelay)
+        global restoreDelay := Integer(advancedValues.restoreDelay)
+        global enterDelay := Integer(advancedValues.enterDelay)
+        global tabDelay := Integer(advancedValues.tabDelay)
+        global enterCount := Integer(advancedValues.enterCount)
+        global tabCount := Integer(advancedValues.tabCount)
+    }
+
+    writeConfig("AppSettings", "replaceWinClip", replaceWinClip ? "1" : "0")
+    writeConfig("AppSettings", "autoStart", autoStart ? "1" : "0")
+    writeConfig("AppSettings", "showCopied", showCopied ? "1" : "0")
+    writeConfig("AppSettings", "historyLimit", historyLimit)
+
+    sectionName := "Preset_" . currentPreset
+    writeConfig(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
+    writeConfig(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
+    writeConfig(sectionName, "lineOption", lineOption)
+    writeConfig(sectionName, "caseOption", caseOption)
+    writeConfig(sectionName, "separatorOption", separatorOption)
+
+    writeConfig("AdvancedSettings", "monitorDelay", monitorDelay)
+    writeConfig("AdvancedSettings", "pasteDelay", pasteDelay)
+    writeConfig("AdvancedSettings", "restoreDelay", restoreDelay)
+    writeConfig("AdvancedSettings", "enterDelay", enterDelay)
+    writeConfig("AdvancedSettings", "tabDelay", tabDelay)
+    writeConfig("AdvancedSettings", "enterCount", enterCount)
+    writeConfig("AdvancedSettings", "tabCount", tabCount)
 }
-
-readPreset(presetName) {
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption
-    global currentPreset
-
-    clearSettingsCache()
-
-    sectionName := "Preset_" . presetName
-    
-    removeAccentsEnabled := readSetting(sectionName, "removeAccentsEnabled", "0") = "1"
-    removeSpecialEnabled := readSetting(sectionName, "removeSpecialEnabled", "0") = "1"
-    lineOption := Integer(readSetting(sectionName, "lineOption", "1"))
-    caseOption := Integer(readSetting(sectionName, "caseOption", "0"))
-    separatorOption := Integer(readSetting(sectionName, "separatorOption", "0"))
-
-    currentPreset := presetName
-    writeSetting("Presets", "CurrentPreset", currentPreset)
-}
-
-writePresetSettings(sectionName) {
-    global removeAccentsEnabled, removeSpecialEnabled
-    global lineOption, caseOption, separatorOption
-    
-    writeSetting(sectionName, "removeAccentsEnabled", removeAccentsEnabled ? "1" : "0")
-    writeSetting(sectionName, "removeSpecialEnabled", removeSpecialEnabled ? "1" : "0")
-    writeSetting(sectionName, "lineOption", lineOption)
-    writeSetting(sectionName, "caseOption", caseOption)
-    writeSetting(sectionName, "separatorOption", separatorOption)
-}
-
-createDefaultPreset() {
-    global presetList, currentPreset
-    sectionName := "Preset_Default"
-    
-    for key, value in DEFAULT_PRESET.OwnProps()
-        writeSetting(sectionName, key, value)
-
-    presetList.Push("Default")
-    writeSetting("Presets", "PresetList", Join(presetList, ","))
-    currentPreset := "Default"
-}
-

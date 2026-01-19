@@ -13,59 +13,22 @@ A_TrayMenu.Default := "Settings (CapsLock+S)"
 
 showSettings(*) {
     static settingsGui := 0
-    static isCreating := false
-
-    if (isCreating)
-        return
-    isCreating := true
-    settingsGui := cleanupGui(settingsGui)
+    destroyGui(settingsGui)
     settingsGui := Gui("+AlwaysOnTop +ToolWindow", "KeyClipboard - Settings")
     settingsGui.SetFont("s10")
     yPos := 10
     yPos := addAppSettings(settingsGui, yPos)
-    yPos := addPresetManagement(settingsGui, yPos, OnPresetChanged, deleteCurrentPreset, (*) => createNewPreset())
+    yPos := addPresetManagement(settingsGui, yPos)
     yPos := addFormatOptions(settingsGui, yPos)
 
     settingsGui.Add("Button", "x20 y" . (yPos + 10) . " w90 Default", "Save")
-    .OnEvent("Click", closeAndSave)
+    .OnEvent("Click", (*) => saveSettings(settingsGui))
     settingsGui.Add("Button", "x120 y" . (yPos + 10) . " w90", "Shortcuts")
     .OnEvent("Click", (*) => showShortcuts())
     settingsGui.Add("Button", "x220 y" . (yPos + 10) . " w90", "About")
     .OnEvent("Click", (*) => showAbout())
     settingsGui.Show("w345 h" . (yPos + 50))
-    closeEvents(settingsGui, closeAndSave)
-    isCreating := false
-
-    ; Handle preset dropdown changes - reload GUI when preset changes
-    OnPresetChanged(ctrl, *) {
-        selectedPreset := ctrl.Text
-        initialPreset := currentPreset
-        if (selectedPreset != initialPreset) {
-            try {
-                if (isGuiValid(settingsGui)) {
-                    formData := settingsGui.Submit(false)
-                    saveSettings(formData)
-                    saveToCurrentPreset()
-                }
-            }
-            readPreset(selectedPreset)
-            destroyGui(settingsGui)
-            showSettings()
-        }
-    }
-    closeAndSave(*) {
-        local guiRef := settingsGui
-        local isCreatingRef := &isCreating
-        try {
-            if (isGuiValid(guiRef)) {
-                formData := guiRef.Submit()  ; Get all form values
-                saveSettings(formData)
-                saveToCurrentPreset()
-                settingsGui := cleanupGui(guiRef)
-            }
-        }
-        %isCreatingRef% := false  ; Reset creation flag
-    }
+    closeEvents(settingsGui, (*) => saveSettings(settingsGui))
 }
 
 showShortcuts(*) {
@@ -76,23 +39,22 @@ showShortcuts(*) {
         "• CapsLock+C: Show History`n" .
         "• CapsLock+Ctrl+C: Clear History`n" .
         "• CapsLock+Alt+C: Show Saved Items`n`n" .
-        "• CapsLock+1-9,0: Paste by position`n" .
         "• CapsLock+A: Paste all History`n" .
         "• CapsLock+V: Paste second latest, Tab, then latest`n" .
         "• CapsLock+T: Paste all History with Tab separator`n" .
         "• CapsLock+E: Paste all History with Enter separator`n" .
         "• CapsLock(+Shift)+B: Paste 'second latest_latest'`n`n" .
-        "• CapsLock+Shift+Num/A/V/T/E: Paste with Format`n" .
-        "• CapsLock+Ctrl+Num/A/V/T/E: Paste from Saved Items`n" .
-        "• CapsLock+Alt+Num/A/V/T/E: Paste as Original`n`n"
+        "• CapsLock+(Alt)+1-9,0: Paste by Index`n" .
+        "• CapsLock+Shift+(Alt)+Num/A/V/T/E: Paste with Format`n" .
+        "• CapsLock+Ctrl+(Alt)+Num/A/V/T/E: Paste from Saved Items`n"
     MsgBox(text, "Shortcuts - KeyClipboard", "OK 262144")
 }
 
 showAbout(*) {
     text :=
         "KeyClipboard`n" .
-        "Version: 1.9`n" .
-        "Date: 25/09/2025`n`n" .
+        "Version: 1.11.0`n" .
+        "Date: 2026-01-13`n`n" .
         "Source: github.com/nvbangg/KeyClipboard`n" .
         "Click Yes to open"
     if (MsgBox(text, "About KeyClipboard", "YesNo 262144") == "Yes") ; 262144: AlwaysOnTop flag
@@ -101,31 +63,24 @@ showAbout(*) {
         Run("https://www.youtube.com/watch?v=dQw4w9WgXcQ") ; Easter egg :)
 }
 
-showWelcome() {
-    text :=
-        "KeyClipboard has been successfully installed!`n" .
-        "A shortcut has been created on your desktop to open settings.`n`n" .
-        "• CapsLock+C: Open Clipboard History`n" .
-        "• CapsLock+S: Open Settings`n" .
-        "• Double-click the tray icon in the system tray to open settings`n`n"
-    MsgBox(text, "Welcome to KeyClipboard", "OK 262144")
-}
-
 addAppSettings(guiObj, yPos) {
-    guiObj.Add("GroupBox", "x10 y" . yPos . " w320 h100", "App Settings")
+    guiObj.Add("GroupBox", "x10 y" . yPos . " w320 h125", "App Settings")
     guiObj.Add("Checkbox", "x20 y" . (yPos + 20) . " w330 vreplaceWinClip",
     "Replace Windows Clipboard")
     .Value := replaceWinClip
     guiObj.Add("Checkbox", "x20 y" . (yPos + 45) . " w330 vautoStart",
     "Auto start with Windows")
     .Value := autoStart
-    guiObj.Add("Text", "x20 y" . (yPos + 75) . " w140", "History Limit:")
-    guiObj.Add("DropDownList", "x110 y" . (yPos + 71) . " w70 vhistoryLimit Choose" .
+    guiObj.Add("Checkbox", "x20 y" . (yPos + 70) . " w330 vshowCopied",
+    "Show copy notification")
+    .Value := showCopied
+    guiObj.Add("Text", "x20 y" . (yPos + 100) . " w140", "History Limit:")
+    guiObj.Add("DropDownList", "x110 y" . (yPos + 96) . " w70 vhistoryLimit Choose" .
     getHistoryLimit(historyLimit), ["50", "100", "200", "500", "1000"])
-    guiObj.Add("Button", "x190 y" . (yPos + 69) . " w130 h25", "Advanced Settings")
+    guiObj.Add("Button", "x190 y" . (yPos + 94) . " w130 h25", "Advanced Settings")
     .OnEvent("Click", (*) => showAdvanced())
 
-    return yPos + 110
+    return yPos + 135
 }
 
 addFormatOptions(settingsGui, yPos) {
@@ -158,7 +113,7 @@ addFormatOptions(settingsGui, yPos) {
     return yPos
 }
 
-addPresetManagement(settingsGui, yPos, presetChangedCallback, deletePresetCallback, createPresetCallback) {
+addPresetManagement(settingsGui, yPos) {
     global presetList, currentPreset
 
     settingsGui.Add("Text", "x20 y" . (yPos + 8) . " w80", "Presets:")
@@ -167,24 +122,39 @@ addPresetManagement(settingsGui, yPos, presetChangedCallback, deletePresetCallba
         presetArray.Push(name)
     presetDropdown := settingsGui.Add("DropDownList", "x80 y" . (yPos + 5) . " w150 vSelectedPreset", presetArray)
     currentIndex := 1
-    if (currentPreset != "") {
+    if (currentPreset != "" && presetArray.Length > 0) {
         for i, name in presetList {
             if (name = currentPreset) {
                 currentIndex := i
                 break
             }
         }
+        if (currentIndex > presetArray.Length) {
+            currentIndex := 1
+        }
     }
 
-    presetDropdown.Choose(currentIndex)
-    initialPreset := presetDropdown.Text
-    presetDropdown.OnEvent("Change", presetChangedCallback)
+    if (presetArray.Length > 0) {
+        presetDropdown.Choose(currentIndex)
+        initialPreset := presetDropdown.Text
+        presetDropdown.OnEvent("Change", OnPresetChanged)
+    }
     settingsGui.Add("Button", "x235 y" . (yPos + 4) . " w35 h25", "Del")
-    .OnEvent("Click", (*) => deletePresetCallback(presetDropdown))
+    .OnEvent("Click", (*) => deleteCurrentPreset(presetDropdown, settingsGui))
     settingsGui.Add("Button", "x275 y" . (yPos + 4) . " w45 h25", "New")
-    .OnEvent("Click", createPresetCallback)
-
+    .OnEvent("Click", (*) => createNewPreset(settingsGui))
     return yPos + 40
+
+    ; Reload GUI when preset changes
+    OnPresetChanged(ctrl, *) {
+        selectedPreset := ctrl.Text
+        if (selectedPreset != currentPreset) {
+            saveSettings(settingsGui)
+            writeConfig("Presets", "CurrentPreset", selectedPreset)
+            readSettings()
+            showSettings()
+        }
+    }
 }
 
 showAdvanced() {
@@ -236,4 +206,31 @@ showAdvanced() {
     advancedGui.Add("Button", "x240 y" . (yPos + 10) . " w70 h30", "Close").OnEvent("Click", (*) => advancedGui.Destroy())
 
     advancedGui.Show("w320 h" . (yPos + 50))
+}
+
+welcome() {
+    showSettings()
+
+    text :=
+        "KeyClipboard has been successfully installed!`n" .
+        "A shortcut has been created on your desktop to open settings.`n`n" .
+        "• CapsLock+C: Open Clipboard History`n" .
+        "• CapsLock+S: Open Settings`n" .
+        "• Double-click the tray icon in the system tray to open settings`n`n"
+    MsgBox(text, "Welcome to KeyClipboard", "OK 262144")
+
+    ; Create desktop shortcut
+    try {
+        desktopPath := A_Desktop
+        shortcutPath := desktopPath . "\KeyClipboard.lnk"
+        targetPath := A_ScriptFullPath
+        workingDir := A_ScriptDir
+        args := "settings"
+        ; Create shortcut with icon and description
+        iconPath := A_IsCompiled ? A_ScriptFullPath : A_ScriptDir . "\src\UI\icon.ico"
+        FileCreateShortcut(targetPath, shortcutPath, workingDir, args,
+            "KeyClipboard - Clipboard Manager", iconPath)
+    } catch Error as e {
+        OutputDebug("Failed to create desktop shortcut: " . e.Message)
+    }
 }

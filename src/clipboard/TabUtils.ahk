@@ -33,7 +33,9 @@ class TabUtils {
         }
     }
 
-    static getItemAtPosition(clipTab, index, useSaved) {
-        return useSaved ? clipTab[index] : clipTab[clipTab.Length - index + 1]
+    static getItem(clipTab, index) {
+        if (index > 0)
+            return clipTab[index]
+        return clipTab[clipTab.Length + index + 1]
     }
 }

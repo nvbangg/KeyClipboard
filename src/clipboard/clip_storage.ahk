@@ -1,9 +1,9 @@
 loadSavedItems() {
     global saved
-    existFile(savedFilePath)
+    existFile(SAVED_PATH)
 
     try {
-        fileContent := FileRead(savedFilePath)
+        fileContent := FileRead(SAVED_PATH)
         if (fileContent = "")
             return
 
@@ -24,21 +24,21 @@ loadSavedItems() {
 
 saveSavedItems() {
     global saved
-    existFile(savedFilePath)
+    existFile(SAVED_PATH)
 
     try {
         fileContent := ""
         for _, item in saved {
-            if (!item || item = "") 
+            if (!item || item = "")
                 continue
             encodedLine := encodeLine(item)  ; item is now a string
             if (encodedLine != "")
                 fileContent .= encodedLine . "`n"
         }
 
-        if (FileExist(savedFilePath))
-            FileDelete(savedFilePath)
-        FileAppend(fileContent, savedFilePath)
+        if (FileExist(SAVED_PATH))
+            FileDelete(SAVED_PATH)
+        FileAppend(fileContent, SAVED_PATH)
     } catch Error as e {
         MsgBox("Error saving data: " . e.Message, "Error", "OK 262144")
     }

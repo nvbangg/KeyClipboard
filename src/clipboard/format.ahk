@@ -1,7 +1,7 @@
 formatDisplayText(text) {
     text := RegExReplace(text, "\r?\n\s*\r?\n", "  ↩↩  ")
     text := RegExReplace(text, "[\r\n]+", "  ↩  ")
-    
+
     return text
 }
 
